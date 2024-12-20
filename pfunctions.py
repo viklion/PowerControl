@@ -155,7 +155,7 @@ def pcwol():
 # ping
 def pcping():
     if ping_enabled:
-        # ping电脑
+        # ping设备
         ping_result = str(ping(device_ip, timeout = 1, count = 1))
         return ping_result
 
