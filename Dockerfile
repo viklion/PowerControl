@@ -1,6 +1,7 @@
-# 使用官方的 Python 运行时作为基础镜像
+# 使用官方的 Python 3.12镜像
 FROM python:3.12.8-slim
 
+# 信息
 LABEL maintainer="viklion" \
     version="1.3" 
 
