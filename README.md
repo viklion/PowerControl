@@ -1,4 +1,4 @@
-![logo](https://pic.viklion.com/s/2024/12/20/67655398296b8.png)
+![logo](https://pic.viklion.com/s/2024/12/20/676553945ec8d.png)
 # PowerControl
 docker容器远程网络唤醒设备，远程关闭windows设备，并可依赖巴法云接入米家，通过米家远程操作
 
