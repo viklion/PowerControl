@@ -1,2 +1,30 @@
 # PowerControl
 docker容器远程网络唤醒设备，远程关闭windows设备，并可依赖巴法云接入米家，通过米家远程操作
+
+## 安装
+不要直接复制命令运行，需要修改参数
+1、将容器/app/data目录映射到你的主机目录，修改/your/path
+2、修改环境变量WEB_PORT：网页端口；WEB_KEY：密钥
+
+### 1、Docker
+```
+docker run -d --restart unless-stopped -v /your/path:/app/data -e WEB_PORT=7156 -e WEB_KEY=yourkey --network host --name powercontrol viklion/powercontrol:latest
+```
+
+### 1、Docker-Compose
+```
+services:
+    powercontrol:
+        image: viklion/powercontrol:latest
+        container_name: powercontrol
+        restart: unless-stopped
+        network_mode: host
+        volumes:
+            - /your/path:/app/data
+        environment:
+            - WEB_PORT=7156
+            - WEB_KEY=yourkey
+
+```
+
+访问 ip:端口 查看教程
