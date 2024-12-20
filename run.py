@@ -19,14 +19,14 @@ def run_web():
 def run_bemfa():
     power_control.run()
         
-# 创建两个线程
+# 创建线程
 thread_a = threading.Thread(target=run_web)
 thread_b = threading.Thread(target=run_bemfa)
 
-# 启动两个线程
+# 启动线程
 thread_a.start()
 thread_b.start()
 
-# 等待两个线程都完成
+# 等待线程
 thread_a.join()
 thread_b.join()
