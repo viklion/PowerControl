@@ -27,4 +27,5 @@ services:
             - WEB_KEY=yourkey
 ```
 
+## 配置
 访问 ip:端口 查看教程
