@@ -2,7 +2,7 @@
 # PowerControl
 docker容器远程网络唤醒设备，远程关闭windows设备，并可依赖巴法云接入米家，通过米家远程操作
 
-## 安装
+## 安装（只有x86平台）
 不要直接复制命令运行，需要修改参数<br>
 1、将容器/app/data目录映射到你的主机目录，存放配置文件和日志文件:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;`修改/your/path`<br>
