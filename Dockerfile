@@ -1,9 +1,14 @@
-# 使用官方的 Python 3.12镜像
+# 使用官方的 Python 运行时作为基础镜像
 FROM python:3.12.8-slim
 
-# 信息
 LABEL maintainer="viklion" \
-    version="1.3" 
+    version="1.5" 
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN apt-get update && apt-get install -y tzdata \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 设置工作目录
 WORKDIR /app

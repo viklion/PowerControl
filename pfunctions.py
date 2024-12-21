@@ -1,6 +1,7 @@
 import yaml
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 import socket
 import winrm
 from wakeonlan import send_magic_packet
@@ -12,7 +13,7 @@ from BarkNotificator import BarkNotificator
 
 # 检查YAML文件
 def check_yaml():
-    # 检查当前目录下是否存在config.yaml文件
+    # 检查当前目录下是否存在yaml文件
     if not os.path.isfile(yaml_path):
         try:
             # 从default目录拷贝文件到当前目录
@@ -223,8 +224,20 @@ def print_and_log(content, level):
     p_print(content)
     write_log(content, level)
 
+# 统计运行时间
+def run_time():
+    run_timedelta = timedelta(seconds = time.time() - start_time)
+    # 获取天、小时、分钟和秒
+    days = run_timedelta.days
+    hours, remainder = divmod(run_timedelta.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"已运行：{days}天{hours}小时{minutes}分钟{seconds}秒"
+    
+
+
 #--------------------------------------------------------------------
 #初始化
+start_time = time.time()
 yaml_file = 'config.yaml'
 yaml_path = os.path.join(os.getcwd(), 'data', yaml_file)
 default_path = os.path.join(os.getcwd(), 'default', yaml_file)

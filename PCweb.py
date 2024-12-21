@@ -1,7 +1,8 @@
-from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log ,checkbool, trans_str ,get_time,write_log,send_message, return_ip
-from flask import Flask, request, render_template, redirect, url_for, flash, send_file
+from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log ,checkbool, trans_str ,get_time,write_log,send_message, return_ip, run_time
+from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response
 from flask_cors import CORS
 import threading
+import os
 
 
 app = Flask(__name__)
@@ -56,11 +57,11 @@ def index():
         save_yaml = write_config_yaml(yaml_config)
         if save_yaml == True:
             # Web_data.yaml_data = yaml_config
-            flash(get_time() + '\n' +'配置保存成功，重启容器生效')
+            flash(get_time() + '\n' +'配置保存成功，请重启服务或容器生效')
         else:
             flash(get_time() + '\n' +'配置保存失败：' + str(save_yaml))
         return redirect(url_for('index')+ f'?key={web_key}')
-    return render_template('index.html', config=yaml_config)
+    return render_template('index.html', config=yaml_config, run_time= run_time())
 
 
 @app.route('/shutdown', methods=['GET', 'POST'])
@@ -117,6 +118,27 @@ def ping():
             return Web_data.device_name + '设备离线 '+ ' ' + ping_result ,200
     except Exception as e:
         return 'error:' + str(e) ,200
+
+# restart
+@app.route('/restart', methods=['POST'])
+def restart():
+    # 获取请求中的密钥
+    web_key = request.args.get('key')
+    if web_key == Web_data.web_key:
+        os._exit(0)
+
+# 更新日志
+@app.route('/changelog', methods=['GET'])
+def change_log():
+    try:
+        # 读取 change.log 文件内容
+        with open('change.log', 'r', encoding='GBK') as file:
+            log_content = file.read()
+        
+        # 返回文件内容，并设置合适的 Content-Type
+        return Response(log_content, mimetype='text/plain')
+    except FileNotFoundError:
+        return "error", 404
 
 class Web_data():
     yaml_data={}

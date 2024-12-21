@@ -27,6 +27,5 @@ thread_b = threading.Thread(target=run_bemfa)
 thread_a.start()
 thread_b.start()
 
-# 等待线程
 thread_a.join()
 thread_b.join()

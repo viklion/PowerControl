@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <title>PowerControl配置页</title>
     <style>
         .input-label {
@@ -24,6 +25,7 @@
 <body>
     <h1>PowerControl配置</h1>
     <h3 style = 'margin-top:-1%;'>by viklion</h3>
+    <p>{{ run_time }}</p>
     <div id="flash-messages" style="color: red;">
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -35,6 +37,9 @@
         {% endif %}
         {% endwith %}
     </div>
+    <form id="restart" method="POST" action="/restart">
+        <button style="width: 100px; height: 30px; font-size: 16px" type="submit">重启服务</button>
+    </form>
     <hr>
     <form method="post">
         <h2 style="color: orangered; margin-bottom: 1%;">巴法：</h2>
@@ -82,5 +87,49 @@
         <input style="width: 100px; height: 30px; font-size: 16px; margin-top: 20px; margin-bottom: 50px; " type="submit" value="保存">
     </form>
 </body>
+    <script>
+        // 获取当前页面的 URL
+        const currentUrl = new URL(window.location.href);
 
+        // 获取 URL 中的 key 参数
+        const key = currentUrl.searchParams.get('key');
+
+        // 如果 key 参数存在，则修改表单的 action 属性
+        if (key) {
+            var form = document.getElementById('restart');
+            form.action = `/restart?key=${key}`;
+        }
+
+        // 监听表单提交事件
+        document.getElementById('restart').addEventListener('submit', function (event) {
+            event.preventDefault(); // 防止表单默认提交
+
+            // 使用 Fetch API 发送 POST 请求（不关心响应）
+            fetch(form.action, {
+                method: 'POST',
+            })
+            // 初始化倒计时
+            let countdown = 3;
+
+            // 添加 "即将刷新" 消息
+            const flashMessages = document.getElementById('flash-messages');
+            const messageElement = document.createElement('ul');
+            const messageItem = document.createElement('li');
+            messageItem.innerHTML = `即将刷新 ${countdown}`;
+            messageElement.appendChild(messageItem);
+            flashMessages.appendChild(messageElement);
+                
+            // 设置定时器每秒更新一次消息
+            const intervalId = setInterval(function () {
+                countdown--;
+                messageItem.innerHTML = `即将刷新 ${countdown}`; // 更新提示消息
+                
+                // 倒计时结束后刷新页面
+                if (countdown < 1) {
+                    clearInterval(intervalId); // 清除定时器
+                    location.reload(); // 刷新页面
+                }
+            }, 1000); // 每隔1秒更新一次 
+        });
+    </script>
 </html>
