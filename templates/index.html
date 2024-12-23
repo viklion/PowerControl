@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>PowerControl配置页</title>
+    <style>
+        .input-label {
+            width: 300px;
+            height: 30px;
+            margin: 2px;
+            font-size: large;
+        }
+        .checkbox-label {
+            font-size: large;
+            margin: 10px;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.5); /* 放大 */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>PowerControl配置</h1>
+    <h3 style = 'margin-top:-1%;'>by viklion</h3>
+    <p>{{ run_time }}</p>
+    <div id="flash-messages" style="color: red;">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message | replace('\n', '<br>')| safe }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    </div>
+    <form id="restart" method="POST" action="/restart">
+        <button style="width: 100px; height: 30px; font-size: 16px" type="submit">重启服务</button>
+    </form>
+    <hr>
+    <form method="post">
+        <h2 style="color: orangered; margin-bottom: 1%;">巴法：</h2>
+        接入巴法云: <input class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %}><br>
+        巴法云用户私钥: <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}"><br>
+        巴法云设备主题: <input class="input-label" type="text" name="bemfa.topic" value="{{ config.bemfa.topic }}"><br>
+        <hr>
+        <h2 style="color: orangered; margin-bottom: 1%;">设备：</h2>
+        设备名称: <input class="input-label" type="text" name="devices.name" value="{{ config.devices.name }}"><br>
+        设备ip地址: <input class="input-label" type="text" name="devices.ip" value="{{ config.devices.ip }}"><br>
+        启用网络唤醒: <input class="checkbox-label" type="checkbox" name="devices.wol.enabled" value="True" {% if config['devices']['wol']['enabled'] %} checked{% endif %}><br>
+        设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx:xx，也可以是xx-xx"><br>
+        启用远程关机: <input class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %}><br>
+        账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
+        密码: <input class="input-label" type="text" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}"><br>
+        延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1"><br>
+        启用ping检测: <input class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %}><br>
+        ping间隔时长(秒): <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
+        <hr>
+        <h2 style="color: orangered; margin-bottom: 1%;">日志：</h2>
+        启用日志记录: <input class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %}><br>
+        日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错"><br>
+        <hr>
+        <h2 style="color: orangered; margin-bottom: 1%;">推送：</h2>
+        启用消息推送: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.enabled" value="True" {% if
+            config['functions']['push_notifications']['enabled'] %} checked{% endif %}><br>
+        Server酱Turbo: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %}><br>
+        SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey"
+            value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}"><br>
+        消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel"
+            value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}"><br>
+        Server酱3: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan3.enabled"
+            value="True" {% if config['functions']['push_notifications']['ServerChan3']['enabled'] %} checked{% endif
+            %}><br>
+        SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}"><br>
+        Qmsg酱: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.Qmsg.enabled"
+            value="True" {% if config['functions']['push_notifications']['Qmsg']['enabled'] %} checked{% endif
+            %}><br>
+        Key: <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
+        QQ: <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
+        <input style="width: 100px; height: 30px; font-size: 16px; margin-top: 20px; margin-bottom: 50px; " type="submit" value="保存">
+    </form>
+</body>
+    <script>
+        // 获取当前页面的 URL
+        const currentUrl = new URL(window.location.href);
+
+        // 获取 URL 中的 key 参数
+        const key = currentUrl.searchParams.get('key');
+
+        // 如果 key 参数存在，则修改表单的 action 属性
+        if (key) {
+            var form = document.getElementById('restart');
+            form.action = `/restart?key=${key}`;
+        }
+
+        // 监听表单提交事件
+        document.getElementById('restart').addEventListener('submit', function (event) {
+            event.preventDefault(); // 防止表单默认提交
+
+            // 使用 Fetch API 发送 POST 请求（不关心响应）
+            fetch(form.action, {
+                method: 'POST',
+            })
+            // 初始化倒计时
+            let countdown = 3;
+
+            // 添加 "即将刷新" 消息
+            const flashMessages = document.getElementById('flash-messages');
+            const messageElement = document.createElement('ul');
+            const messageItem = document.createElement('li');
+            messageItem.innerHTML = `即将刷新 ${countdown}`;
+            messageElement.appendChild(messageItem);
+            flashMessages.appendChild(messageElement);
+                
+            // 设置定时器每秒更新一次消息
+            const intervalId = setInterval(function () {
+                countdown--;
+                messageItem.innerHTML = `即将刷新 ${countdown}`; // 更新提示消息
+                
+                // 倒计时结束后刷新页面
+                if (countdown < 1) {
+                    clearInterval(intervalId); // 清除定时器
+                    location.reload(); // 刷新页面
+                }
+            }, 1000); // 每隔1秒更新一次 
+        });
+    </script>
+</html>

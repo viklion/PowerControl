@@ -1,0 +1,35 @@
+bemfa:
+  enabled: False
+  uid: aaabbbcccdddeeefffggg
+  topic: testpc001
+devices:
+  name: µçÄÔ
+  ip: 192.168.100.100
+  wol:
+    enabled: True
+    mac: 00:11:22:33:44:55
+  shutdown:
+    enabled: True
+    account: youraccount
+    password: yourpassword
+    time: 60
+  ping:
+    enabled: True
+    time: 60
+functions:
+  log:
+    enabled: True
+    level: 2
+  push_notifications:
+    enabled: False
+    ServerChan_turbo:
+      enabled: False
+      SendKey: YOUR SENDKEY
+      channel: 9
+    ServerChan3:
+      enabled: False
+      SendKey: YOUR SENDKEY
+    Qmsg:
+      enabled: False
+      key: YOUR KEY
+      qq: 123456789
