@@ -22,12 +22,12 @@ class PowerControl():
 
     #订阅
     def connTCP(self):
-        # 创建socket
-        self.tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # IP和端口
         server_ip = 'bemfa.com'
         server_port = 8344
         try:
+            # 创建socket
+            self.tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             # 连接服务器
             self.tcp_client_socket.connect((server_ip, server_port))
             # 发送订阅指令
