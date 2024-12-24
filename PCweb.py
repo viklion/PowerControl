@@ -160,23 +160,26 @@ class PCweb():
     # def get_web_data(self):
     #     return Web_data.yaml_data
     def web_ping(self, is_power_off):
-        ping_result = pcping()
-        write_log('\n' + ping_result + '\n' + '---------------------', 1 ,'_ping_result')
-        if 'Reply' in ping_result:
-            is_power_off = False
-            new_state = "在线"
-        elif 'timed out' in ping_result:
-            if not is_power_off:
-                self.web_ping(True)
-                return
-            new_state = "离线"
-        if Web_data.device_status != new_state:
-            Web_data.device_status = new_state
-            print_and_log(f"状态更新：{new_state}",2)
-            send_message(f"状态更新：{new_state}")
-        #开启ping定时
-        self.ping_check = threading.Timer(self.ping_time, self.web_ping, args=(is_power_off,))
-        self.ping_check.start()
+        try:
+            ping_result = pcping()
+            write_log('\n' + ping_result + '\n' + '---------------------', 1 ,'_ping_result')
+            if 'Reply' in ping_result:
+                is_power_off = False
+                new_state = "在线"
+            elif 'timed out' in ping_result:
+                if not is_power_off:
+                    self.web_ping(True)
+                    return
+                new_state = "离线"
+            if Web_data.device_status != new_state:
+                Web_data.device_status = new_state
+                print_and_log(f"状态更新：{new_state}",2)
+                send_message(f"状态更新：{new_state}")
+            #开启ping定时
+            self.ping_check = threading.Timer(self.ping_time, self.web_ping, args=(is_power_off,))
+            self.ping_check.start()
+        except Exception as e:
+            print_and_log("ping出错：" + str(e), 3)
     
     def run(self):
         self.set_web_data()

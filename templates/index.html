@@ -55,7 +55,7 @@
         启用远程关机: <input class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %}><br>
         账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
         密码: <input class="input-label" type="text" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}"><br>
-        延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1"><br>
+        延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机"><br>
         启用ping检测: <input class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %}><br>
         ping间隔时长(秒): <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
         <hr>
