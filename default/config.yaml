@@ -10,6 +10,9 @@ devices:
     mac: 00:11:22:33:44:55
   shutdown:
     enabled: True
+    method: 
+      netrpc: True
+      udp: False
     account: youraccount
     password: yourpassword
     time: 60

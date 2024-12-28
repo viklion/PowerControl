@@ -6,6 +6,18 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <title>PowerControl配置页</title>
     <style>
+        .default-hr {
+            width: 100%;
+            margin: 10px 0;
+            border: none;
+            height: 2px;
+            background-color: #80808040;
+        }
+        .device-hr {
+            width: 100%;
+            margin: 10px 0;
+            border-top: 2px dashed #80808040;
+        }
         .input-label {
             width: 300px;
             height: 30px;
@@ -16,6 +28,25 @@
             font-size: large;
             margin: 10px;
         }
+        .checkbox-label2 {
+            font-size: large;
+            margin: 10px;
+        }
+        .line-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .textlink {
+            font-size: 14px;
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
         input[type="checkbox"] {
             transform: scale(1.5); /* 放大 */
         }
@@ -23,9 +54,14 @@
 </head>
 
 <body>
-    <h1>PowerControl配置</h1>
-    <h3 style = 'margin-top:-1%;'>by viklion</h3>
-    <p>{{ run_time }}</p>
+    <div class="line-container">
+        <a id="jiaocheng" class="textlink" href="/" target="_blank">查看教程</a>
+        <a id="changelog" class="textlink" href="/changelog" target="_blank">查看更新日志</a>
+    </div>
+    <h1 style="margin-bottom: 2px; margin-top: 2px;">PowerControl配置 V2.1</h1>
+    <h3 style='margin: 0px;'>by viklion</h3>
+    <p style="margin-bottom: -20px;">{{ run_time }}</p>
+    <br>
     <div id="flash-messages" style="color: red;">
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -37,65 +73,117 @@
         {% endif %}
         {% endwith %}
     </div>
-    <form id="restart" method="POST" action="/restart">
-        <button style="width: 100px; height: 30px; font-size: 16px" type="submit">重启服务</button>
-    </form>
-    <hr>
-    <form method="post">
+    <div class="line-container" style="margin-top: 16px;">
+        <input style="width: 100px; height: 30px; font-size: 16px;" type="submit"
+            value="保存" onclick="submit_pcconfig()">
+        <form id="restart" method="POST" action="/restart">
+            <button style="width: 100px; height: 30px; font-size: 16px; " type="submit">重启服务</button>
+        </form>
+    </div>
+    <hr class="default-hr">
+    <form id="pcconfig" method="post">
         <h2 style="color: orangered; margin-bottom: 1%;">巴法：</h2>
-        接入巴法云: <input class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %}><br>
-        巴法云用户私钥: <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}"><br>
-        巴法云设备主题: <input class="input-label" type="text" name="bemfa.topic" value="{{ config.bemfa.topic }}"><br>
-        <hr>
+        接入巴法云: <input class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %} data-target = 'bemfaconfig'><br>
+        <div id = 'bemfaconfig' class = 'hidden'>
+            巴法云用户私钥: <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}"><br>
+            巴法云设备主题: <input class="input-label" type="text" name="bemfa.topic" value="{{ config.bemfa.topic }}"><br>
+        </div>
+        <hr class="default-hr">
         <h2 style="color: orangered; margin-bottom: 1%;">设备：</h2>
         设备名称: <input class="input-label" type="text" name="devices.name" value="{{ config.devices.name }}"><br>
         设备ip地址: <input class="input-label" type="text" name="devices.ip" value="{{ config.devices.ip }}"><br>
-        启用网络唤醒: <input class="checkbox-label" type="checkbox" name="devices.wol.enabled" value="True" {% if config['devices']['wol']['enabled'] %} checked{% endif %}><br>
-        设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx:xx，也可以是xx-xx"><br>
-        启用远程关机: <input class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %}><br>
-        账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
-        密码: <input class="input-label" type="text" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}"><br>
-        延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机"><br>
-        启用ping检测: <input class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %}><br>
-        ping间隔时长(秒): <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
-        <hr>
+        <hr class="device-hr">
+        <div class='line-container'>
+            启用网络唤醒: <input id="wol_enabled" class="checkbox-label" type="checkbox" name="devices.wol.enabled" value="True" {% if config['devices']['wol']['enabled'] %} checked{% endif %} data-target = 'wolconfig'>
+            <a id="go_wol" class="textlink" href="/wol" target="_blank">测试开机</a><br>
+        </div>
+        <div id = 'wolconfig' class = 'hidden'>
+            设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx:xx，也可以是xx-xx"><br>
+        </div>
+        <hr class="device-hr">
+        <div class='line-container'>
+            启用远程关机: <input id="shutdown_enabled" class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %} data-target = 'shutdownconfig'>
+            <a id="go_shutdown" class="textlink" href="/shutdown" target="_blank">测试关机</a><br>
+        </div>
+        <div id = 'shutdownconfig' class = 'hidden'>
+            <div class='line-container'>
+                <span>关机方法：</span>
+                <label for="netrpc">netrpc</label>
+                <input id='netrpc' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.netrpc" value="True" {% if config['devices']['shutdown']['method']['netrpc'] %} checked{% endif %} data-target = 'netrpcconfig'>
+                <label for="udp">udp</label>
+                <input id='udp' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.udp" value="False" {% if config['devices']['shutdown']['method']['udp'] %} checked{% endif %} data-target = 'dl_pcshutdown'><br>
+            </div>
+            <div id = 'netrpcconfig' class = 'hidden'>
+                账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
+                密码: <input class="input-label" type="text" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}"><br>
+            </div>
+            <div id='dl_pcshutdown' class='hidden'>
+                <a id="pcshutdown" class="textlink" href="{{ url_for('download') }}">下载配套服务程序，并按教程使用</a>
+            </div>
+            延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机"><br>
+        </div>
+        <hr class="device-hr">
+        <div class='line-container'>
+            启用ping检测: <input id="ping_enabled" class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %} data-target = 'pingconfig'>
+            <a id="go_ping" class="textlink" href="/ping" target="_blank">测试ping</a><br>
+        </div>
+        <div id = 'pingconfig' class = 'hidden'>
+            ping间隔时长(秒): <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
+        </div>
+        <hr class="default-hr">
         <h2 style="color: orangered; margin-bottom: 1%;">日志：</h2>
-        启用日志记录: <input class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %}><br>
-        日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错"><br>
-        <hr>
+        启用日志记录: <input class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %} data-target = 'logconfig'><br>
+        <div id = 'logconfig' class = 'hidden'>
+            日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错"><br>
+        </div>
+        <hr class="default-hr">
         <h2 style="color: orangered; margin-bottom: 1%;">推送：</h2>
         启用消息推送: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.enabled" value="True" {% if
-            config['functions']['push_notifications']['enabled'] %} checked{% endif %}><br>
-        Server酱Turbo: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %}><br>
-        SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey"
-            value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}"><br>
-        消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel"
-            value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}"><br>
-        Server酱3: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan3.enabled"
-            value="True" {% if config['functions']['push_notifications']['ServerChan3']['enabled'] %} checked{% endif
-            %}><br>
-        SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}"><br>
-        Qmsg酱: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.Qmsg.enabled"
-            value="True" {% if config['functions']['push_notifications']['Qmsg']['enabled'] %} checked{% endif
-            %}><br>
-        Key: <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
-        QQ: <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
-        <input style="width: 100px; height: 30px; font-size: 16px; margin-top: 20px; margin-bottom: 50px; " type="submit" value="保存">
+            config['functions']['push_notifications']['enabled'] %} checked{% endif %} data-target = 'pushconfig'><br>
+        <div id = 'pushconfig' class = 'hidden'>
+            Server酱Turbo: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %} data-target = 'serverchan_turboconfig'><br>
+            <div id = 'serverchan_turboconfig' class = 'hidden'>
+                SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey"
+                    value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}"><br>
+                消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel"
+                    value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}"><br>
+            </div>
+            Server酱3: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan3.enabled"
+                value="True" {% if config['functions']['push_notifications']['ServerChan3']['enabled'] %} checked{% endif
+                %} data-target = 'serverchan3config'><br>
+            <div id = 'serverchan3config' class = 'hidden'>
+                SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}"><br>
+            </div>
+            Qmsg酱: <input class="checkbox-label" type="checkbox" name="functions.push_notifications.Qmsg.enabled"
+                value="True" {% if config['functions']['push_notifications']['Qmsg']['enabled'] %} checked{% endif
+                %} data-target = 'qmsgconfig'><br>
+            <div id = 'qmsgconfig' class = 'hidden'>
+                Key: <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
+                QQ: <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
+            </div>
+        </div>
+        <hr class="default-hr">
+        <div class="line-container">
+            <input style="width: 100px; height: 30px; font-size: 16px; margin-top: 20px; margin-bottom: 50px; " type="submit" value="保存">
+        </div>
+        <!-- <div class="line-container">
+            <button style="width: 100px; height: 30px; font-size: 16px; margin-top: 1%;" type="submit" onclick="submit_restart()">重启服务</button>
+        </div> -->
     </form>
 </body>
     <script>
         // 获取当前页面的 URL
         const currentUrl = new URL(window.location.href);
-
         // 获取 URL 中的 key 参数
         const key = currentUrl.searchParams.get('key');
-
         // 如果 key 参数存在，则修改表单的 action 属性
         if (key) {
             var form = document.getElementById('restart');
             form.action = `/restart?key=${key}`;
+            document.getElementById('go_wol').href = `/wol?key=${key}`;
+            document.getElementById('go_shutdown').href = `/shutdown?key=${key}`;
+            document.getElementById('go_ping').href = `/ping?key=${key}`;
         }
-
         // 监听表单提交事件
         document.getElementById('restart').addEventListener('submit', function (event) {
             event.preventDefault(); // 防止表单默认提交
@@ -127,5 +215,109 @@
                 }
             }, 1000); // 每隔1秒更新一次 
         });
+// ----------------------------------------------------------------------------------------------------
+        function go_func_show() {
+            if (document.getElementById('wol_enabled').checked) {
+                document.getElementById('go_wol').style.display = ''
+            } else {
+                document.getElementById('go_wol').style.display = 'none'
+            }
+            if (document.getElementById('shutdown_enabled').checked) {
+                document.getElementById('go_shutdown').style.display = ''
+            } else {
+                document.getElementById('go_shutdown').style.display = 'none'
+            }
+            if (document.getElementById('ping_enabled').checked) {
+                document.getElementById('go_ping').style.display = ''
+            } else {
+                document.getElementById('go_ping').style.display = 'none'
+            }
+        }
+        // 定义函数，根据复选框状态更新对应内容的显示或隐藏
+        function ifshow(event) {
+            const checkbox = event.target; // 当前触发事件的复选框
+            const targetId = checkbox.dataset.target; // 获取对应的内容 ID
+            const targetElement = document.getElementById(targetId); // 获取目标内容元素
+
+            if (checkbox.checked) {
+                targetElement.classList.remove('hidden');
+            } else {
+                targetElement.classList.add('hidden');
+            }
+            go_func_show()
+        }
+        // 页面加载完成后为所有复选框添加事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('.checkbox-label');
+
+            checkboxes.forEach(checkbox => {
+                // 初始化显示状态
+                const targetId = checkbox.dataset.target;
+                const targetElement = document.getElementById(targetId);
+
+                if (checkbox.checked) {
+                    targetElement.classList.remove('hidden');
+                } else {
+                    targetElement.classList.add('hidden');
+                }
+                go_func_show()
+                // 添加监听事件
+                checkbox.addEventListener('change', ifshow);
+            });
+        });
+// ----------------------------------------------------------------------------------------------------
+        // 获取复选框和目标内容元素
+        const netrpcCheckbox = document.getElementById('netrpc');
+        const udpCheckbox = document.getElementById('udp');
+        const netrpcConfig = document.getElementById('netrpcconfig');
+        const dl_pcshutdown = document.getElementById('dl_pcshutdown');
+
+        // 更新netrpcconfig的显示状态
+        function ifshow_method_shutdown() {
+            if (netrpcCheckbox.checked) {
+                netrpcConfig.classList.remove('hidden');
+                dl_pcshutdown.classList.add('hidden');
+            } else {
+                netrpcConfig.classList.add('hidden');
+                dl_pcshutdown.classList.remove('hidden');
+            }
+        }
+
+        // 互斥逻辑：勾选一个复选框时，取消另一个复选框的勾选
+        function only_one_netrpc() {
+            if (netrpcCheckbox.checked) {
+                udpCheckbox.checked = false;
+            } else {
+                udpCheckbox.checked = true;
+            }
+            ifshow_method_shutdown();
+        }
+        function only_one_udp() {
+            if (udpCheckbox.checked) {
+                netrpcCheckbox.checked = false;
+            } else {
+                netrpcCheckbox.checked = true;
+            }
+            ifshow_method_shutdown();
+        }
+
+        // 初始化状态
+        document.addEventListener('DOMContentLoaded', () => {
+            ifshow_method_shutdown();
+
+        // 添加change事件监听
+        netrpcCheckbox.addEventListener('change', only_one_netrpc);
+        udpCheckbox.addEventListener('change', only_one_udp);
+        });
+// ----------------------------------------------------------------------------------------------------
+        function submit_pcconfig() {
+            document.getElementById("pcconfig").submit();
+        }
+        // function submit_restart() {
+        //     // 触发表单提交
+        //     const form = document.getElementById("restart");
+        //     // 使用原始的 submit 方法来触发提交事件
+        //     form.dispatchEvent(new Event('submit')); // 触发表单提交事件
+        // }
     </script>
 </html>

@@ -1,5 +1,5 @@
 from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log , trans_str ,get_time,write_log,send_message, return_ip, run_time, get_var
-from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response
+from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory
 from flask_cors import CORS
 import threading
 import os
@@ -34,6 +34,8 @@ def index():
         yaml_config['devices']['wol']['enabled'] = bool(request.form.get('devices.wol.enabled'))
         yaml_config['devices']['wol']['mac'] = trans_str(request.form.get('devices.wol.mac'))
         yaml_config['devices']['shutdown']['enabled'] = bool(request.form.get('devices.shutdown.enabled'))
+        yaml_config['devices']['shutdown']['method']['netrpc'] = bool(request.form.get('devices.shutdown.method.netrpc'))
+        yaml_config['devices']['shutdown']['method']['udp'] = bool(request.form.get('devices.shutdown.method.udp'))
         yaml_config['devices']['shutdown']['account'] = trans_str(request.form.get('devices.shutdown.account'))
         yaml_config['devices']['shutdown']['password'] = trans_str(request.form.get('devices.shutdown.password'))
         yaml_config['devices']['shutdown']['time'] = trans_str(request.form.get('devices.shutdown.time'))
@@ -141,6 +143,10 @@ def change_log():
         return Response(log_content, mimetype='text/plain')
     except FileNotFoundError:
         return "error", 404
+# 下载
+@app.route('/download', methods=['GET'])
+def download():
+    return send_from_directory('static', 'PCshutdown.exe', as_attachment=True)
 
 class Web_data():
     # yaml_data={}

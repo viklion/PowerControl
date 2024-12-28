@@ -1,4 +1,5 @@
 import yaml
+import json
 import os
 from datetime import datetime, timedelta
 import time
@@ -56,26 +57,25 @@ def write_config_yaml(data):
 
 # 更新YAML文件
 def update_yaml(config_yaml, default_yaml):
+    global yaml_changed
     try:
-        changed = False
         for key, value in default_yaml.items():
             if key in config_yaml:
                 if isinstance(value, dict):
                     if isinstance(config_yaml[key], dict):
                         # 如果两个值都是字典，则递归合并
-                        changed = update_yaml(config_yaml[key], value)
+                        update_yaml(config_yaml[key], value)
                     else:
                         # 如果原yaml中的值不是字典，则更新为默认值
                         config_yaml[key] = value
-                        changed = True
+                        yaml_changed = True
             else:
                 # 如果键在原yaml中不存在，则添加该键
                 config_yaml[key] = value
-                changed = True
-        return changed
+                yaml_changed = True
     except Exception as e:
         p_print("更新配置文件出错:" + str(e))
-        return False
+        yaml_changed = False
 
 # 检查目录权限
 def check_permission(mode, folder):
@@ -142,18 +142,45 @@ def return_ip():
 # 关机
 def pcshutdown():
     if shutdown_enabled:
-        try:
-            # 构建命令
-            command = [
-                "net", "rpc", "shutdown",
-                "-f", "-t", shutdown_time, "-C", f"设备将于{shutdown_time}秒后关闭",
-                "-U", f"{pc_account}%{pc_password}", "-I", device_ip
-            ]
-            # 使用 subprocess.run() 执行命令并获取输出
-            result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=2)
-            return result.stdout
-        except Exception as e:
-            return str(e)
+        if method_netrpc:
+            try:
+                # 构建命令
+                command = [
+                    "net", "rpc", "shutdown",
+                    "-f", "-t", shutdown_time, "-C", f"设备将于{shutdown_time}秒后关闭",
+                    "-U", f"{pc_account}%{pc_password}", "-I", device_ip
+                ]
+                # 使用 subprocess.run() 执行命令并获取输出
+                result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=2)
+                return result.stdout
+            except Exception as e:
+                return str(e)
+        elif method_udp:
+            try:
+                # 创建一个UDP socket
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                # 设置超时时间
+                sock.settimeout(3)
+                # 目标主机和端口
+                host = device_ip
+                port = 17678
+                # 要发送的消息
+                data = {
+                    'cmd': 'shutdown',
+                    'time': shutdown_time,
+                }
+                # 将字典序列化为JSON字符串
+                json_data = json.dumps(data)
+                # 发送数据
+                _ = sock.sendto(json_data.encode(),(host, port))
+                # 接收响应
+                response, _ = sock.recvfrom(1024)
+                return response.decode('utf-8')
+            except Exception as e:
+                return str(e)
+            finally:
+                # 关闭socket
+                sock.close()
     return None
 
 # 网络唤醒
@@ -248,6 +275,7 @@ start_time = time.time()
 yaml_file = 'config.yaml'
 yaml_path = os.path.join(os.getcwd(), 'data', yaml_file)
 default_path = os.path.join(os.getcwd(), 'default', yaml_file)
+yaml_changed = False
 
 #检查目录权限
 check_permission('r','data')
@@ -263,8 +291,8 @@ yd = read_config_yaml()
 yd_default = read_default_yaml()
 
 #更新YAML
-update_result = update_yaml(yd ,yd_default)
-if update_result:
+update_yaml(yd ,yd_default)
+if yaml_changed:
     write_config_yaml(yd)
     p_print("配置文件已更新新内容")
 
@@ -281,9 +309,12 @@ if wol_enabled:
     pc_mac = trans_str(yd['devices']['wol']['mac'])
 shutdown_enabled = checkbool(yd['devices']['shutdown']['enabled'])
 if shutdown_enabled:
-    pc_account = trans_str(yd['devices']['shutdown']['account'])
-    pc_password = trans_str(yd['devices']['shutdown']['password'])
+    method_netrpc = checkbool(yd['devices']['shutdown']['method']['netrpc'])
+    method_udp = checkbool(yd['devices']['shutdown']['method']['udp'])
     shutdown_time = trans_str(yd['devices']['shutdown']['time'])
+    if method_netrpc:
+        pc_account = trans_str(yd['devices']['shutdown']['account'])
+        pc_password = trans_str(yd['devices']['shutdown']['password'])
 ping_enabled = checkbool(yd['devices']['ping']['enabled'])
 if ping_enabled:
     ping_time = int(yd['devices']['ping']['time'])
