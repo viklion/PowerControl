@@ -63,7 +63,7 @@ def index():
     if not Web_data.ping_enabled:
         flash(get_time() + '\n' +'未启用ping，设备状态未知')
     else:
-        flash(get_time() + '\n' + Web_data.device_name + ' ' + Web_data.device_status[0])
+        flash(get_time() + '\n' + Web_data.device_name + ' ' + get_var('pc_state')[0])
     return render_template('index.html', config=yaml_config, run_time= run_time())
 
 # 关机
@@ -161,7 +161,6 @@ class Web_data():
     web_key=''
     device_name=''
     ping_enabled = False
-    device_status = get_var('pc_state')
 class PCweb():
     def __init__(self, web_port, web_key):
         self.web_port = web_port
