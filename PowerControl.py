@@ -1,4 +1,4 @@
-from pfunctions import pcshutdown,pcwol,print_and_log,send_message,pcping, get_var, write_log
+from pfunctions import pcshutdown,pcwol,print_and_log,send_message, get_var, write_log
 import socket
 import threading
 import time
@@ -10,13 +10,7 @@ class PowerControl():
             self.uid = get_var('bemfa_uid')
             self.topic = get_var('bemfa_topic')
             self.ping_enabled = get_var('ping_enabled')
-            if self.ping_enabled:
-                self.ping_time = get_var('ping_time')
-
-            self.pc_state = None
-            self.ping_check = None
-            self.update_bemfa_status = None
-            self.update_state = ''
+            self.update_bemfa_task = None
 
             print_and_log("接入巴法云初始化成功",2)
 
@@ -54,43 +48,19 @@ class PowerControl():
         #开启定时，60秒发送一次心跳
         t = threading.Timer(60, self.Ping)
         t.start()
-
-    #定时ping检测设备状态
-    def check_state(self, is_power_off):
-        try:
-            ping_result = pcping()
-            write_log('\n' + ping_result + '\n' + '---------------------', 1 ,'_ping_result')
-            if 'Reply' in ping_result:
-                is_power_off = False
-                new_state = "在线"
-                self.update_state = "on"
-            elif 'timed out' in ping_result:
-                if not is_power_off:
-                    self.check_state(True)
-                    return
-                new_state = "离线"
-                self.update_state = "off"
-            if self.pc_state != new_state:
-                self.pc_state = new_state
-                print_and_log(f"状态更新：{new_state}",2)
-                send_message(f"状态更新：{new_state}")
-            #开启ping定时
-            self.ping_check = threading.Timer(self.ping_time, self.check_state, args=(is_power_off,))
-            self.ping_check.start()
-        except Exception as e:
-            print_and_log("ping出错：" + str(e),3)
-
+    
     #定时更新巴法云的设备状态
     def update_bemfa(self):
-        if self.update_state:
-            substr = f'cmd=2&uid={self.uid}&topic={self.topic}/up&msg={self.update_state}\r\n'
+        pc_state = get_var('pc_state')
+        if pc_state:
             try:
+                substr = f'cmd=2&uid={self.uid}&topic={self.topic}/up&msg={pc_state[1]}\r\n'
                 self.tcp_client_socket.send(substr.encode("utf-8"))
-                write_log("巴法云设备状态更新："+self.update_state, 1, '_bemfa')
+                write_log("巴法云设备状态更新："+pc_state[0], 1, '_bemfa')
             except Exception as e:
                 print_and_log("更新巴法云设备状态失败："+str(e),3)
-            self.update_bemfa_status = threading.Timer(120, self.update_bemfa)
-            self.update_bemfa_status.start()
+            self.update_bemfa_task = threading.Timer(60, self.update_bemfa)
+            self.update_bemfa_task.start()
 
     #收到消息后执行开关机
     def power_control(self, state):
@@ -126,8 +96,6 @@ class PowerControl():
             self.connTCP()
             self.Ping()
             if self.ping_enabled:
-                print_and_log("Ping服务启动", 2)
-                self.check_state(False)
                 self.update_bemfa()
             while True:
                 try:

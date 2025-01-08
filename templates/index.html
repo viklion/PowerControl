@@ -56,9 +56,10 @@
 <body>
     <div class="line-container">
         <a id="jiaocheng" class="textlink" href="/" target="_blank">查看教程</a>
+        <a id="code" class="textlink" href="/code" target="_blank">代码</a>
         <a id="changelog" class="textlink" href="/changelog" target="_blank">查看更新日志</a>
     </div>
-    <h1 style="margin-bottom: 2px; margin-top: 2px;">PowerControl配置 V2.1</h1>
+    <h1 style="margin-bottom: 2px; margin-top: 2px;">PowerControl配置 V2.2</h1>
     <h3 style='margin: 0px;'>by viklion</h3>
     <p style="margin-bottom: -20px;">{{ run_time }}</p>
     <br>
@@ -67,7 +68,7 @@
         {% if messages %}
         <ul>
             {% for message in messages %}
-            <li>{{ message | replace('\n', '<br>')| safe }}</li>
+            <li style="margin-top: 10px;">{{ message | replace('\n', '<br>')| safe }}</li>
             {% endfor %}
         </ul>
         {% endif %}
@@ -233,7 +234,7 @@
                 document.getElementById('go_ping').style.display = 'none'
             }
         }
-        // 定义函数，根据复选框状态更新对应内容的显示或隐藏
+        // 根据复选框状态更新对应内容的显示或隐藏
         function ifshow(event) {
             const checkbox = event.target; // 当前触发事件的复选框
             const targetId = checkbox.dataset.target; // 获取对应的内容 ID
@@ -283,7 +284,7 @@
             }
         }
 
-        // 互斥逻辑：勾选一个复选框时，取消另一个复选框的勾选
+        // 勾选一个复选框时，取消另一个复选框的勾选
         function only_one_netrpc() {
             if (netrpcCheckbox.checked) {
                 udpCheckbox.checked = false;

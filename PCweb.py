@@ -1,7 +1,6 @@
-from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log , trans_str ,get_time,write_log,send_message, return_ip, run_time, get_var
-from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory
+from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log , trans_str ,get_time,send_message, return_ip, run_time, get_var
+from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory, jsonify
 from flask_cors import CORS
-import threading
 import os
 
 
@@ -61,6 +60,10 @@ def index():
         else:
             flash(get_time() + '\n' +'配置保存失败：' + str(save_yaml))
         return redirect(url_for('index')+ f'?key={web_key}')
+    if not Web_data.ping_enabled:
+        flash(get_time() + '\n' +'未启用ping，设备状态未知')
+    else:
+        flash(get_time() + '\n' + Web_data.device_name + ' ' + Web_data.device_status[0])
     return render_template('index.html', config=yaml_config, run_time= run_time())
 
 # 关机
@@ -112,14 +115,14 @@ def ping():
     web_key = request.args.get('key')
     if web_key != Web_data.web_key:
         return '请在url中填入正确的key', 401
-    if not get_var('ping_enabled'):
+    if not Web_data.ping_enabled:
         return '未启用ping!', 403
     try:
         ping_result = pcping()
         if 'Reply' in ping_result:
-            return Web_data.device_name + '设备在线 '+ ' ' + ping_result ,200
+            return jsonify({"device_name": Web_data.device_name, "device_status_cn": "在线" ,"device_status": "on" , "ping_result" : ping_result}),200
         elif 'timed out' in ping_result:
-            return Web_data.device_name + '设备离线 '+ ' ' + ping_result ,200
+            return jsonify({"device_name": Web_data.device_name, "device_status_cn": "离线" ,"device_status": "off" , "ping_result" : ping_result}),200
     except Exception as e:
         return 'error:' + str(e) ,200
 
@@ -143,58 +146,33 @@ def change_log():
         return Response(log_content, mimetype='text/plain')
     except FileNotFoundError:
         return "error", 404
+
 # 下载
 @app.route('/download', methods=['GET'])
 def download():
     return send_from_directory('static', 'PCshutdown.exe', as_attachment=True)
 
+# 代码
+@app.route('/code', methods=['GET'])
+def copy_code():
+    return render_template('code.html')
+'''---------------------------------------------------------------------------------'''
 class Web_data():
-    # yaml_data={}
     web_key=''
     device_name=''
-    device_status = ''
+    ping_enabled = False
+    device_status = get_var('pc_state')
 class PCweb():
     def __init__(self, web_port, web_key):
         self.web_port = web_port
         self.web_key = web_key
-        self.ping_enabled = get_var('ping_enabled')
-        if self.ping_enabled:
-            self.ping_time = get_var('ping_time')
-        self.ping_check = None
     def set_web_data(self):
         Web_data.web_key = self.web_key
-    # def get_web_data(self):
-    #     return Web_data.yaml_data
-    def web_ping(self, is_power_off):
-        try:
-            ping_result = pcping()
-            write_log('\n' + ping_result + '\n' + '---------------------', 1 ,'_ping_result')
-            if 'Reply' in ping_result:
-                is_power_off = False
-                new_state = "在线"
-            elif 'timed out' in ping_result:
-                if not is_power_off:
-                    self.web_ping(True)
-                    return
-                new_state = "离线"
-            if Web_data.device_status != new_state:
-                Web_data.device_status = new_state
-                print_and_log(f"状态更新：{new_state}",2)
-                send_message(f"状态更新：{new_state}")
-            #开启ping定时
-            self.ping_check = threading.Timer(self.ping_time, self.web_ping, args=(is_power_off,))
-            self.ping_check.start()
-        except Exception as e:
-            print_and_log("ping出错：" + str(e), 3)
-    
+        Web_data.ping_enabled = get_var('ping_enabled')
     def run(self):
         self.set_web_data()
         Web_data.yaml_data = read_config_yaml()
         Web_data.device_name = get_var('device_name')
-        if not get_var('bemfa_enabled'):
-            if get_var('ping_enabled'):
-                print_and_log("Ping服务启动", 2)
-                self.web_ping(False)
         print_and_log("Web服务启动", 2)
         app.run(host=return_ip(), port=self.web_port)
         

@@ -10,6 +10,7 @@ import requests
 import shutil
 from pythonping import ping
 from serverchan_sdk import sc_send
+import threading
 
 # 检查YAML文件
 def check_yaml():
@@ -196,9 +197,34 @@ def pcwol():
         
 # ping
 def pcping():
-    # ping设备
-    ping_result = str(ping(device_ip, timeout = 1, count = 1))
-    return ping_result
+    if ping_enabled:
+        # ping设备
+        ping_result = str(ping(device_ip, timeout = 1, count = 1))
+        return ping_result.replace('\n', '').replace('\r', '|')
+
+#定时ping检测设备状态
+def check_state(is_power_off):
+    global pc_state
+    try:
+        ping_result = pcping()
+        write_log('\n' + ping_result + '\n' + '---------------------', 1 ,'_ping_result')
+        if 'Reply' in ping_result:
+            is_power_off = False
+            new_state = ["在线","on"]
+        elif 'timed out' in ping_result:
+            if not is_power_off:
+                check_state(True)
+                return
+            new_state = ["离线","off"]
+        if pc_state != new_state:
+            pc_state = new_state
+            print_and_log(f"状态更新：{pc_state[0]}",2)
+            send_message(f"状态更新：{pc_state[0]}")
+        # 开启ping定时
+        ping_check_task = threading.Timer(ping_time, check_state, args=(is_power_off,))
+        ping_check_task.start()
+    except Exception as e:
+        print_and_log("ping出错：" + str(e),3)
 
 # 日志记录
 def write_log(content, level, nameadd = ''):
@@ -276,6 +302,8 @@ yaml_file = 'config.yaml'
 yaml_path = os.path.join(os.getcwd(), 'data', yaml_file)
 default_path = os.path.join(os.getcwd(), 'default', yaml_file)
 yaml_changed = False
+pc_state = None
+ping_check_task = None
 
 #检查目录权限
 check_permission('r','data')
@@ -343,6 +371,10 @@ send_message('PowerControl启动')
 #本机ip
 local_ip = get_ip_address()
 print_and_log('获取本机ip：'+local_ip, 2)
+
+if ping_enabled:
+    print_and_log("Ping服务启动", 2)
+    check_state(False)
 
 del yd
 del yd_default

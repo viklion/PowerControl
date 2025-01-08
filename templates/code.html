@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/default.css') }}">
+    <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+    <script>hljs.highlightAll();</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/clipboard.min.js') }}"></script>
+    <title>代码块</title>
+    <style>
+        h3 {
+            margin-bottom: -15px;
+        }
+
+        pre {
+            position: relative; /* 为了让按钮定位到代码块内部 */
+        }
+        
+        code {
+            font-family: Consolas;
+            font-size: 14px;
+        }
+
+         /* 复制按钮样式 */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .copy-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>代码</h1>
+{% raw %}
+    <!-- 第一个代码块 -->
+    <h3>1、docker-cli：</h3>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-1">复制代码</button>
+        <code id="code-block-1" class="language-bash">
+docker run -d --restart unless-stopped -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --name powercontrol viklion/powercontrol:latest
+        </code>
+    </pre>
+
+    <!-- 第二个代码块 -->
+    <h3>2、docker-compose（注意检查缩进）</h3>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
+        <code id="code-block-2" class="language-yaml">
+services:
+  powercontrol:
+    image: viklion/powercontrol:latest
+    container_name: powercontrol
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /your/path:/app/data
+    environment:
+      - WEB_PORT=7678
+      - WEB_KEY=yourkey
+        </code>
+    </pre>
+
+    <!-- 第三个代码块 -->
+    <h3>3、homeassistant configuration.yaml（注意检查缩进）</h3>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-3">复制代码</button>
+        <code id="code-block-3" class="language-yaml">
+shell_command:
+  ha_wol_pc: "curl http://192.168.2.75:1856/wol?key=1111"
+  ha_shutdown_pc: "curl http://192.168.2.75:1856/shutdown?key=1111"
+
+input_text:
+  powercontrol_state:
+    name: powercontrol_state
+    initial: "off"
+
+sensor:
+  - platform: rest
+    name: "powercontrol_pc_state"
+    resource: "http://192.168.2.75:1856/ping?key=1111"
+    method: GET
+    scan_interval: 60
+    value_template: "{{ value_json.device_status }}"
+
+switch:
+  - platform: template
+    switches:
+      my_pc:
+        friendly_name: "电脑"
+        unique_id: "my_pc_001"
+        icon_template: mdi:desktop-tower-monitor
+        value_template: "{{ states('input_text.powercontrol_state') == 'on' }}"
+        turn_on:
+          - service: shell_command.ha_wol_pc
+          - service: input_text.set_value
+            target:
+              entity_id: input_text.powercontrol_state
+            data:
+              value: "on"
+        turn_off:
+          - service: shell_command.ha_shutdown_pc
+          - service: input_text.set_value
+            target:
+              entity_id: input_text.powercontrol_state
+            data:
+              value: "off"
+        </code>
+    </pre>
+
+    <!-- 第四个代码块 -->
+    <h3>4、homeassistant automations.yaml（注意检查缩进）</h3>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
+        <code id="code-block-4" class="language-yaml">
+- id: '20250108'
+  alias: 更新电脑在线状态
+  trigger:
+    - platform: time_pattern
+      minutes: "/1"
+  condition:
+    - condition: template
+      value_template: "{{ states('sensor.powercontrol_pc_state') != states('input_text.powercontrol_state') }}"
+  action:
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.powercontrol_state
+      data:
+        value: "{{ states('sensor.powercontrol_pc_state') }}"
+        </code>
+    </pre>
+{% endraw %}
+    <script>
+        // 使用 ClipboardJS 实现多个代码块的复制功能
+        var clipboard = new ClipboardJS('.copy-btn', {
+            text: function (trigger) {
+                // 获取按钮对应的代码块
+                var codeBlock = document.querySelector(trigger.getAttribute('data-clipboard-target'));
+                // 获取代码块内容，并去掉首尾空白字符
+                return codeBlock.textContent.trim();
+            }
+        });
+
+        // 成功复制后的提示
+        clipboard.on('success', function (e) {
+            alert('代码已复制到剪贴板!');
+            e.clearSelection();
+        });
+
+        // 复制失败后的提示
+        clipboard.on('error', function (e) {
+            alert('复制失败，请手动复制!');
+        });
+    </script>
+</body>
+
+</html>

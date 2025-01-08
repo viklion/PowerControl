@@ -1,3 +1,4 @@
+from pfunctions import p_print
 from PCweb import PCweb
 from PowerControl import PowerControl
 import os
@@ -6,6 +7,8 @@ import threading
 #读取环境变量
 web_port = int(os.getenv('WEB_PORT', '7678'))
 web_key = str(os.getenv('WEB_KEY', 'admin'))
+p_print("web_port: "+ str(web_port))
+p_print("web_key: "+ web_key)
 
 #初始化web
 pc_web = PCweb(web_port, web_key)
