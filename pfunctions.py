@@ -249,6 +249,11 @@ def write_log(content, level, nameadd = ''):
 
 # 消息推送
 def send_message(content):
+    response = {
+        'serverchan_turbo':None,
+        'serverchan3':None,
+        'qmsg':None
+        }
     if push_enabled:
         if push_serverchan_turbo_enabled:
             try:
@@ -257,13 +262,15 @@ def send_message(content):
                         'desp': get_time(),
                         'channel': push_serverchan_turbo_channel
                     }
-                _ = requests.post(f'https://sctapi.ftqq.com/{push_serverchan_turbo_SendKey}.send', data=data)
+                response['serverchan_turbo'] = requests.post(f'https://sctapi.ftqq.com/{push_serverchan_turbo_SendKey}.send', data=data).json()
             except Exception as e:
+                response['serverchan_turbo'] = str(e)
                 p_print("Server酱Turbo发送消息出错：" + str(e))
         if push_serverchan3_enabled:
             try:
-                _ = sc_send(f"{push_serverchan3_SendKey}", device_name + content, get_time(), {"tags": "PowerControl"})
+                response['serverchan3'] = sc_send(f"{push_serverchan3_SendKey}", device_name + content, get_time(), {"tags": "PowerControl"})
             except Exception as e:
+                response['serverchan3'] = str(e)
                 p_print("Server酱3发送消息出错：" + str(e))
         if push_qmsg_enabled:
             try:
@@ -271,9 +278,11 @@ def send_message(content):
                         'msg': device_name + content + '\n' + get_time(),
                         'qq': push_qmsg_qq
                     }
-                _ = requests.post(f'https://qmsg.zendee.cn/send/{push_qmsg_key}', data=data)
+                response['qmsg'] = requests.post(f'https://qmsg.zendee.cn/send/{push_qmsg_key}', data=data).json()
             except Exception as e:
+                response['qmsg'] = str(e)
                 p_print("Qmsg酱发送消息出错：" + str(e))
+    return response
 
 # 带时间的print
 def p_print(content):

@@ -1,6 +1,7 @@
 from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log , trans_str ,get_time,send_message, return_ip, run_time, get_var
-from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory, jsonify
+from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory
 from flask_cors import CORS
+import json
 import os
 
 
@@ -120,9 +121,13 @@ def ping():
     try:
         ping_result = pcping()
         if 'Reply' in ping_result:
-            return jsonify({"device_name": Web_data.device_name, "device_status_cn": "在线" ,"device_status": "on" , "ping_result" : ping_result}),200
+            rs = {"device_name": Web_data.device_name, "device_status_cn": "在线" ,"device_status": "on" , "ping_result" : ping_result}
         elif 'timed out' in ping_result:
-            return jsonify({"device_name": Web_data.device_name, "device_status_cn": "离线" ,"device_status": "off" , "ping_result" : ping_result}),200
+            rs = {"device_name": Web_data.device_name, "device_status_cn": "离线" ,"device_status": "off" , "ping_result" : ping_result}
+        return Response(
+                json.dumps(rs, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
     except Exception as e:
         return 'error:' + str(e) ,200
 
@@ -133,6 +138,22 @@ def restart():
     web_key = request.args.get('key')
     if web_key == Web_data.web_key:
         os._exit(0)
+
+# 测试消息推送
+@app.route('/testpush', methods=['GET'])
+def testpush():
+    web_key = request.args.get('key')
+    if web_key != Web_data.web_key:
+        return '请在url中填入正确的key', 401
+    rs = send_message('PowerControl消息推送测试')
+    rs = {key: value for key, value in rs.items() if value is not None}
+    if rs:
+        return Response(
+                json.dumps(rs, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+    else:
+        return '至少启用一个推送通道'
 
 # 更新日志
 @app.route('/changelog', methods=['GET'])
