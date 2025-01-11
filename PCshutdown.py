@@ -1,9 +1,6 @@
-import socket
-import json
-import subprocess
+import socket, json, subprocess, os
 from time import sleep
 from win11toast import toast
-import os
 
 def get_ip_address():
     try:
@@ -28,7 +25,6 @@ def ptoast(title,text):
 
 UDP_IP = get_ip_address() # 自动获取本地ip地址
 UDP_PORT = 17678 # 接收端口
-
 
 try:
     sock = socket.socket(socket.AF_INET, # Internet

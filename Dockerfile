@@ -2,7 +2,7 @@
 FROM python:3.12.8-alpine
 
 LABEL maintainer="viklion" \
-    version="2.2" 
+    version="2.3" 
 
 # 设置时区
 ENV TZ=Asia/Shanghai
@@ -18,8 +18,8 @@ RUN apk add --no-cache --update tzdata samba && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone && \
     rm -rf /var/cache/apk/* && \
-	pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt
 
 # 设置容器启动时运行的命令
-CMD ["python", "run.py"]
+CMD ["python", "PCrun.py"]
 

@@ -1,8 +1,7 @@
-from pfunctions import read_config_yaml, write_config_yaml, pcshutdown ,pcwol ,pcping ,print_and_log , trans_str ,get_time,send_message, return_ip, run_time, get_var
+import os, json
+from PCfunctions import *
 from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory
 from flask_cors import CORS
-import json
-import os
 
 
 app = Flask(__name__)
@@ -17,7 +16,7 @@ def home():
 # 配置页
 @app.route('/config', methods=['GET', 'POST'])
 def index():
-    yaml_config = read_config_yaml()
+    yaml_config = Web_data.df.read_config_yaml()
     if not bool(yaml_config):
         return '配置文件读取失败，检查权限' ,500
     # 获取请求中的密钥
@@ -54,9 +53,8 @@ def index():
         yaml_config['functions']['push_notifications']['Qmsg']['qq'] = trans_str(request.form.get('functions.push_notifications.Qmsg.qq'))
         
         # 保存配置
-        save_yaml = write_config_yaml(yaml_config)
+        save_yaml = Web_data.df.write_config_yaml(yaml_config)
         if save_yaml == True:
-            # Web_data.yaml_data = yaml_config
             flash(get_time() + '\n' +'配置保存成功，请重启服务或容器生效')
         else:
             flash(get_time() + '\n' +'配置保存失败：' + str(save_yaml))
@@ -64,8 +62,8 @@ def index():
     if not Web_data.ping_enabled:
         flash(get_time() + '\n' +'未启用ping，设备状态未知')
     else:
-        flash(get_time() + '\n' + Web_data.device_name + ' ' + get_var('pc_state')[0])
-    return render_template('index.html', config=yaml_config, run_time= run_time())
+        flash(get_time() + '\n' + Web_data.device_name + ' ' + Web_data.df.pc_state[0])
+    return render_template('index.html', config=yaml_config, run_time= Web_data.df.run_time())
 
 # 关机
 @app.route('/shutdown', methods=['GET', 'POST'])
@@ -180,21 +178,24 @@ def copy_code():
 '''---------------------------------------------------------------------------------'''
 class Web_data():
     web_key=''
+    df = None
     device_name=''
     ping_enabled = False
 class PCweb():
-    def __init__(self, web_port, web_key):
+    def __init__(self, web_port, web_key, data_funcs):
         self.web_port = web_port
         self.web_key = web_key
+        self.df = data_funcs
+        print_and_log("web初始化成功",2)
     def set_web_data(self):
         Web_data.web_key = self.web_key
-        Web_data.ping_enabled = get_var('ping_enabled')
+        Web_data.df =self.df
+        Web_data.ping_enabled = self.df.ping_enabled
+        Web_data.device_name = self.df.device_name
     def run(self):
         self.set_web_data()
-        Web_data.yaml_data = read_config_yaml()
-        Web_data.device_name = get_var('device_name')
-        print_and_log("Web服务启动", 2)
-        app.run(host=return_ip(), port=self.web_port)
+        print_and_log("web服务启动", 2)
+        app.run(host=self.df.local_ip, port=self.web_port)
         
 
 if __name__ == '__main__':

@@ -55,11 +55,13 @@
 
 <body>
     <div class="line-container">
-        <a id="jiaocheng" class="textlink" href="/" target="_blank">查看教程</a>
-        <a id="code" class="textlink" href="/code" target="_blank">代码</a>
-        <a id="changelog" class="textlink" href="/changelog" target="_blank">查看更新日志</a>
+        <a id="pdf" class="textlink" href="/" target="_blank">pdf教程</a>
+        <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
+        <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
+        <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
+        <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
     </div>
-    <h1 style="margin-bottom: 2px; margin-top: 2px;">PowerControl配置 V2.2</h1>
+    <h1 style="margin-bottom: 2px; margin-top: 2px;">PowerControl配置 V2.3</h1>
     <h3 style='margin: 0px;'>by viklion</h3>
     <p style="margin-bottom: -20px;">{{ run_time }}</p>
     <br>
@@ -180,9 +182,6 @@
         <div class="line-container">
             <input style="width: 100px; height: 30px; font-size: 16px; margin-top: 20px; margin-bottom: 50px; " type="submit" value="保存">
         </div>
-        <!-- <div class="line-container">
-            <button style="width: 100px; height: 30px; font-size: 16px; margin-top: 1%;" type="submit" onclick="submit_restart()">重启服务</button>
-        </div> -->
     </form>
 </body>
     <script>
@@ -328,11 +327,6 @@
         function submit_pcconfig() {
             document.getElementById("pcconfig").submit();
         }
-        // function submit_restart() {
-        //     // 触发表单提交
-        //     const form = document.getElementById("restart");
-        //     // 使用原始的 submit 方法来触发提交事件
-        //     form.dispatchEvent(new Event('submit')); // 触发表单提交事件
-        // }
+
     </script>
 </html>
