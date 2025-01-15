@@ -1,0 +1,316 @@
+/* index.html */
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0 auto;
+    padding: 0;
+    max-width: 1024px;
+    overflow-x: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+h1,
+h3 {
+    color: #2e2d3b;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 22px;
+    color: orangered;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #ffcdbb;
+    padding-bottom: 5px;
+}
+
+h3 {
+    font-size: 16px;
+    margin-top: 0;
+    color: #888;
+}
+
+p {
+    background-color: #ebebeb;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: inline-flex;
+    color: #2e2d3b;
+}
+
+.head-container {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: left;
+}
+
+.head-container a {
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+    text-decoration: none;
+    margin-right: 20px;
+    transition: all 0.3s ease;
+}
+
+.head-container a:hover {
+    color: #2e2d3b;
+}
+
+/* 图标图片 */
+.icon-image {
+    height: 25px;
+    /* 图标的高度适应容器 */
+    width: auto;
+    /* 图标的宽度自动调整，保持比例 */
+    vertical-align: middle;
+    /* 垂直居中 */
+    margin-top: -12px;
+    margin-bottom: -10px;
+    cursor: pointer;
+}
+
+.line-container {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+}
+
+.input-label {
+    width: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 18px;
+    color: #333;
+    margin: 5px 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 10px;
+}
+
+.checkbox-label {
+    font-size: 16px;
+}
+
+.checkbox-label2 {
+    font-size: 14px;
+}
+
+input[type="submit"],
+button {
+    background-color: #28a745;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover,
+button:hover {
+    background-color: #218838;
+}
+
+.textlink {
+    font-size: 14px;
+    color: #4CAF50;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.textlink:hover {
+    color: #ff6600;
+}
+
+#flash-messages ul {
+    margin: 20px 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+#flash-messages ul li {
+    background-color: #ebebeb;
+    color: red;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.default-hr {
+    width: 100%;
+    border: none;
+    height: 2px;
+    background-color: #e0e0e0;
+}
+
+.dashed-hr {
+    width: 100%;
+    border: 1px dashed #e0e0e0;
+}
+
+@media (max-width: 768px) {
+    .head-container-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .head-container {
+        display: flex;
+        flex-direction: row;
+        position: relative;
+        top: 5%;
+        overflow-x: auto;
+        /* 添加横向滚动效果 */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        /* 隐藏滚动条 */
+        scroll-behavior: smooth;
+        /* 平滑滚动效果 */
+        overscroll-behavior-x: contain;
+        /* 添加横向滚动的 OverScroll 效果 */
+        width: 100%;
+    }
+
+    .head-container a {
+        margin: 0;
+        margin-right: 25px;
+        font-size: 14px;
+        flex: 0 0 auto;
+        /* 确保每个 h2 和 a 元素不会缩小 */
+        min-width: fit-content;
+        /* 使内容自适应宽度 */
+    }
+
+    .head-container a:last-child {
+        margin-right: 0;
+        flex-grow: 1;
+        white-space: nowrap;
+    }
+
+    /* 左侧模糊提示 */
+    .blur-left {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 80px;
+        height: 100%;
+        background: linear-gradient(to right, rgba(164, 233, 166, 1), rgba(255, 255, 255, 0));
+        pointer-events: none;
+        /* 防止影响滚动 */
+        opacity: 0;
+        /* 默认透明 */
+        transition: opacity 0.3s ease;
+        /* 淡入淡出效果 */
+        z-index: 10;
+        /* 确保在内容之上 */
+    }
+
+    /* 右侧模糊提示 */
+    .blur-right {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 80px;
+        height: 100%;
+        background: linear-gradient(to left, rgba(164, 233, 166, 1), rgba(255, 255, 255, 0));
+        pointer-events: none;
+        opacity: 0;
+        /* 默认透明 */
+        transition: opacity 0.3s ease;
+        /* 淡入淡出效果 */
+        z-index: 10;
+        /* 确保在内容之上 */
+    }
+
+    .input-label {
+        font-size: 16px;
+    }
+
+    .checkbox-label {
+        font-size: 14px;
+    }
+
+    input[type="submit"],
+    button {
+        width: 100%;
+    }
+}
+
+/* 深色模式 */
+body.dark-mode {
+    background-color: #333;
+    color: #ffffffd6;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .head-container {
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .head-container a:hover {
+    color: #2e2d3b;
+}
+
+body.dark-mode h1,
+h3 {
+    color: #888;
+}
+
+body.dark-mode h2 {
+    color: #f9703ddb;
+    border-bottom: 2px solid #ffcdbb8f;
+}
+
+body.dark-mode p {
+    background-color: #555555;
+    color: #ffffffd6;
+}
+
+body.dark-mode #flash-messages ul li {
+    background-color: #555555;
+    color: #ffffffd6;
+}
+
+body.dark-mode .input-label {
+    background-color: #555555;
+    color: #ffffffd6;
+}
+
+body.dark-mode .textlink:hover {
+    color: #f9703ddb;
+}
+
+body.dark-mode .default-hr {
+    background-color: #888888;
+}
+
+body.dark-mode .dashed-hr {
+    border: 1px dashed #888888;
+}
+
+body.dark-mode .blur-left {
+    background: linear-gradient(to right, #218838, #ffffff00);
+}
+
+body.dark-mode .blur-right {
+    background: linear-gradient(to left, #218838, #ffffff00);
+}

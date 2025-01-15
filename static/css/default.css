@@ -31,8 +31,8 @@ code.hljs {
 }
 /* end baseline CSS */
 .hljs {
-  background: #F3F3F3;
-  color: #444
+  background: #ebebeb;
+  color: #3b3b3b
 }
 /* Base color: saturation 0; */
 .hljs-subst {
@@ -74,11 +74,11 @@ code.hljs {
 .hljs-quote,
 .hljs-template-tag,
 .hljs-deletion {
-  color: #880000
+  color: #ff6d38
 }
 .hljs-title,
 .hljs-section {
-  color: #880000;
+  color: #ff6d38;
   font-weight: bold
 }
 .hljs-regexp,
@@ -89,7 +89,7 @@ code.hljs {
 .hljs-selector-attr,
 .hljs-operator,
 .hljs-selector-pseudo {
-  color: #ab5656
+  color: #ff6d38
 }
 /* Language color: hue: 90; */
 .hljs-literal {

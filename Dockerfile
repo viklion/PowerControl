@@ -2,7 +2,7 @@
 FROM python:3.12.8-alpine
 
 LABEL maintainer="viklion" \
-    version="2.3" 
+    version="2.4" 
 
 # 设置时区
 ENV TZ=Asia/Shanghai

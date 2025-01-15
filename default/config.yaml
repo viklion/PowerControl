@@ -23,6 +23,9 @@ functions:
   log:
     enabled: True
     level: 2
+    clear_log: 
+      enabled: False
+      keep_days: 7
   push_notifications:
     enabled: False
     ServerChan_turbo:

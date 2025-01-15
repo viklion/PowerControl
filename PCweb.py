@@ -16,7 +16,7 @@ def home():
 # 配置页
 @app.route('/config', methods=['GET', 'POST'])
 def index():
-    yaml_config = Web_data.df.read_config_yaml()
+    yaml_config = Web_data.fd.read_config_yaml()
     if not bool(yaml_config):
         return '配置文件读取失败，检查权限' ,500
     # 获取请求中的密钥
@@ -42,6 +42,8 @@ def index():
         yaml_config['devices']['ping']['time'] = trans_str(request.form.get('devices.ping.time'))
         yaml_config['functions']['log']['enabled'] = bool(request.form.get('functions.log.enabled'))
         yaml_config['functions']['log']['level'] = trans_str(request.form.get('functions.log.level'))
+        yaml_config['functions']['log']['clear_log']['enabled'] = bool(request.form.get('functions.log.clear_log.enabled'))
+        yaml_config['functions']['log']['clear_log']['keep_days'] = trans_str(request.form.get('functions.log.clear_log.keep_days'))
         yaml_config['functions']['push_notifications']['enabled'] = bool(request.form.get('functions.push_notifications.enabled'))
         yaml_config['functions']['push_notifications']['ServerChan_turbo']['enabled'] = bool(request.form.get('functions.push_notifications.ServerChan_turbo.enabled'))
         yaml_config['functions']['push_notifications']['ServerChan_turbo']['SendKey'] = trans_str(request.form.get('functions.push_notifications.ServerChan_turbo.SendKey'))
@@ -53,7 +55,7 @@ def index():
         yaml_config['functions']['push_notifications']['Qmsg']['qq'] = trans_str(request.form.get('functions.push_notifications.Qmsg.qq'))
         
         # 保存配置
-        save_yaml = Web_data.df.write_config_yaml(yaml_config)
+        save_yaml = Web_data.fd.write_config_yaml(yaml_config)
         if save_yaml == True:
             flash(get_time() + '\n' +'配置保存成功，请重启服务或容器生效')
         else:
@@ -62,8 +64,11 @@ def index():
     if not Web_data.ping_enabled:
         flash(get_time() + '\n' +'未启用ping，设备状态未知')
     else:
-        flash(get_time() + '\n' + Web_data.device_name + ' ' + Web_data.df.pc_state[0])
-    return render_template('index.html', config=yaml_config, run_time= Web_data.df.run_time())
+        if Web_data.fd.pc_state:
+            flash(get_time() + '\n' + Web_data.device_name + ' ' + Web_data.fd.pc_state[0])
+        else:
+            flash(get_time() + '\n' + Web_data.device_name + ' ' + '设备状态未知')
+    return render_template('index.html', config=yaml_config, run_time= Web_data.fd.run_time())
 
 # 关机
 @app.route('/shutdown', methods=['GET', 'POST'])
@@ -160,11 +165,9 @@ def change_log():
         # 读取 change.log 文件内容
         with open('change.log', 'r', encoding='GBK') as file:
             log_content = file.read()
-        
-        # 返回文件内容，并设置合适的 Content-Type
-        return Response(log_content, mimetype='text/plain')
     except FileNotFoundError:
-        return "error", 404
+        log_content = "读取change.log文件失败！"
+    return render_template('changelog.html', log_content=log_content)
 
 # 下载
 @app.route('/download', methods=['GET'])
@@ -175,28 +178,61 @@ def download():
 @app.route('/code', methods=['GET'])
 def copy_code():
     return render_template('code.html')
+
+# 获取log文件列表
+@app.route('/logs', methods=['GET'])
+def list_logs():
+    web_key = request.args.get('key')
+    if web_key != Web_data.web_key:
+        return '请在url中填入正确的key', 401
+    log_dir = Web_data.fd.log_path
+    # 检查目录是否存在
+    if not os.path.exists(log_dir):
+        return "日志目录不存在", 404
+    # 获取目录中的所有 .log 文件
+    log_files = [f for f in os.listdir(log_dir) if f.endswith('.log')]
+    # 倒序排列
+    log_files.sort(reverse=True)
+    # 返回文件列表
+    return render_template('logs.html', log_files=log_files)
+
+# 查看log文件内容
+@app.route('/logs/<filename>', methods=['GET'])
+def view_log_content(filename):
+    log_dir = Web_data.fd.log_path
+    log_path = os.path.join(log_dir, filename)
+    # 检查文件是否存在
+    if not os.path.isfile(log_path):
+        return "文件不存在", 404
+    try:
+        # 打开并读取文件内容
+        with open(log_path, 'r', encoding='GBK') as file:
+            log_content = file.read()
+        # 返回文件内容的 JSON 数据
+        return Response(
+            json.dumps({'log_content': log_content}, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+    except Exception as e:
+        return str(e), 500
 '''---------------------------------------------------------------------------------'''
 class Web_data():
     web_key=''
-    df = None
+    fd = None
     device_name=''
     ping_enabled = False
 class PCweb():
-    def __init__(self, web_port, web_key, data_funcs):
+    def __init__(self, web_port, web_key, funcs_data):
         self.web_port = web_port
         self.web_key = web_key
-        self.df = data_funcs
+        self.fd = funcs_data
         print_and_log("web初始化成功",2)
     def set_web_data(self):
         Web_data.web_key = self.web_key
-        Web_data.df =self.df
-        Web_data.ping_enabled = self.df.ping_enabled
-        Web_data.device_name = self.df.device_name
+        Web_data.fd =self.fd
+        Web_data.ping_enabled = self.fd.ping_enabled
+        Web_data.device_name = self.fd.device_name
     def run(self):
         self.set_web_data()
         print_and_log("web服务启动", 2)
-        app.run(host=self.df.local_ip, port=self.web_port)
-        
-
-if __name__ == '__main__':
-    pass
+        app.run(host=self.fd.local_ip, port=self.web_port)

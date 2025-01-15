@@ -1,38 +1,45 @@
-import yaml, json, os, time, socket, subprocess, requests, shutil, threading
+import yaml, json, os, time, socket, subprocess, requests, shutil
 from datetime import datetime, timedelta
 from wakeonlan import send_magic_packet
 from pythonping import ping
 from serverchan_sdk import sc_send
+from apscheduler.schedulers.background import BackgroundScheduler
 
 class PCfuncs():
+    start_time = time.time()
+    yaml_file = 'config.yaml'
+    yaml_path = os.path.join(os.getcwd(), 'data', yaml_file)
+    default_path = os.path.join(os.getcwd(), 'default', yaml_file)
+    log_path = os.path.join(os.getcwd(), 'data', 'logs')
+    yaml_changed = False
+    pc_state = []
+    
     def __init__(self):
-        self.start_time = time.time()
-        self.yaml_file = 'config.yaml'
-        self.yaml_path = os.path.join(os.getcwd(), 'data', self.yaml_file)
-        self.default_path = os.path.join(os.getcwd(), 'default', self.yaml_file)
-        self.yaml_changed = False
-        self.pc_state = ''
-
-        #检查目录权限
+        self.is_power_off = False
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        self.check_job = False
+        
+        # 检查目录权限
         self.check_permission('r')
         self.check_permission('w')
         
-        #检查是否存在配置文件，没有则拷贝一份
+        # 检查是否存在配置文件，没有则拷贝一份
         self.check_yaml()
 
-        #读取配置文件
+        # 读取配置文件
         yd = self.read_config_yaml()
 
-        #读取默认配置文件
+        # 读取默认配置文件
         yd_default = self.read_default_yaml()
         
-        #更新YAML
+        # 更新YAML
         self.update_yaml(yd ,yd_default)
         if self.yaml_changed:
             self.write_config_yaml(yd)
             p_print("配置文件已更新新内容")
             
-        #参数
+        # 参数
         PCfuncs.bemfa_enabled = checkbool(yd['bemfa']['enabled'])
         if PCfuncs.bemfa_enabled:
             PCfuncs.bemfa_uid = trans_str(yd['bemfa']['uid'])
@@ -59,6 +66,9 @@ class PCfuncs():
         PCfuncs.log_enabled = checkbool(yd['functions']['log']['enabled'])
         if PCfuncs.log_enabled:
             PCfuncs.log_level = int(yd['functions']['log']['level'])
+            PCfuncs.clear_log_enabled = checkbool(yd['functions']['log']['clear_log']['enabled'])
+            if PCfuncs.clear_log_enabled:
+                PCfuncs.log_keep_days = int(yd['functions']['log']['clear_log']['keep_days'])
         PCfuncs.push_enabled = checkbool(yd['functions']['push_notifications']['enabled'])
         if PCfuncs.push_enabled:
             PCfuncs.push_serverchan_turbo_enabled = checkbool(yd['functions']['push_notifications']['ServerChan_turbo']['enabled'])
@@ -73,13 +83,17 @@ class PCfuncs():
                 PCfuncs.push_qmsg_key = trans_str(yd['functions']['push_notifications']['Qmsg']['key'])
                 PCfuncs.push_qmsg_qq = trans_str(yd['functions']['push_notifications']['Qmsg']['qq'])
         
+        print_and_log('----------------------------------', 2)
         print_and_log('PowerControl启动', 2)
         send_message('PowerControl启动')
         
-        #本机ip
+        # 本机ip
         PCfuncs.local_ip = get_ip_address()
         print_and_log('获取本机ip：'+PCfuncs.local_ip, 2)
         
+        # 启动定时任务
+        self.add_ping_job()
+        self.add_clear_log_job()
         
     # 检查目录权限
     def check_permission(self, mode):
@@ -169,11 +183,11 @@ class PCfuncs():
             p_print("保存配置文件出错:" + str(e))
             return str(e)
 
-    #定时ping检测设备状态
+    # 定时ping检测设备状态
     def ping_check(self ,is_power_off):
         try:
             ping_result = pcping()
-            write_log('\n' + ping_result + '\n' + '---------------------', 1 ,'_ping_result')
+            write_log('\n' + ping_result + '\n' + '----------------------------------', 1 ,'_ping_result')
             if 'Reply' in ping_result:
                 is_power_off = False
                 new_state = ["在线","on"]
@@ -186,16 +200,29 @@ class PCfuncs():
                 self.pc_state = new_state
                 print_and_log(f"状态更新：{self.pc_state[0]}",2)
                 send_message(f"状态更新：{self.pc_state[0]}")
-            # 开启ping定时
-            self.ping_check_task = threading.Timer(self.ping_time, self.ping_check, args=(is_power_off,))
-            self.ping_check_task.start()
         except Exception as e:
             print_and_log("ping出错：" + str(e),3)
-            
-    def start_ping(self):
+    
+    # 开启定时ping
+    def add_ping_job(self):
         if self.ping_enabled:
-            print_and_log("Ping服务启动", 2)
-            self.ping_check(False)
+            try:
+                self.scheduler.add_job(self.ping_check, 'interval', seconds=self.ping_time, args= (self.is_power_off,) ,next_run_time=datetime.now())
+                print_and_log("Ping服务已启动", 2)
+                self.check_job = True
+            except Exception as e:
+                print_and_log("启动定时ping任务出错：" + str(e),3)
+    
+    # 开启定时清理日志
+    def add_clear_log_job(self):
+        if self.log_enabled:
+            if self.clear_log_enabled:
+                try:
+                    self.scheduler.add_job(clear_log, 'cron', hour = 12, next_run_time=datetime.now())
+                    print_and_log("日志定时清理已启动（每天中午12点）", 2)
+                    self.check_job = True
+                except Exception as e:
+                    print_and_log("启动定时清理日志任务出错：" + str(e),3)
     
     # 统计运行时间
     def run_time(self):
@@ -205,6 +232,7 @@ class PCfuncs():
         hours, remainder = divmod(run_timedelta.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"已运行：{days}天{hours}小时{minutes}分钟{seconds}秒"
+
 #---------------------------------------------------------------------------------------------------------
 # 获取当前时间
 def get_time():
@@ -245,12 +273,12 @@ def write_log(content, level, nameadd = ''):
     if PCfuncs.log_enabled:
         if PCfuncs.log_level == 1 or level >= PCfuncs.log_level:
             try:
-                if not os.path.exists(os.path.join('data', 'logs')):
+                if not os.path.exists(PCfuncs.log_path):
                     # 如果不存在，则创建logs文件夹
-                    os.makedirs(os.path.join('data', 'logs'))
+                    os.makedirs(PCfuncs.log_path)
                 # 打开日志文件，"a"追加写入
                 time_day = datetime.now().strftime('%Y-%m-%d')
-                with open(os.path.join('data', 'logs' ,rf'{time_day}{nameadd}.log'), 'a',encoding='GBK') as file:
+                with open(os.path.join(PCfuncs.log_path ,rf'{time_day}{nameadd}.log'), 'a',encoding='GBK') as file:
                     if level == 1:
                         front = '[Result]: '
                     elif level == 2:
@@ -260,6 +288,36 @@ def write_log(content, level, nameadd = ''):
                     file.write(PCfuncs.device_name + front + get_time() + '  ' + content + '\n')
             except Exception as e:
                 p_print(get_time() + " 写入日志出错了：\n" + str(e))
+
+# 清理日志
+def clear_log():
+    if os.path.exists(PCfuncs.log_path):
+        keep_days = PCfuncs.log_keep_days
+        # 获取今天的日期
+        today = datetime.today()
+        # 需要保留的最早日期
+        if keep_days == 0:  # 只保留当天日志
+            keep_date = datetime(today.year, today.month, today.day)
+        else:
+            keep_date = today - timedelta(days=keep_days)
+        # 遍历日志目录
+        for filename in os.listdir(PCfuncs.log_path):
+            # 只处理.log文件
+            if filename.endswith(".log"):
+                try:
+                    # 获取文件的完整路径
+                    file_path = os.path.join(PCfuncs.log_path, filename)
+                    # 获取文件的最后修改时间
+                    file_mtime = os.path.getmtime(file_path)
+                    # 将最后修改时间转换为 datetime 对象
+                    file_date = datetime.fromtimestamp(file_mtime)
+                    # 对比日期，删除早于保留日期的文件
+                    if file_date < keep_date:
+                        os.remove(file_path)
+                        print_and_log(f"已删除日志: {filename}", 2)
+                except Exception as e:
+                    # 如果发生异常输出错误信息
+                    print_and_log(f"删除日志 {filename} 出错: {str(e)}", 3)
 
 # 同时打印和日志记录
 def print_and_log(content, level):

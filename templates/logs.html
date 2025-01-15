@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/logs.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/logs.js') }}" defer></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>操作日志</title>
+</head>
+<body class="dark-mode">
+    <!-- 切换按钮 -->
+    <button id="toggleButton" onclick="toggleSidebar()">&gt;</button>
+
+    <div class="container">
+        <!-- 左侧文件列表 -->
+        <div class="sidebar" id="sidebar">
+            <h2>日志文件列表</h2>
+            <ul class="file-list" id="fileList">
+                <!-- 文件列表会动态加载 -->
+                {% for file in log_files %}
+                <li onclick="loadFileContent('{{ file }}', this)">{{ file }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- 右侧文件内容展示 -->
+        <div class="content" id="contentArea">
+            <div class="line-container">
+                <h2 id="fileName">左侧选择日志文件</h2>
+                <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
+                    title="深色/浅色模式切换">
+            </div>
+            <pre id="fileContent">点击日志文件查看内容。</pre>
+        </div>
+    </div>
+</body>
+</html>

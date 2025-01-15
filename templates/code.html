@@ -3,51 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/code.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/code.js') }}" defer></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/default.css') }}">
     <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
     <script>hljs.highlightAll();</script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/clipboard.min.js') }}"></script>
     <title>代码块</title>
-    <style>
-        h3 {
-            margin-bottom: -15px;
-        }
-
-        pre {
-            position: relative; /* 为了让按钮定位到代码块内部 */
-        }
-        
-        code {
-            font-family: Consolas;
-            font-size: 14px;
-        }
-
-         /* 复制按钮样式 */
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .copy-btn:hover {
-            background-color: #45a049;
-        }
-    </style>
 </head>
-<body>
-    <h1>代码</h1>
+<body class="dark-mode">
+    <div class="line-container">
+      <h1>代码</h1>
+      <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
+        title="深色/浅色模式切换">
+    </div>
 {% raw %}
     <!-- 第一个代码块 -->
     <h3>1、docker-cli：</h3>
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-1">复制代码</button>
-        <code id="code-block-1" class="language-bash">
+        <code id="code-block-1">
 docker run -d --restart unless-stopped -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --name powercontrol viklion/powercontrol:latest
         </code>
     </pre>
@@ -56,7 +33,7 @@ docker run -d --restart unless-stopped -v /your/path:/app/data -e WEB_PORT=7678 
     <h3>2、docker-compose（注意检查缩进）</h3>
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
-        <code id="code-block-2" class="language-yaml">
+        <code id="code-block-2">
 services:
   powercontrol:
     image: viklion/powercontrol:latest
@@ -75,7 +52,7 @@ services:
     <h3>3、homeassistant configuration.yaml（注意检查缩进）</h3>
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-3">复制代码</button>
-        <code id="code-block-3" class="language-yaml">
+        <code id="code-block-3">
 shell_command:
   ha_wol_pc: "curl http://192.168.2.75:1856/wol?key=1111"
   ha_shutdown_pc: "curl http://192.168.2.75:1856/shutdown?key=1111"
@@ -122,7 +99,7 @@ switch:
     <h3>4、homeassistant automations.yaml（注意检查缩进）</h3>
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
-        <code id="code-block-4" class="language-yaml">
+        <code id="code-block-4">
 - id: '20250108'
   alias: 更新电脑在线状态
   trigger:
@@ -140,28 +117,5 @@ switch:
         </code>
     </pre>
 {% endraw %}
-    <script>
-        // 使用 ClipboardJS 实现多个代码块的复制功能
-        var clipboard = new ClipboardJS('.copy-btn', {
-            text: function (trigger) {
-                // 获取按钮对应的代码块
-                var codeBlock = document.querySelector(trigger.getAttribute('data-clipboard-target'));
-                // 获取代码块内容，并去掉首尾空白字符
-                return codeBlock.textContent.trim();
-            }
-        });
-
-        // 成功复制后的提示
-        clipboard.on('success', function (e) {
-            alert('代码已复制到剪贴板!');
-            e.clearSelection();
-        });
-
-        // 复制失败后的提示
-        clipboard.on('error', function (e) {
-            alert('复制失败，请手动复制!');
-        });
-    </script>
 </body>
-
 </html>
