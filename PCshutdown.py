@@ -29,7 +29,7 @@ UDP_PORT = 17678 # 接收端口
 try:
     sock = socket.socket(socket.AF_INET, # Internet
                         socket.SOCK_DGRAM) # UDP
-    sock.bind((UDP_IP, UDP_PORT))
+    sock.bind(('0.0.0.0', UDP_PORT))
     ptoast("PCshutdown已启动",f"本机ip：{UDP_IP}，监听端口：{UDP_PORT}，将保持后台运行")
 except Exception as e:
     ptoast("PCshutdown已退出","启动失败：" + str(e))

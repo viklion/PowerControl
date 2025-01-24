@@ -13,17 +13,17 @@ class PCfuncs():
     log_path = os.path.join(os.getcwd(), 'data', 'logs')
     yaml_changed = False
     pc_state = []
-    
+
     def __init__(self):
         self.is_power_off = False
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
         self.check_job = False
-        
+
         # 检查目录权限
         self.check_permission('r')
         self.check_permission('w')
-        
+
         # 检查是否存在配置文件，没有则拷贝一份
         self.check_yaml()
 
@@ -32,13 +32,13 @@ class PCfuncs():
 
         # 读取默认配置文件
         yd_default = self.read_default_yaml()
-        
+
         # 更新YAML
         self.update_yaml(yd ,yd_default)
         if self.yaml_changed:
             self.write_config_yaml(yd)
             p_print("配置文件已更新新内容")
-            
+
         # 参数
         PCfuncs.bemfa_enabled = checkbool(yd['bemfa']['enabled'])
         if PCfuncs.bemfa_enabled:
@@ -54,10 +54,13 @@ class PCfuncs():
         if PCfuncs.shutdown_enabled:
             PCfuncs.method_netrpc = checkbool(yd['devices']['shutdown']['method']['netrpc'])
             PCfuncs.method_udp = checkbool(yd['devices']['shutdown']['method']['udp'])
+            PCfuncs.method_shell = checkbool(yd['devices']['shutdown']['method']['shell'])
             PCfuncs.shutdown_time = trans_str(yd['devices']['shutdown']['time'])
             if PCfuncs.method_netrpc:
                 PCfuncs.pc_account = trans_str(yd['devices']['shutdown']['account'])
                 PCfuncs.pc_password = trans_str(yd['devices']['shutdown']['password'])
+            elif PCfuncs.method_shell:
+                PCfuncs.shell_script = trans_str(yd['devices']['shutdown']['shell_script'])
         PCfuncs.ping_enabled = checkbool(yd['devices']['ping']['enabled'])
         if PCfuncs.ping_enabled:
             PCfuncs.ping_time = int(yd['devices']['ping']['time'])
@@ -82,26 +85,26 @@ class PCfuncs():
             if PCfuncs.push_qmsg_enabled:
                 PCfuncs.push_qmsg_key = trans_str(yd['functions']['push_notifications']['Qmsg']['key'])
                 PCfuncs.push_qmsg_qq = trans_str(yd['functions']['push_notifications']['Qmsg']['qq'])
-        
+
         print_and_log('----------------------------------', 2)
         print_and_log('PowerControl启动', 2)
         send_message('PowerControl启动')
-        
+
         # 本机ip
         PCfuncs.local_ip = get_ip_address()
         print_and_log('获取本机ip：'+PCfuncs.local_ip, 2)
-        
+
         # 启动定时任务
         self.add_ping_job()
         self.add_clear_log_job()
-        
+
     # 检查目录权限
     def check_permission(self, mode):
         path = os.path.join(os.getcwd(), 'data')
         # 检查目录是否存在
         if not os.path.exists(path):
             p_print(f"{path} 不存在")
-            
+
         if mode == 'r':
             # 检查目录是否可读
             if os.access(path, os.R_OK):
@@ -119,8 +122,8 @@ class PCfuncs():
             if os.access(path, os.X_OK):
                 p_print(f"{path} 有执行权限")
             else:
-                p_print(f"{path} 无执行权限") 
-                
+                p_print(f"{path} 无执行权限")
+
     # 检查YAML文件
     def check_yaml(self):
         # 检查当前目录下是否存在yaml文件
@@ -133,7 +136,7 @@ class PCfuncs():
                 p_print(f"生成'{self.yaml_file}'失败: {e}")
         else:
             p_print(f"'{self.yaml_file}'存在")
-            
+
     # 读取用户YAML文件
     def read_config_yaml(self):
         try:
@@ -202,7 +205,7 @@ class PCfuncs():
                 send_message(f"状态更新：{self.pc_state[0]}")
         except Exception as e:
             print_and_log("ping出错：" + str(e),3)
-    
+
     # 开启定时ping
     def add_ping_job(self):
         if self.ping_enabled:
@@ -212,7 +215,7 @@ class PCfuncs():
                 self.check_job = True
             except Exception as e:
                 print_and_log("启动定时ping任务出错：" + str(e),3)
-    
+
     # 开启定时清理日志
     def add_clear_log_job(self):
         if self.log_enabled:
@@ -223,7 +226,7 @@ class PCfuncs():
                     self.check_job = True
                 except Exception as e:
                     print_and_log("启动定时清理日志任务出错：" + str(e),3)
-    
+
     # 统计运行时间
     def run_time(self):
         run_timedelta = timedelta(seconds = time.time() - self.start_time)
@@ -323,7 +326,7 @@ def clear_log():
 def print_and_log(content, level):
     p_print(content)
     write_log(content, level)
-    
+
 # 消息推送
 def send_message(content):
     response = {
@@ -403,6 +406,13 @@ def pcshutdown():
             finally:
                 # 关闭socket
                 sock.close()
+        elif PCfuncs.method_shell:
+            try:
+                # 执行并获取shell命令的结果
+                result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=60)
+                return 'succeeded:'+result.stdout
+            except Exception as e:
+                return str(e)
     return None
 
 # 网络唤醒
@@ -415,7 +425,7 @@ def pcwol():
         except Exception as e:
             return str(e)
     return None
-        
+
 # ping
 def pcping():
     if PCfuncs.ping_enabled:

@@ -3,7 +3,7 @@ bemfa:
   uid: aaabbbcccdddeeefffggg
   topic: testpc001
 devices:
-  name: µçÄÔ
+  name: ç”µè„‘
   ip: 192.168.100.100
   wol:
     enabled: True
@@ -13,8 +13,10 @@ devices:
     method: 
       netrpc: True
       udp: False
+      shell: False
     account: youraccount
     password: yourpassword
+    shell_script: yourscript
     time: 60
   ping:
     enabled: True

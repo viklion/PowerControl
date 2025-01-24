@@ -84,6 +84,8 @@
                     <input id='netrpc' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.netrpc" value="True" {% if config['devices']['shutdown']['method']['netrpc'] %} checked{% endif %} data-target = 'netrpcconfig'>
                     <label for="udp">udp</label>
                     <input id='udp' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.udp" value="False" {% if config['devices']['shutdown']['method']['udp'] %} checked{% endif %} data-target = 'dl_pcshutdown'><br>
+                    <label for="shell">shell</label>
+                    <input id='shell' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.shell" value="False" {% if config['devices']['shutdown']['method']['shell'] %} checked{% endif %} data-target = 'dl_shell_script'><br>
                 </div>
                 <div id = 'netrpcconfig' class = 'hidden'>
                     账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
@@ -91,6 +93,9 @@
                 </div>
                 <div id='dl_pcshutdown' class='hidden'>
                     <a id="pcshutdown" class="textlink" href="{{ url_for('download') }}">下载配套服务程序，并按教程使用</a>
+                </div>
+                <div id='dl_shell_script' class='hidden'>
+                    自定义指令: <input class="input-label" type="text" name="devices.shutdown.shell_script" value="{{ config.devices.shutdown.shell_script }}">
                 </div>
                 延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机"><br>
             </div>

@@ -126,34 +126,47 @@ document.addEventListener('DOMContentLoaded', () => {
 // 获取复选框和目标内容元素
 const netrpcCheckbox = document.getElementById('netrpc');
 const udpCheckbox = document.getElementById('udp');
+const shellCheckbox = document.getElementById('shell');
 const netrpcConfig = document.getElementById('netrpcconfig');
 const dl_pcshutdown = document.getElementById('dl_pcshutdown');
+const dl_shell_script = document.getElementById('dl_shell_script');
 
 // 更新netrpcconfig的显示状态
 function ifshow_method_shutdown() {
     if (netrpcCheckbox.checked) {
         netrpcConfig.classList.remove('hidden');
         dl_pcshutdown.classList.add('hidden');
-    } else {
-        netrpcConfig.classList.add('hidden');
+        dl_shell_script.classList.add('hidden');
+    } else if (udpCheckbox.checked) {
         dl_pcshutdown.classList.remove('hidden');
+        netrpcConfig.classList.add('hidden');
+        dl_shell_script.classList.add('hidden');
+    }else if (shellCheckbox.checked) {
+        dl_shell_script.classList.remove('hidden');
+        netrpcConfig.classList.add('hidden');
+        dl_pcshutdown.classList.add('hidden');
     }
 }
 
 // 勾选一个复选框时，取消另一个复选框的勾选
-function only_one_netrpc() {
+function only_one_check_netrpc() {
     if (netrpcCheckbox.checked) {
         udpCheckbox.checked = false;
-    } else {
-        udpCheckbox.checked = true;
+        shellCheckbox.checked = false;
     }
     ifshow_method_shutdown();
 }
-function only_one_udp() {
+function only_one_check_udp() {
     if (udpCheckbox.checked) {
         netrpcCheckbox.checked = false;
-    } else {
-        netrpcCheckbox.checked = true;
+        shellCheckbox.checked = false;
+    }
+    ifshow_method_shutdown();
+}
+function only_one_check_shell() {
+    if (shellCheckbox.checked) {
+        netrpcCheckbox.checked = false;
+        udpCheckbox.checked = false;
     }
     ifshow_method_shutdown();
 }
@@ -163,8 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ifshow_method_shutdown();
 
     // 添加change事件监听
-    netrpcCheckbox.addEventListener('change', only_one_netrpc);
-    udpCheckbox.addEventListener('change', only_one_udp);
+    netrpcCheckbox.addEventListener('change', only_one_check_netrpc);
+    udpCheckbox.addEventListener('change', only_one_check_udp);
+    shellCheckbox.addEventListener('change', only_one_check_shell);
 });
 // ----------------------------------------------------------------------------------------------------
 function submit_pcconfig() {

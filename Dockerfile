@@ -14,7 +14,7 @@ WORKDIR /app
 COPY . /app
 
 # 安装包
-RUN apk add --no-cache --update tzdata samba && \
+RUN apk add --no-cache --update tzdata && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone && \
     rm -rf /var/cache/apk/* && \
