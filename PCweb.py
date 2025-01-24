@@ -237,4 +237,4 @@ class PCweb():
     def run(self):
         self.set_web_data()
         print_and_log("web服务启动", 2)
-        app.run(host=self.fd.local_ip, port=self.web_port)
+        app.run(host='0.0.0.0', port=self.web_port)
