@@ -16,23 +16,30 @@ linux/amd64,linux/arm/v7,linux/arm64,linux/386
 
 *不设置环境变量则使用默认参数port：7678，key：admin
 ### 1、Docker
+#默认root用户运行
 ```
-docker run -d --restart unless-stopped -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --name powercontrol viklion/powercontrol:latest
+docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+```
+#设置指定user运行（-u uid:gid）
+```
+docker run -d -u 1000:100 -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
 ```
 
 ### 2、Docker-Compose
 ```
 services:
-    powercontrol:
-        image: viklion/powercontrol:latest
-        container_name: powercontrol
-        restart: unless-stopped
-        network_mode: host
-        volumes:
-            - /your/path:/app/data
-        environment:
-            - WEB_PORT=7678
-            - WEB_KEY=yourkey
+  powercontrol:
+    image: viklion/powercontrol:latest
+    container_name: powercontrol
+    volumes:
+      - /your/path:/app/data
+    environment:
+      - WEB_PORT=7678
+      - WEB_KEY=yourkey
+    # 默认root用户运行，去掉下行的#，设置指定user运行（uid:gid）
+    #user: 1000:100
+    restart: unless-stopped
+    network_mode: host
 ```
 
 ## 配置
