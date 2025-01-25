@@ -16,7 +16,7 @@ WORKDIR /app
 COPY . /app
 
 # 安装包
-RUN apk add --no-cache --update libcap tzdata samba sshpass && \
+RUN apk add --no-cache --update libcap tzdata samba sshpass curl && \
     ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     echo ${TZ} > /etc/timezone && \
     rm -rf /var/cache/apk/* && \
