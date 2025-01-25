@@ -25,34 +25,44 @@
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-1">复制代码</button>
         <code id="code-block-1">
-docker run -d --restart unless-stopped -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --name powercontrol viklion/powercontrol:latest
+docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+# 默认root用户运行
+        </code>
+    </pre>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
+        <code id="code-block-2">
+docker run -d -u 1000:100 -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+# 设置指定user运行（-u uid:gid）
         </code>
     </pre>
 
     <!-- 第二个代码块 -->
     <h3>2、docker-compose（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
-        <code id="code-block-2">
+        <button class="copy-btn" data-clipboard-target="#code-block-3">复制代码</button>
+        <code id="code-block-3">
 services:
   powercontrol:
     image: viklion/powercontrol:latest
     container_name: powercontrol
-    restart: unless-stopped
-    network_mode: host
     volumes:
       - /your/path:/app/data
     environment:
       - WEB_PORT=7678
       - WEB_KEY=yourkey
+    # 默认root用户运行，去掉下行的#，设置指定user运行（uid:gid）
+    #user: 1000:100
+    restart: unless-stopped
+    network_mode: host
         </code>
     </pre>
 
     <!-- 第三个代码块 -->
     <h3>3、homeassistant configuration.yaml（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-3">复制代码</button>
-        <code id="code-block-3">
+        <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
+        <code id="code-block-4">
 shell_command:
   ha_wol_pc: "curl http://192.168.2.75:1856/wol?key=1111"
   ha_shutdown_pc: "curl http://192.168.2.75:1856/shutdown?key=1111"
@@ -98,8 +108,8 @@ switch:
     <!-- 第四个代码块 -->
     <h3>4、homeassistant automations.yaml（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
-        <code id="code-block-4">
+        <button class="copy-btn" data-clipboard-target="#code-block-5">复制代码</button>
+        <code id="code-block-5">
 - id: '20250108'
   alias: 更新电脑在线状态
   trigger:

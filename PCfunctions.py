@@ -377,7 +377,7 @@ def pcshutdown():
                 ]
                 # 使用 subprocess.run() 执行命令并获取输出
                 result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=2)
-                return result.stdout
+                return result.stdout.replace('\n', '').replace('\r', '')
             except Exception as e:
                 return str(e)
         elif PCfuncs.method_udp:
@@ -407,12 +407,25 @@ def pcshutdown():
                 # 关闭socket
                 sock.close()
         elif PCfuncs.method_shell:
-            try:
-                # 执行并获取shell命令的结果
-                result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=60)
-                return 'succeeded:'+result.stdout
-            except Exception as e:
-                return str(e)
+            shell_allowed = ("sshpass", "curl")
+            if PCfuncs.shell_script.startswith(shell_allowed):
+                try:
+                    # 执行并获取shell命令的结果
+                    result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=2)
+                    if result.stdout:
+                        return 'succeeded:' + result.stdout
+                    else:
+                        return 'succeeded: 已执行指令'
+                except subprocess.TimeoutExpired as e:
+                    # 处理sshpass超时但已经成功执行的报错
+                    if 'sshpass' in PCfuncs.shell_script:
+                        return 'succeeded: 已执行指令'
+                    else:
+                        return str(e)
+                except Exception as e:
+                    return str(e)
+            else:
+                return "error:不允许的指令"
     return None
 
 # 网络唤醒

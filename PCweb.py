@@ -60,8 +60,10 @@ def index():
         save_yaml = Web_data.fd.write_config_yaml(yaml_config)
         if save_yaml == True:
             flash(get_time() + '\n' +'配置保存成功，请重启服务或容器生效')
+            print_and_log('配置保存成功', 2)
         else:
             flash(get_time() + '\n' +'配置保存失败：' + str(save_yaml))
+            print_and_log('配置保存失败：' + str(save_yaml), 3)
         return redirect(url_for('index')+ f'?key={web_key}')
     if not Web_data.ping_enabled:
         flash(get_time() + '\n' +'未启用ping，设备状态未知')
@@ -82,13 +84,13 @@ def shutdown():
     rs = pcshutdown()
     if rs:
         if 'succeeded' in rs:
-            print_and_log("[Web]已发送关机指令",2)
+            print_and_log("[Web]已发送关机指令" + ' || ' + rs ,2)
             send_message('已发送关机指令')
-            return Web_data.device_name + '已发送关机指令', 200  # 返回200 OK状态码
+            return Web_data.device_name + '已发送关机指令' + ' || ' + rs, 200  # 返回200 OK状态码
         else:
-            print_and_log("[Web]关机指令发送失败："+ rs ,3)
+            print_and_log("[Web]关机指令发送失败：" + ' || ' + rs ,3)
             send_message('关机指令发送失败')
-            return Web_data.device_name + '发送关机指令失败，检查配置或是否已经离线', 200
+            return Web_data.device_name + '发送关机指令失败，检查配置或是否已经离线' + ' | ' + rs , 200
     else:
         print_and_log('[Web]未启用远程关机！' ,3)
         send_message('未启用远程关机！')
@@ -167,8 +169,9 @@ def change_log():
         # 读取 change.log 文件内容
         with open('change.log', 'r', encoding='GBK') as file:
             log_content = file.read()
-    except FileNotFoundError:
-        log_content = "读取change.log文件失败！"
+    except Exception as e:
+        log_content = "读取change.log文件失败" + ' || ' + str(e)
+        print_and_log(log_content , 3)
     return render_template('changelog.html', log_content=log_content)
 
 # 下载

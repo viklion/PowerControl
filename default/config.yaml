@@ -3,7 +3,7 @@ bemfa:
   uid: aaabbbcccdddeeefffggg
   topic: testpc001
 devices:
-  name: ç”µè„‘
+  name: µçÄÔ
   ip: 192.168.100.100
   wol:
     enabled: True

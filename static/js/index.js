@@ -129,22 +129,27 @@ const udpCheckbox = document.getElementById('udp');
 const shellCheckbox = document.getElementById('shell');
 const netrpcConfig = document.getElementById('netrpcconfig');
 const dl_pcshutdown = document.getElementById('dl_pcshutdown');
-const dl_shell_script = document.getElementById('dl_shell_script');
+const shell_script = document.getElementById('shell_script');
+const shutdown_delay_time = document.getElementById('shutdown_delay_time');
+
 
 // 更新netrpcconfig的显示状态
 function ifshow_method_shutdown() {
     if (netrpcCheckbox.checked) {
         netrpcConfig.classList.remove('hidden');
         dl_pcshutdown.classList.add('hidden');
-        dl_shell_script.classList.add('hidden');
+        shell_script.classList.add('hidden');
+        shutdown_delay_time.classList.remove('hidden');
     } else if (udpCheckbox.checked) {
         dl_pcshutdown.classList.remove('hidden');
         netrpcConfig.classList.add('hidden');
-        dl_shell_script.classList.add('hidden');
+        shell_script.classList.add('hidden');
+        shutdown_delay_time.classList.remove('hidden');
     }else if (shellCheckbox.checked) {
-        dl_shell_script.classList.remove('hidden');
+        shell_script.classList.remove('hidden');
         netrpcConfig.classList.add('hidden');
         dl_pcshutdown.classList.add('hidden');
+        shutdown_delay_time.classList.add('hidden');
     }
 }
 
@@ -153,6 +158,8 @@ function only_one_check_netrpc() {
     if (netrpcCheckbox.checked) {
         udpCheckbox.checked = false;
         shellCheckbox.checked = false;
+    } else {
+        netrpcCheckbox.checked = true;
     }
     ifshow_method_shutdown();
 }
@@ -160,6 +167,8 @@ function only_one_check_udp() {
     if (udpCheckbox.checked) {
         netrpcCheckbox.checked = false;
         shellCheckbox.checked = false;
+    } else {
+        udpCheckbox.checked = true;
     }
     ifshow_method_shutdown();
 }
@@ -167,6 +176,8 @@ function only_one_check_shell() {
     if (shellCheckbox.checked) {
         netrpcCheckbox.checked = false;
         udpCheckbox.checked = false;
+    } else {
+        shellCheckbox.checked = true;
     }
     ifshow_method_shutdown();
 }
