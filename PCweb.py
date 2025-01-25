@@ -35,8 +35,10 @@ def index():
         yaml_config['devices']['shutdown']['enabled'] = bool(request.form.get('devices.shutdown.enabled'))
         yaml_config['devices']['shutdown']['method']['netrpc'] = bool(request.form.get('devices.shutdown.method.netrpc'))
         yaml_config['devices']['shutdown']['method']['udp'] = bool(request.form.get('devices.shutdown.method.udp'))
+        yaml_config['devices']['shutdown']['method']['shell'] = bool(request.form.get('devices.shutdown.method.shell'))
         yaml_config['devices']['shutdown']['account'] = trans_str(request.form.get('devices.shutdown.account'))
         yaml_config['devices']['shutdown']['password'] = trans_str(request.form.get('devices.shutdown.password'))
+        yaml_config['devices']['shutdown']['shell_script'] = trans_str(request.form.get('devices.shutdown.shell_script'))
         yaml_config['devices']['shutdown']['time'] = trans_str(request.form.get('devices.shutdown.time'))
         yaml_config['devices']['ping']['enabled'] = bool(request.form.get('devices.ping.enabled'))
         yaml_config['devices']['ping']['time'] = trans_str(request.form.get('devices.ping.time'))
@@ -235,4 +237,4 @@ class PCweb():
     def run(self):
         self.set_web_data()
         print_and_log("web服务启动", 2)
-        app.run(host=self.fd.local_ip, port=self.web_port)
+        app.run(host='0.0.0.0', port=self.web_port)
