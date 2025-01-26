@@ -9,20 +9,20 @@ CORS(app)
 app.secret_key = 'PowerControlWeb'
 
 # 首页跳转
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def home():
     return send_file('PowerControl教程.pdf', mimetype='application/pdf')
 
 # 配置页
 @app.route('/config', methods=['GET', 'POST'])
 def index():
-    yaml_config = Web_data.fd.read_config_yaml()
-    if not bool(yaml_config):
-        return '配置文件读取失败，检查权限' ,500
     # 获取请求中的密钥
     web_key = request.args.get('key')
     if web_key != Web_data.web_key:
         return '请在url中填入正确的key', 401
+    yaml_config = Web_data.fd.read_config_yaml()
+    if not bool(yaml_config):
+        return '配置文件读取失败，检查权限' ,500
     if request.method == 'POST':
         # 获取表单数据
         yaml_config['bemfa']['enabled'] = bool(request.form.get('bemfa.enabled'))
@@ -75,7 +75,7 @@ def index():
     return render_template('index.html', config=yaml_config, run_time= Web_data.fd.run_time())
 
 # 关机
-@app.route('/shutdown', methods=['GET', 'POST'])
+@app.route('/shutdown', methods=['GET'])
 def shutdown():
     # 获取请求中的密钥
     web_key = request.args.get('key')
@@ -97,7 +97,7 @@ def shutdown():
         return '未启用远程关机！', 403
 
 # 网络唤醒
-@app.route('/wol', methods=['GET', 'POST'])
+@app.route('/wol', methods=['GET'])
 def wol():
     web_key = request.args.get('key')
     if web_key != Web_data.web_key:
@@ -118,7 +118,7 @@ def wol():
         return '未启用网络唤醒！', 403
 
 # ping
-@app.route('/ping', methods=['GET', 'POST'])
+@app.route('/ping', methods=['GET'])
 def ping():
     web_key = request.args.get('key')
     if web_key != Web_data.web_key:
@@ -204,6 +204,9 @@ def list_logs():
 # 查看log文件内容
 @app.route('/logs/<filename>', methods=['GET'])
 def view_log_content(filename):
+    web_key = request.args.get('key')
+    if web_key != Web_data.web_key:
+        return '请在url中填入正确的key', 401
     log_dir = Web_data.fd.log_path
     log_path = os.path.join(log_dir, filename)
     # 检查文件是否存在

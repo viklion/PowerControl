@@ -12,8 +12,15 @@ function loadFileContent(filename, listItem) {
     // 更新文件名
     document.getElementById('fileName').textContent = filename;
 
+    // 获取当前页面的 URL
+    const currentUrl = new URL(window.location.href);
+    // 获取 URL 中的 key 参数
+    const key = currentUrl.searchParams.get('key');
+    // 构造 fetch 请求的 URL，带上 key 参数
+    const fetchUrl = `/logs/${filename}?key=${key}`;
+
     // 请求文件内容
-    fetch('/logs/' + filename)
+    fetch(fetchUrl)
         .then(response => response.json())
         .then(data => {
             // 更新文件内容

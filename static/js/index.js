@@ -31,7 +31,7 @@ function checkBlur() {
 const currentUrl = new URL(window.location.href);
 // 获取 URL 中的 key 参数
 const key = currentUrl.searchParams.get('key');
-// 如果 key 参数存在，则修改表单的 action 属性
+// 如果 key 参数存在，则修改相关跳转
 if (key) {
     var form = document.getElementById('restart');
     form.action = `/restart?key=${key}`;
