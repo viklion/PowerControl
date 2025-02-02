@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/changelog.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>更新日志</title>
+</head>
+<body class="dark-mode">
+    <div class="container">
+        <div class="line-container">
+            <h1>更新日志</h1>
+            <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image" style="margin-bottom: 6px;" title="深色/浅色模式切换">
+        </div>
+        {% if log_content %}
+        <div class="log-content">{{ log_content }}</div>
+        {% else %}
+        <div class="error-message">无法加载更新日志，文件未找到。</div>
+        {% endif %}
+    </div>
+</body>
+</html>

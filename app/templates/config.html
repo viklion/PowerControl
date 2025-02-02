@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/config.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/config.js') }}" defer></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>PowerControl配置页</title>
+</head>
+
+<body class="dark-mode">
+    <div class="head-container-wrapper">
+        <!-- 左侧模糊提示 -->
+        <div class="blur-left"></div>
+        <div class="head-container">
+            <a>
+                <img id="theme-toggle" src="{{ url_for('static', filename='icon.png') }}" alt="PowerControl" class="icon-image"  title="深色/浅色模式切换">
+            </a>
+            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
+            <a id="pdf" class="textlink" href="/pdf" target="_blank">pdf教程</a>
+            <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
+            <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
+            <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
+            <a id="logs" class="textlink" href="/logs" target="_blank">操作日志</a>
+        </div>
+        <!-- 右侧模糊提示 -->
+        <div class="blur-right"></div>
+    </div>
+    <div style="margin-left: 20px; margin-right: 20px;">
+        <h1>PowerControl配置 {{ config.version }}</h1>
+        <h3>by viklion</h3>
+        <p style="margin-bottom: -20px;">{{ run_time }}</p>
+        <br>
+        <div id="flash-messages">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li style="margin-top: 10px;">{{ message | replace('\n', '<br>')| safe }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+        <div class="line-container" style="margin-top: 16px; margin-bottom: 26px;">
+            <input style="width: 100px; height: 30px; font-size: 16px;" type="submit"
+                value="保存" onclick="submit_pcconfig()">
+            <form id="restart" method="POST" action="/restart">
+                <button style="width: 100px; height: 30px; font-size: 16px; " type="submit">重启服务</button>
+            </form>
+        </div>
+        <form id="pcconfig" method="post">
+            <h2>巴法：</h2>
+            <div class='line-container'>
+                接入巴法云: <input id="bemfa_enabled" class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %} data-target = 'bemfaconfig'><br>
+                <a id="go_bemfa" class="textlink" href="https://cloud.bemfa.com/" target="_blank">前往巴法控制台</a>
+            </div>
+            <div id = 'bemfaconfig' class = 'hidden'>
+                巴法云用户私钥: <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}"><br>
+                巴法云设备主题: <input class="input-label" type="text" name="bemfa.topic" value="{{ config.bemfa.topic }}"><br>
+            </div>
+            <h2>设备：</h2>
+            设备名称: <input class="input-label" type="text" name="devices.name" value="{{ config.devices.name }}"><br>
+            设备ip地址: <input class="input-label" type="text" name="devices.ip" value="{{ config.devices.ip }}"><br>
+            <hr class="dashed-hr">
+            <div class='line-container'>
+                启用网络唤醒: <input id="wol_enabled" class="checkbox-label" type="checkbox" name="devices.wol.enabled" value="True" {% if config['devices']['wol']['enabled'] %} checked{% endif %} data-target = 'wolconfig'>
+                <a id="go_wol" class="textlink" href="/wol" target="_blank">测试开机</a><br>
+            </div>
+            <div id = 'wolconfig' class = 'hidden'>
+                设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx:xx，也可以是xx-xx"><br>
+            </div>
+            <hr class="dashed-hr">
+            <div class='line-container'>
+                启用远程关机: <input id="shutdown_enabled" class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %} data-target = 'shutdownconfig'>
+                <a id="go_shutdown" class="textlink" href="/shutdown" target="_blank">测试关机</a><br>
+            </div>
+            <div id = 'shutdownconfig' class = 'hidden'>
+                <div class='line-container'>
+                    <span>关机方法：</span>
+                    <label for="netrpc">netrpc</label>
+                    <input id='netrpc' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.netrpc" value="True" {% if config['devices']['shutdown']['method']['netrpc'] %} checked{% endif %} data-target = 'netrpcconfig'>
+                    <label for="udp">udp</label>
+                    <input id='udp' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.udp" value="False" {% if config['devices']['shutdown']['method']['udp'] %} checked{% endif %} data-target = 'dl_pcshutdown'><br>
+                    <label for="shell">shell</label>
+                    <input id='shell' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.shell" value="False" {% if config['devices']['shutdown']['method']['shell'] %} checked{% endif %} data-target = 'shell_script'><br>
+                </div>
+                <div id = 'netrpcconfig' class = 'hidden'>
+                    账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
+                    密码: <input class="input-label" type="text" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}"><br>
+                </div>
+                <div id='dl_pcshutdown' class='hidden'>
+                    <a id="pcshutdown" class="textlink" href="{{ url_for('download') }}">下载配套服务程序，并按教程使用</a>
+                </div>
+                <div id='shell_script' class='hidden'>
+                    自定义指令: <input class="input-label" type="text" name="devices.shutdown.shell_script" value="{{ config.devices.shutdown.shell_script }}">
+                </div>
+                <div id='shutdown_delay_time'>
+                    延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机"><br>
+                </div>
+            </div>
+            <hr class="dashed-hr">
+            <div class='line-container'>
+                启用ping检测: <input id="ping_enabled" class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %} data-target = 'pingconfig'>
+                <a id="go_ping" class="textlink" href="/ping" target="_blank">测试ping</a><br>
+            </div>
+            <div id = 'pingconfig' class = 'hidden'>
+                ping间隔时长(秒): <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
+            </div>
+            <h2>日志：</h2>
+            启用日志记录: <input class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %} data-target = 'logconfig'><br>
+            <div id = 'logconfig' class = 'hidden'>
+                日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错"><br>
+                <hr class="dashed-hr">
+                启用日志清理: <input class="checkbox-label" type="checkbox" name="functions.log.clear_log.enabled" value="True" {% if config['functions']['log']['clear_log']['enabled'] %} checked{% endif %} data-target='clearlogconfig'><br>
+                <div id='clearlogconfig' class='hidden'>
+                    保留天数: <input class="input-label" type="number" name="functions.log.clear_log.keep_days" value="{{ config.functions.log.clear_log.keep_days }}" min="0" step="1" title="0：只保留当天的日志（每天中午12点清理）"><br>
+                </div>
+            </div>
+            <h2>推送：</h2>
+            <div class='line-container'>
+                启用消息推送: <input id="push_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.enabled" value="True" {% if config['functions']['push_notifications']['enabled'] %} checked{% endif %} data-target = 'pushconfig'><br>
+                <a id="go_push" class="textlink" href="/testpush" target="_blank">测试消息推送</a>
+            </div>
+            <div id = 'pushconfig' class = 'hidden'>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Server酱Turbo: <input id="serverchanturbo_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %} data-target = 'serverchan_turboconfig'><br>
+                    <a id="go_serverchanturbo" class="textlink" href="https://sct.ftqq.com/sendkey" target="_blank">前往Server酱Turbo</a>
+                </div>
+                <div id = 'serverchan_turboconfig' class = 'hidden'>
+                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey"
+                        value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}"><br>
+                    消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel"
+                        value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Server酱3: <input id="serverchan3_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan3.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan3']['enabled'] %} checked{% endif %} data-target = 'serverchan3config'><br>
+                    <a id="go_serverchan3" class="textlink" href="https://sc3.ft07.com/" target="_blank">前往Server酱3</a>
+                </div>
+                <div id = 'serverchan3config' class = 'hidden'>
+                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Qmsg酱: <input id="qmsg_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.Qmsg.enabled" value="True" {% if config['functions']['push_notifications']['Qmsg']['enabled'] %} checked{% endif %} data-target = 'qmsgconfig'><br>
+                    <a id="go_qmsg" class="textlink" href="https://qmsg.zendee.cn/" target="_blank">前往Qmsg酱</a>
+                </div>
+                <div id = 'qmsgconfig' class = 'hidden'>
+                    Key: <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
+                    QQ: <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
+                </div>
+            </div>
+            <hr class="default-hr">
+            <div class="line-container">
+                <input style="width: 100px; height: 30px; font-size: 16px; margin-top: 20px; margin-bottom: 50px; " type="submit" value="保存">
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}" defer></script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>PowerControl</title>
+</head>
+
+<body class="dark-mode">
+    <div class="head-container-wrapper">
+        <!-- 左侧模糊提示 -->
+        <div class="blur-left"></div>
+        <div class="head-container">
+            <a>
+                <img id="theme-toggle" src="{{ url_for('static', filename='icon.png') }}" alt="PowerControl"
+                    class="icon-image" title="深色/浅色模式切换">
+            </a>
+            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
+            <a id="pdf" class="textlink" href="/pdf" target="_blank">pdf教程</a>
+            <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
+            <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
+            <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
+            <!-- <a id="logs" class="textlink" href="/logs" target="_blank">操作日志</a> -->
+        </div>
+        <!-- 右侧模糊提示 -->
+        <div class="blur-right"></div>
+    </div>
+    <div style="margin-left: 20px; margin-right: 20px;">
+        <h1>PowerControl {{ config.version }}</h1>
+        <h3>by viklion</h3>
+        <p>{{ run_time }}</p>
+        <br>
+        <div class="line-container">
+            <input id="webkey" class="key-input" type="text" placeholder="请输入KEY">
+            <div id="keybtn" class="key-button">跳转配置</div>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+</body>
+
+</html>
