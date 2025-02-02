@@ -8,13 +8,13 @@ linux/amd64,linux/arm/v7,linux/arm64,linux/386
 [视频教程(bilibili)](https://www.bilibili.com/video/BV1cykZY7Er9)
 
 不要直接复制命令运行，需要修改参数<br>
-1、将容器/app/data目录映射到你的主机目录，存放配置文件和日志文件:<br>
+> 1、将容器/app/data目录映射到你的主机目录，存放配置文件和日志文件:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;`修改/your/path`<br>
 2、修改环境变量：<br>
 &nbsp;&nbsp;&nbsp;&nbsp;`WEB_PORT：网页端口`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;`WEB_KEY：密钥`
 
-**不设置环境变量则使用默认参数port：7678，key：admin*
+**不设置环境变量则使用默认参数`port：7678`，`key：admin`*
 ### 1、Docker
 + 默认root用户运行
 ```
@@ -44,4 +44,4 @@ services:
 ```
 
 ## 配置
-访问 ip:端口 进入首页，顶部跳转教程，输入KEY跳转配置
+访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
