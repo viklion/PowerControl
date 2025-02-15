@@ -135,8 +135,9 @@ button:hover {
 .textlink {
     font-size: 14px;
     color: #4CAF50;
-    text-decoration: underline;
+    text-decoration: none;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .textlink:hover {
@@ -161,13 +162,15 @@ button:hover {
     opacity: 0;
     max-height: 0;
     visibility: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    /* transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; */
+    transition: all 0.3s ease;
 }
 .visible {
     opacity: 1;
     max-height: 1000px;
     visibility: visible;
-    transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    /* transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0.3s ease; */
+    transition: all 0.3s ease;
 }
 
 .default-hr {

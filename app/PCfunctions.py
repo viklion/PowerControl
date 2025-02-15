@@ -11,10 +11,10 @@ class PCfuncs():
     yaml_path = os.path.join(os.getcwd(), 'data', yaml_file)
     default_path = os.path.join(os.getcwd(), 'default', yaml_file)
     log_path = os.path.join(os.getcwd(), 'data', 'logs')
-    yaml_changed = False
     pc_state = []
 
     def __init__(self):
+        self.yaml_changed = False
         self.is_power_off = False
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
@@ -36,7 +36,7 @@ class PCfuncs():
         self.update_yaml(yd ,yd_default)
         if self.yaml_changed:
             self.write_config_yaml(yd)
-            p_print("配置文件已更新新内容")
+            p_print('配置文件已更新新内容')
 
         # 参数
         PCfuncs.version = get_version()
@@ -45,27 +45,27 @@ class PCfuncs():
             PCfuncs.bemfa_uid = trans_str(yd['bemfa']['uid'])
             PCfuncs.bemfa_topic = trans_str(yd['bemfa']['topic'])
         PCfuncs.device_name = trans_str(yd['devices']['name'])
-        if PCfuncs.device_name:
-            PCfuncs.device_name = f'[{PCfuncs.device_name}]'
+        PCfuncs.device_ip = trans_str(yd['devices']['ip'])
         PCfuncs.wol_enabled = checkbool(yd['devices']['wol']['enabled'])
         if PCfuncs.wol_enabled:
-            PCfuncs.pc_mac = trans_str(yd['devices']['wol']['mac'])
+            PCfuncs.wol_mac = trans_str(yd['devices']['wol']['mac'])
+            PCfuncs.wol_destination = trans_str(yd['devices']['wol']['destination'])
+            PCfuncs.wol_port = int(yd['devices']['wol']['port'])
+            PCfuncs.wol_interface = trans_str(yd['devices']['wol']['interface']).lower()
         PCfuncs.shutdown_enabled = checkbool(yd['devices']['shutdown']['enabled'])
         if PCfuncs.shutdown_enabled:
-            PCfuncs.method_netrpc = checkbool(yd['devices']['shutdown']['method']['netrpc'])
-            PCfuncs.method_udp = checkbool(yd['devices']['shutdown']['method']['udp'])
-            PCfuncs.method_shell = checkbool(yd['devices']['shutdown']['method']['shell'])
+            PCfuncs.shutdown_method_netrpc = checkbool(yd['devices']['shutdown']['method']['netrpc'])
+            PCfuncs.shutdown_method_udp = checkbool(yd['devices']['shutdown']['method']['udp'])
+            PCfuncs.shutdown_method_shell = checkbool(yd['devices']['shutdown']['method']['shell'])
             PCfuncs.shutdown_time = trans_str(yd['devices']['shutdown']['time'])
-            if PCfuncs.method_netrpc:
-                PCfuncs.pc_account = trans_str(yd['devices']['shutdown']['account'])
-                PCfuncs.pc_password = trans_str(yd['devices']['shutdown']['password'])
-            elif PCfuncs.method_shell:
+            if PCfuncs.shutdown_method_netrpc:
+                PCfuncs.shutdown_pc_account = trans_str(yd['devices']['shutdown']['account'])
+                PCfuncs.shutdown_pc_password = trans_str(yd['devices']['shutdown']['password'])
+            elif PCfuncs.shutdown_method_shell:
                 PCfuncs.shell_script = trans_str(yd['devices']['shutdown']['shell_script'])
         PCfuncs.ping_enabled = checkbool(yd['devices']['ping']['enabled'])
         if PCfuncs.ping_enabled:
             PCfuncs.ping_time = int(yd['devices']['ping']['time'])
-        if PCfuncs.shutdown_enabled or PCfuncs.ping_enabled:
-            PCfuncs.device_ip = trans_str(yd['devices']['ip'])
         PCfuncs.log_enabled = checkbool(yd['functions']['log']['enabled'])
         if PCfuncs.log_enabled:
             PCfuncs.log_level = int(yd['functions']['log']['level'])
@@ -85,13 +85,29 @@ class PCfuncs():
             if PCfuncs.push_qmsg_enabled:
                 PCfuncs.push_qmsg_key = trans_str(yd['functions']['push_notifications']['Qmsg']['key'])
                 PCfuncs.push_qmsg_qq = trans_str(yd['functions']['push_notifications']['Qmsg']['qq'])
+        
+        # 本机ip
+        PCfuncs.local_ip = get_ip_address()
+        
+        # 判断处理参数
+        if PCfuncs.device_name:
+            PCfuncs.device_name = f'[{PCfuncs.device_name}]'
+        if PCfuncs.wol_destination == 'broadcast_ip_global':
+            PCfuncs.wol_destination = '255.255.255.255'
+        elif PCfuncs.wol_destination == 'broadcast_ip_direct':
+            PCfuncs.wol_destination = PCfuncs.device_ip.rsplit('.', 1)[0] + '.255'
+        elif PCfuncs.wol_destination == 'device_ip':
+            PCfuncs.wol_destination = PCfuncs.device_ip
+        if PCfuncs.wol_interface == 'default':
+            PCfuncs.wol_interface = PCfuncs.local_ip
+        elif PCfuncs.wol_interface == 'none':
+            PCfuncs.wol_interface = None
 
         print_and_log('----------------------------------', 2)
         print_and_log('PowerControl启动', 2)
         send_message('PowerControl启动')
-
-        # 本机ip
-        PCfuncs.local_ip = get_ip_address()
+        if self.yaml_changed:
+            write_log('配置文件已更新新内容', 2)
         print_and_log('获取本机ip：'+PCfuncs.local_ip, 2)
 
         # 启动定时任务
@@ -375,20 +391,20 @@ def send_message(content):
 # 关机
 def pcshutdown():
     if PCfuncs.shutdown_enabled:
-        if PCfuncs.method_netrpc:
+        if PCfuncs.shutdown_method_netrpc:
             try:
                 # 构建命令
                 command = [
                     "net", "rpc", "shutdown",
                     "-f", "-t", PCfuncs.shutdown_time, "-C", f"设备将于{PCfuncs.shutdown_time}秒后关闭",
-                    "-U", f"{PCfuncs.pc_account}%{PCfuncs.pc_password}", "-I", PCfuncs.device_ip
+                    "-U", f"{PCfuncs.shutdown_pc_account}%{PCfuncs.shutdown_pc_password}", "-I", PCfuncs.device_ip
                 ]
                 # 使用 subprocess.run() 执行命令并获取输出
                 result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=2)
                 return result.stdout.replace('\n', '').replace('\r', '')
             except Exception as e:
                 return str(e)
-        elif PCfuncs.method_udp:
+        elif PCfuncs.shutdown_method_udp:
             try:
                 # 创建一个UDP socket
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -414,7 +430,7 @@ def pcshutdown():
             finally:
                 # 关闭socket
                 sock.close()
-        elif PCfuncs.method_shell:
+        elif PCfuncs.shutdown_method_shell:
             shell_allowed = ("sshpass", "curl")
             if PCfuncs.shell_script.startswith(shell_allowed):
                 try:
@@ -441,7 +457,7 @@ def pcwol():
     if PCfuncs.wol_enabled:
         try:
             # 唤醒设备
-            send_magic_packet(PCfuncs.pc_mac,  interface = PCfuncs.local_ip)
+            send_magic_packet(PCfuncs.wol_mac, ip_address = PCfuncs.wol_destination, port = PCfuncs.wol_port, interface = PCfuncs.wol_interface)
             return True
         except Exception as e:
             return str(e)

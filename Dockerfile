@@ -20,24 +20,23 @@ RUN apk add --no-cache --update shadow libcap tzdata samba sshpass curl openssh-
     chmod u+s /bin/ping && \
     setcap cap_net_raw+ep $(which python3.12)
 
-# 复制一般不会有变动的文件
-COPY software /app/static
-COPY requirements.txt /app
-
 # 安装python模块
-RUN pip install --no-cache-dir -r requirements.txt && \
-    rm -rf requirements.txt
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 创建一些用户和组
-RUN for i in $(seq 1000 1005); do \
+RUN for i in $(seq 1000 1005) $(seq 1025 1030); do \
         useradd -d /app -u $i -g 100 PCuser$i; \
         groupadd -g $i PCuser$i; \
     done
 
-# 复制其他文件
-COPY doc /app/static
-COPY app /app
+# 复制文件
+COPY software /app/static/
+COPY doc /app/static/
+COPY app LICENSE /app/
+
+# 版本
+ARG VERSION="2.7"
 
 # 设置容器启动时运行的命令
 CMD ["python", "PCrun.py"]
-

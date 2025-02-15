@@ -33,8 +33,6 @@ def config():
         return '请在url中填入正确的key', 401
     yaml_config = WebData.fd.read_config_yaml()
     yaml_config['version'] = WebData.fd.version
-    if not bool(yaml_config):
-        return '配置文件读取失败，检查权限' ,500
     if request.method == 'POST':
         # 获取表单数据
         yaml_config['bemfa']['enabled'] = bool(request.form.get('bemfa.enabled'))
@@ -44,6 +42,7 @@ def config():
         yaml_config['devices']['ip'] = trans_str(request.form.get('devices.ip'))
         yaml_config['devices']['wol']['enabled'] = bool(request.form.get('devices.wol.enabled'))
         yaml_config['devices']['wol']['mac'] = trans_str(request.form.get('devices.wol.mac'))
+        yaml_config['devices']['wol']['destination'] = trans_str(request.form.get('devices.wol.destination'))
         yaml_config['devices']['shutdown']['enabled'] = bool(request.form.get('devices.shutdown.enabled'))
         yaml_config['devices']['shutdown']['method']['netrpc'] = bool(request.form.get('devices.shutdown.method.netrpc'))
         yaml_config['devices']['shutdown']['method']['udp'] = bool(request.form.get('devices.shutdown.method.udp'))
@@ -77,13 +76,13 @@ def config():
             flash(get_time() + '\n' +'配置保存失败：' + str(save_yaml))
             print_and_log('配置保存失败：' + str(save_yaml), 3)
         return redirect(url_for('config')+ f'?key={web_key}')
-    if not WebData.ping_enabled:
+    if not WebData.fd.ping_enabled:
         flash(get_time() + '\n' +'未启用ping，设备状态未知')
     else:
         if WebData.fd.pc_state:
-            flash(get_time() + '\n' + WebData.device_name + ' ' + WebData.fd.pc_state[0])
+            flash(get_time() + '\n' + WebData.fd.device_name + ' ' + WebData.fd.pc_state[0])
         else:
-            flash(get_time() + '\n' + WebData.device_name + ' ' + '设备状态未知，等待下次ping查询')
+            flash(get_time() + '\n' + WebData.fd.device_name + ' ' + '设备状态未知，等待下次ping查询')
     return render_template('config.html', config=yaml_config, run_time= WebData.fd.run_time())
 
 # 关机
@@ -98,11 +97,11 @@ def shutdown():
         if 'succeeded' in rs:
             print_and_log("[Web]已发送关机指令" + ' || ' + rs ,2)
             send_message('已发送关机指令')
-            return WebData.device_name + '已发送关机指令' + ' || ' + rs, 200  # 返回200 OK状态码
+            return WebData.fd.device_name + '已发送关机指令' + ' || ' + rs, 200  # 返回200 OK状态码
         else:
             print_and_log("[Web]关机指令发送失败" + ' || ' + rs ,3)
             send_message('关机指令发送失败')
-            return WebData.device_name + '发送关机指令失败' + ' || ' + rs , 200
+            return WebData.fd.device_name + '发送关机指令失败' + ' || ' + rs , 200
     else:
         print_and_log('[Web]未启用远程关机！' ,3)
         send_message('未启用远程关机！')
@@ -119,11 +118,11 @@ def wol():
         if rs == True:
             print_and_log("[Web]已发送唤醒指令" , 2)
             send_message('已发送唤醒指令')
-            return WebData.device_name + '已发送唤醒指令', 200  # 返回200 OK状态码
+            return WebData.fd.device_name + '已发送唤醒指令', 200  # 返回200 OK状态码
         else:
             print_and_log("[Web]发送唤醒指令失败" + ' || ' + rs , 3)
             send_message('发送唤醒指令失败')
-            return WebData.device_name + '发送唤醒指令失败', 200
+            return WebData.fd.device_name + '发送唤醒指令失败', 200
     else:
         print_and_log('[Web]未启用网络唤醒！' ,3)
         send_message('未启用网络唤醒！')
@@ -135,14 +134,14 @@ def ping():
     web_key = request.args.get('key')
     if web_key != WebData.web_key:
         return '请在url中填入正确的key', 401
-    if not WebData.ping_enabled:
+    if not WebData.fd.ping_enabled:
         return '未启用ping!', 403
     try:
         ping_result = pcping()
         if 'Reply' in ping_result:
-            rs = {"device_name": WebData.device_name, "device_status_cn": "在线" ,"device_status": "on" , "ping_result" : ping_result}
+            rs = {"device_name": WebData.fd.device_name, "device_ip": WebData.fd.device_ip, "device_status_cn": "在线" ,"device_status": "on" , "ping_result" : ping_result}
         elif 'timed out' in ping_result:
-            rs = {"device_name": WebData.device_name, "device_status_cn": "离线" ,"device_status": "off" , "ping_result" : ping_result}
+            rs = {"device_name": WebData.fd.device_name, "device_ip": WebData.fd.device_ip, "device_status_cn": "离线" ,"device_status": "off" , "ping_result" : ping_result}
         return Response(
                 json.dumps(rs, ensure_ascii=False),
                 mimetype='application/json; charset=utf-8'
@@ -190,7 +189,11 @@ def change_log():
 # 下载
 @app.route('/download', methods=['GET'])
 def download():
-    return send_from_directory('static', 'PCshutdown.exe', as_attachment=True)
+    file = request.args.get('file')
+    if file == 'pcshutdown':
+        return send_from_directory('static', 'PCshutdown.exe', as_attachment=True)
+    elif file == 'wolmonitor':
+        return send_from_directory('static', 'WakeOnLanMonitor.exe', as_attachment=True)
 
 # 代码
 @app.route('/code', methods=['GET'])
@@ -239,10 +242,8 @@ def view_log_content(filename):
 
 '''---------------------------------------------------------------------------------'''
 class WebData():
-    web_key=''
-    fd = None
-    device_name=''
-    ping_enabled = False
+    web_key = ''
+    fd = ''
 class PCweb():
     def __init__(self, web_port, web_key, funcs_data):
         self.web_port = web_port
@@ -251,9 +252,7 @@ class PCweb():
         print_and_log("web初始化成功",2)
     def set_WebData(self):
         WebData.web_key = self.web_key
-        WebData.fd =self.fd
-        WebData.ping_enabled = self.fd.ping_enabled
-        WebData.device_name = self.fd.device_name
+        WebData.fd = self.fd
     def run(self):
         self.set_WebData()
         print_and_log("web服务启动", 2)

@@ -52,7 +52,7 @@ document.getElementById('restart').addEventListener('submit', function (event) {
         method: 'POST',
     })
     // 初始化倒计时
-    let countdown = 3;
+    let countdown = 5;
 
     // 添加 "即将刷新" 消息
     const flashMessages = document.getElementById('flash-messages');
@@ -243,5 +243,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
+
+// ----------------------------------------------------------------------------------------------------
+// 下载确认
+function confirmDownload() {
+    var result = confirm("确认下载");
+    return result;
+}
 
 // ----------------------------------------------------------------------------------------------------

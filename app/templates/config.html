@@ -70,7 +70,14 @@
                 <a id="go_wol" class="textlink" href="/wol" target="_blank">测试开机</a><br>
             </div>
             <div id = 'wolconfig' class = 'hidden'>
-                设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx:xx，也可以是xx-xx"><br>
+                设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx-xx，也可以是xx:xx"><br>
+                目标地址: 
+                <select class="input-label" name="devices.wol.destination">
+                    <option value="broadcast_ip_global" {% if config.devices.wol.destination=='broadcast_ip_global' %}selected{% endif %}>全局广播(255.255.255.255)</option>
+                    <option value="broadcast_ip_direct" {% if config.devices.wol.destination=='broadcast_ip_direct' %}selected{% endif %}>定向广播({{ config.devices.ip[:config.devices.ip.rfind('.')+1] }}255)</option>
+                    <option value="device_ip" {% if config.devices.wol.destination=='device_ip' %}selected{% endif %}>设备ip({{ config.devices.ip }})</option>
+                </select><br>
+                <a class="textlink" href="{{ url_for('download') }}?file=wolmonitor" onclick="return confirmDownload();">下载唤醒魔包接收测试软件，查阅教程使用</a>
             </div>
             <hr class="dashed-hr">
             <div class='line-container'>
@@ -92,7 +99,7 @@
                     密码: <input class="input-label" type="text" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}"><br>
                 </div>
                 <div id='dl_pcshutdown' class='hidden'>
-                    <a id="pcshutdown" class="textlink" href="{{ url_for('download') }}">下载配套服务程序，并按教程使用</a>
+                    <a class="textlink" href="{{ url_for('download') }}?file=pcshutdown" onclick="return confirmDownload();">下载配套服务程序，并按教程使用</a>
                 </div>
                 <div id='shell_script' class='hidden'>
                     自定义指令: <input class="input-label" type="text" name="devices.shutdown.shell_script" value="{{ config.devices.shutdown.shell_script }}">

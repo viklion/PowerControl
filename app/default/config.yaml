@@ -1,13 +1,16 @@
 bemfa:
   enabled: False
   uid: aaabbbcccdddeeefffggg
-  topic: testpc001
+  topic: mypc001
 devices:
   name: µçÄÔ
   ip: 192.168.100.100
   wol:
     enabled: True
-    mac: 00:11:22:33:44:55
+    mac: 00-11-22-33-44-55
+    destination: broadcast_ip_global
+    port: 9
+    interface: default
   shutdown:
     enabled: True
     method: 
