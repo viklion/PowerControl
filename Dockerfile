@@ -31,9 +31,9 @@ RUN for i in $(seq 1000 1005) $(seq 1025 1030); do \
     done
 
 # 复制文件
-COPY software /app/static/
-COPY doc /app/static/
-COPY app LICENSE /app/
+COPY --chmod=755 software /app/static/
+COPY --chmod=755 doc /app/static/
+COPY --chmod=755 app LICENSE /app/
 
 # 版本
 ARG VERSION="2.7"

@@ -247,13 +247,9 @@ class WebData():
 class PCweb():
     def __init__(self, web_port, web_key, funcs_data):
         self.web_port = web_port
-        self.web_key = web_key
-        self.fd = funcs_data
+        WebData.web_key = web_key
+        WebData.fd = funcs_data
         print_and_log("web初始化成功",2)
-    def set_WebData(self):
-        WebData.web_key = self.web_key
-        WebData.fd = self.fd
     def run(self):
-        self.set_WebData()
         print_and_log("web服务启动", 2)
         app.run(host='0.0.0.0', port=self.web_port)
