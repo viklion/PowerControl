@@ -36,7 +36,7 @@ COPY --chmod=755 doc /app/static/
 COPY --chmod=755 app LICENSE /app/
 
 # 版本
-ARG VERSION="2.7"
+ARG VERSION="2.8"
 
 # 设置容器启动时运行的命令
 CMD ["python", "PCrun.py"]

@@ -1,5 +1,5 @@
 import os, json
-from PCfunctions import trans_str, get_time, print_and_log, pcwol, pcshutdown, pcping, send_message
+from PCfunctions import trans_str, get_time, pcwol, pcshutdown, pcping, send_message, write_log, extra_log
 from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory, jsonify
 from flask_cors import CORS
 
@@ -12,11 +12,14 @@ app.secret_key = 'PowerControlWeb'
 @app.route('/', methods=['GET', 'POST'])
 def index():
     data = {'version': WebData.fd.version}
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if request.method == 'POST':
         web_key = trans_str(request.get_json().get('key'))
         if web_key != WebData.web_key:
+            extra_log(f'ip：{user_ip} 跳转配置页失败，错误的KEY：{web_key}', 3, '_web')
             return jsonify({"success": False, "message": "KEY不正确"}), 400
         return jsonify({"success": True})
+    write_log(f'ip：{user_ip} 访问首页', 1, '_web')
     return render_template('index.html', config=data, run_time= WebData.fd.run_time())
 
 # pdf教程
@@ -29,7 +32,9 @@ def pdf():
 def config():
     # 获取请求中的密钥
     web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if web_key != WebData.web_key:
+        extra_log(f'ip：{user_ip} 访问配置页失败，错误的KEY：{web_key}', 3, '_web')
         return '请在url中填入正确的key', 401
     yaml_config = WebData.fd.read_config_yaml()
     yaml_config['version'] = WebData.fd.version
@@ -66,15 +71,14 @@ def config():
         yaml_config['functions']['push_notifications']['Qmsg']['enabled'] = bool(request.form.get('functions.push_notifications.Qmsg.enabled'))
         yaml_config['functions']['push_notifications']['Qmsg']['key'] = trans_str(request.form.get('functions.push_notifications.Qmsg.key'))
         yaml_config['functions']['push_notifications']['Qmsg']['qq'] = trans_str(request.form.get('functions.push_notifications.Qmsg.qq'))
-        
         # 保存配置
         save_yaml = WebData.fd.write_config_yaml(yaml_config)
         if save_yaml == True:
             flash(get_time() + '\n' +'配置保存成功，请重启服务或容器生效')
-            print_and_log('配置保存成功', 2)
+            extra_log('配置保存成功', 2, '_web')
         else:
             flash(get_time() + '\n' +'配置保存失败：' + str(save_yaml))
-            print_and_log('配置保存失败：' + str(save_yaml), 3)
+            extra_log('配置保存失败：' + str(save_yaml), 3, '_web')
         return redirect(url_for('config')+ f'?key={web_key}')
     if not WebData.fd.ping_enabled:
         flash(get_time() + '\n' +'未启用ping，设备状态未知')
@@ -83,6 +87,7 @@ def config():
             flash(get_time() + '\n' + WebData.fd.device_name + ' ' + WebData.fd.pc_state[0])
         else:
             flash(get_time() + '\n' + WebData.fd.device_name + ' ' + '设备状态未知，等待下次ping查询')
+    write_log(f'ip：{user_ip} 访问配置页', 1, '_web')
     return render_template('config.html', config=yaml_config, run_time= WebData.fd.run_time())
 
 # 关机
@@ -90,60 +95,99 @@ def config():
 def shutdown():
     # 获取请求中的密钥
     web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if web_key != WebData.web_key:
+        extra_log(f'ip：{user_ip} 访问关机接口失败，错误的KEY：{web_key}', 3, '_web')
         return '请在url中填入正确的key', 401
+    write_log(f'ip：{user_ip} 访问关机接口', 1, '_web')
     rs = pcshutdown()
     if rs:
         if 'succeeded' in rs:
-            print_and_log("[Web]已发送关机指令" + ' || ' + rs ,2)
-            send_message('已发送关机指令')
-            return WebData.fd.device_name + '已发送关机指令' + ' || ' + rs, 200  # 返回200 OK状态码
+            message = 'success'
+            message_cn = '已发送关机指令'
+            extra_log(f'{message_cn}(web) || {rs}',2, '_web')
         else:
-            print_and_log("[Web]关机指令发送失败" + ' || ' + rs ,3)
-            send_message('关机指令发送失败')
-            return WebData.fd.device_name + '发送关机指令失败' + ' || ' + rs , 200
+            message = 'error'
+            message_cn = '发送关机指令失败'
+            extra_log(f'{message_cn}(web) || {rs}' ,3, '_web')
     else:
-        print_and_log('[Web]未启用远程关机！' ,3)
-        send_message('未启用远程关机！')
-        return '未启用远程关机！', 403
+        message = 'error'
+        message_cn = '未启用远程关机'
+        extra_log(f'{message_cn}(web)' ,3, '_web')
+    rs_json = {"device_name": WebData.fd.device_name,
+                "device_ip": WebData.fd.device_ip,
+                "message_cn": message_cn,
+                "message": message,
+                "result": rs
+                }
+    send_message(message_cn)
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
 
 # 网络唤醒
 @app.route('/wol', methods=['GET'])
 def wol():
     web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if web_key != WebData.web_key:
+        extra_log(f'ip：{user_ip} 访问网络唤醒接口失败，错误的KEY：{web_key}', 3, '_web')
         return '请在url中填入正确的key', 401
+    write_log(f'ip：{user_ip} 访问网络唤醒接口', 1, '_web')
     rs = pcwol()
     if rs:
-        if rs == True:
-            print_and_log("[Web]已发送唤醒指令" , 2)
-            send_message('已发送唤醒指令')
-            return WebData.fd.device_name + '已发送唤醒指令', 200  # 返回200 OK状态码
+        if rs == 'done':
+            message = 'success'
+            message_cn = '已发送唤醒指令'
+            extra_log(f'{message_cn}(web)', 2, '_web')
         else:
-            print_and_log("[Web]发送唤醒指令失败" + ' || ' + rs , 3)
-            send_message('发送唤醒指令失败')
-            return WebData.fd.device_name + '发送唤醒指令失败', 200
+            message = 'error'
+            message_cn = '发送唤醒指令失败'
+            extra_log(f'{message_cn}(web) || {rs}' , 3, '_web')
     else:
-        print_and_log('[Web]未启用网络唤醒！' ,3)
-        send_message('未启用网络唤醒！')
-        return '未启用网络唤醒！', 403
+        message = 'error'
+        message_cn = '未启用网络唤醒'
+        extra_log(f'{message_cn}(web)' ,3, '_web')
+    rs_json = {"device_name": WebData.fd.device_name,
+                "device_ip": WebData.fd.device_ip,
+                "message_cn": message_cn,
+                "message": message,
+                "result": rs
+                }
+    send_message(message_cn)
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
 
 # ping
 @app.route('/ping', methods=['GET'])
 def ping():
     web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if web_key != WebData.web_key:
+        extra_log(f'ip：{user_ip} 访问ping接口失败，错误的KEY：{web_key}', 3, '_web')
         return '请在url中填入正确的key', 401
+    write_log(f'ip：{user_ip} 访问ping接口', 1, '_web')
     if not WebData.fd.ping_enabled:
         return '未启用ping!', 403
     try:
         ping_result = pcping()
         if 'Reply' in ping_result:
-            rs = {"device_name": WebData.fd.device_name, "device_ip": WebData.fd.device_ip, "device_status_cn": "在线" ,"device_status": "on" , "ping_result" : ping_result}
+            device_status_cn = "在线"
+            device_status = "on"
         elif 'timed out' in ping_result:
-            rs = {"device_name": WebData.fd.device_name, "device_ip": WebData.fd.device_ip, "device_status_cn": "离线" ,"device_status": "off" , "ping_result" : ping_result}
+            device_status_cn = "离线",
+            device_status = "off",
+        rs_json = {"device_name": WebData.fd.device_name,
+                    "device_ip": WebData.fd.device_ip,
+                    "device_status_cn": device_status_cn,
+                    "device_status": device_status,
+                    "ping_result" : ping_result
+                    }
         return Response(
-                json.dumps(rs, ensure_ascii=False),
+                json.dumps(rs_json, ensure_ascii=False),
                 mimetype='application/json; charset=utf-8'
             ), 200
     except Exception as e:
@@ -155,7 +199,7 @@ def restart():
     # 获取请求中的密钥
     web_key = request.args.get('key')
     if web_key == WebData.web_key:
-        print_and_log('程序退出，准备重启', 2)
+        extra_log('程序退出，准备重启', 2, '_web')
         os._exit(0)
 
 # 测试消息推送
@@ -183,7 +227,7 @@ def change_log():
             log_content = file.read()
     except Exception as e:
         log_content = "读取change.log文件失败" + ' || ' + str(e)
-        print_and_log(log_content , 3)
+        extra_log(log_content , 3, '_web')
     return render_template('changelog.html', log_content=log_content)
 
 # 下载
@@ -204,8 +248,11 @@ def copy_code():
 @app.route('/logs', methods=['GET'])
 def list_logs():
     web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if web_key != WebData.web_key:
+        extra_log(f'ip：{user_ip} 访问日志失败，KEY不正确（传入的KEY:{web_key}）', 3, '_web')
         return '请在url中填入正确的key', 401
+    write_log(f'ip：{user_ip} 访问日志', 1, '_web')
     log_dir = WebData.fd.log_path
     # 检查目录是否存在
     if not os.path.exists(log_dir):
@@ -249,7 +296,7 @@ class PCweb():
         self.web_port = web_port
         WebData.web_key = web_key
         WebData.fd = funcs_data
-        print_and_log("web初始化成功",2)
+        extra_log("web初始化成功",2, '_web')
     def run(self):
-        print_and_log("web服务启动", 2)
+        extra_log("web服务启动", 2, '_web')
         app.run(host='0.0.0.0', port=self.web_port)

@@ -92,6 +92,10 @@ h2 {
     line-height: 1.6;
 }
 
+.error-line {
+    color: red;
+}
+
 /* 在小屏幕下隐藏文件列表 */
 @media screen and (max-width: 768px) {
     .sidebar {
@@ -160,6 +164,10 @@ body.dark-mode .content {
 
 body.dark-mode .content pre {
     background-color: #555555;
+}
+
+body.dark-mode .error-line {
+    color: #ffff99d6;
 }
 
 body.dark-mode .file-list li {

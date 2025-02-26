@@ -1,4 +1,4 @@
-import yaml, json, os, time, socket, subprocess, requests, shutil
+import yaml, json, os, time, socket, subprocess, requests, shutil, threading
 from datetime import datetime, timedelta
 from wakeonlan import send_magic_packet
 from pythonping import ping
@@ -217,16 +217,16 @@ class PCfuncs():
                 new_state = ["离线","off"]
             if self.pc_state != new_state:
                 self.pc_state = new_state
-                print_and_log(f"状态更新：{self.pc_state[0]}",2)
+                print_and_log(f"设备状态更新：{self.pc_state[0]}",2)
                 send_message(f"状态更新：{self.pc_state[0]}")
         except Exception as e:
-            print_and_log("ping出错：" + str(e),3)
+            extra_log("ping出错：" + str(e),3,'_ping')
 
     # 开启定时ping
     def add_ping_job(self):
         if self.ping_enabled:
             try:
-                self.scheduler.add_job(self.ping_check, 'interval', seconds=self.ping_time, args= (self.is_power_off,) ,next_run_time=datetime.now())
+                self.scheduler.add_job(self.ping_check, 'interval', seconds=self.ping_time, args=(self.is_power_off,) ,next_run_time=datetime.now(), id='ping_job')
                 print_and_log("Ping服务已启动", 2)
             except Exception as e:
                 print_and_log("启动定时ping任务出错：" + str(e),3)
@@ -236,14 +236,14 @@ class PCfuncs():
         if self.log_enabled:
             if self.clear_log_enabled:
                 try:
-                    self.scheduler.add_job(clear_log, 'cron', hour = 12, next_run_time=datetime.now())
+                    self.scheduler.add_job(clear_log, 'cron', hour=12, next_run_time=datetime.now(), id='clear_log_job')
                     print_and_log("日志定时清理已启动（每天中午12点）", 2)
                 except Exception as e:
                     print_and_log("启动定时清理日志任务出错：" + str(e),3)
 
     # 统计运行时间
     def run_time(self):
-        run_timedelta = timedelta(seconds = time.time() - self.start_time)
+        run_timedelta = timedelta(seconds=time.time()-self.start_time)
         # 获取天、小时、分钟和秒
         days = run_timedelta.days
         hours, remainder = divmod(run_timedelta.seconds, 3600)
@@ -348,8 +348,13 @@ def print_and_log(content, level):
     p_print(content)
     write_log(content, level)
 
+# 扩展日志记录
+def extra_log(content, level, nameadd):
+    print_and_log(content,level)
+    write_log(content,1, nameadd)
+
 # 消息推送
-def send_message(content):
+def send_message(title, desp='', retry=False):
     response = {
         'serverchan_turbo':None,
         'serverchan3':None,
@@ -359,33 +364,46 @@ def send_message(content):
         if PCfuncs.push_serverchan_turbo_enabled:
             try:
                 data = {
-                        'title': PCfuncs.device_name + content,
-                        'desp': get_time(),
+                        'title': PCfuncs.device_name + title,
+                        'desp': get_time() + ' ' + desp,
                         'channel': PCfuncs.push_serverchan_turbo_channel
                     }
                 response['serverchan_turbo'] = rs = requests.post(f'https://sctapi.ftqq.com/{PCfuncs.push_serverchan_turbo_SendKey}.send', data=data).json()
                 write_log("Server酱Turbo推送返回:" + str(rs), 1, '_message')
+                success = True
             except Exception as e:
                 response['serverchan_turbo'] = str(e)
-                print_and_log("Server酱Turbo发送消息出错：" + str(e), 3)
+                print_and_log("Server酱Turbo发送消息出错", 3)
+                write_log("Server酱Turbo发送消息出错：" + str(e), 1, '_message')
+                success = False
         if PCfuncs.push_serverchan3_enabled:
             try:
-                response['serverchan3'] = rs = sc_send(f"{PCfuncs.push_serverchan3_SendKey}", PCfuncs.device_name + content, get_time(), {"tags": "PowerControl"})
+                response['serverchan3'] = rs = sc_send(f"{PCfuncs.push_serverchan3_SendKey}", PCfuncs.device_name + title, get_time() + ' ' + desp, {"tags": "PowerControl"})
                 write_log("Server酱3推送返回:" + str(rs), 1, '_message')
+                success = True
             except Exception as e:
                 response['serverchan3'] = str(e)
-                print_and_log("Server酱3发送消息出错：" + str(e), 3)
+                print_and_log("Server酱3发送消息出错", 3)
+                write_log("Server酱3发送消息出错：" + str(e), 1, '_message')
+                success = False
         if PCfuncs.push_qmsg_enabled:
             try:
                 data = {
-                        'msg': PCfuncs.device_name + content + '\n' + get_time(),
+                        'msg': PCfuncs.device_name + title + '\n' + get_time() + ' ' + desp,
                         'qq': PCfuncs.push_qmsg_qq
                     }
                 response['qmsg'] = rs = requests.post(f'https://qmsg.zendee.cn/send/{PCfuncs.push_qmsg_key}', data=data).json()
                 write_log("Qmsg酱推送返回:" + str(rs), 1, '_message')
+                success = True
             except Exception as e:
                 response['qmsg'] = str(e)
-                print_and_log("Qmsg酱发送消息出错：" + str(e), 3)
+                print_and_log("Qmsg酱发送消息出错", 3)
+                write_log("Qmsg酱发送消息出错：" + str(e), 1, '_message')
+                success = False
+        if retry:
+            if not success:
+                retry_send = threading.Timer(60, send_message, args=(title, desp, retry,))
+                retry_send.start()
     return response
 
 # 关机
@@ -449,7 +467,7 @@ def pcshutdown():
                 except Exception as e:
                     return str(e)
             else:
-                return "error:不允许的指令"
+                return "Error:不允许的指令"
     return None
 
 # 网络唤醒
@@ -458,7 +476,7 @@ def pcwol():
         try:
             # 唤醒设备
             send_magic_packet(PCfuncs.wol_mac, ip_address = PCfuncs.wol_destination, port = PCfuncs.wol_port, interface = PCfuncs.wol_interface)
-            return True
+            return 'done'
         except Exception as e:
             return str(e)
     return None

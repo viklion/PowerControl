@@ -23,14 +23,28 @@ function loadFileContent(filename, listItem) {
     fetch(fetchUrl)
         .then(response => response.json())
         .then(data => {
-            // 更新文件内容
-            document.getElementById('fileContent').textContent = data.log_content;
+            // 获取日志内容
+            let logContent = data.log_content;
+
+            // 将日志内容按行分割
+            const lines = logContent.split('\n');
+
+            // 遍历每一行，检查是否包含 '[Error]'，如果是，则添加红色样式
+            const formattedLines = lines.map(line => {
+                if (line.includes('[Error]')) {
+                    return `<span class="error-line">${line}</span>`;
+                }
+                return line;
+            });
+
+            // 将处理后的日志内容插入到页面
+            document.getElementById('fileContent').innerHTML = formattedLines.join('<br>');
+
             // 使用 DOM 的 scrollTop 属性将内容区域滚动到顶部
             const contentArea = document.getElementById('contentArea');
             contentArea.scrollTop = 0;  // 直接将 scrollTop 设置为 0
         })
         .catch(error => alert('无法加载文件内容: ' + error));
-
 
     // 点击文件后自动隐藏文件列表（仅移动端）
     if (window.innerWidth <= 768) {
