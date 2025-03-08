@@ -79,7 +79,7 @@ document.getElementById('restart').addEventListener('submit', function (event) {
 function go_func_show() {
     const items = [
         'bemfa', 'wol', 'shutdown', 'ping', 'push',
-        'serverchanturbo', 'serverchan3', 'qmsg'
+        'serverchanturbo', 'serverchan3', 'qmsg', 'wechat_webhook'
     ];
 
     items.forEach(item => {
@@ -118,7 +118,7 @@ function ifshow(event) {
 
 // 页面加载完成后为所有复选框添加事件监听
 document.addEventListener('DOMContentLoaded', () => {
-    const checkboxes = document.querySelectorAll('.checkbox-label');
+    const checkboxes = document.querySelectorAll('.checkbox-label:not(#bemfa_reconnect_enabled)');
 
     checkboxes.forEach(checkbox => {
         // 初始化显示状态

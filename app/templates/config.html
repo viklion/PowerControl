@@ -70,7 +70,7 @@
                 <a id="go_wol" class="textlink" href="/wol" target="_blank">测试开机</a><br>
             </div>
             <div id = 'wolconfig' class = 'hidden'>
-                设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx-xx，也可以是xx:xx"><br>
+                设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx-xx，也可以是xx:xx" placeholder="xx-xx或xx:xx"><br>
                 目标地址: 
                 <select class="input-label" name="devices.wol.destination">
                     <option value="broadcast_ip_global" {% if config.devices.wol.destination=='broadcast_ip_global' %}selected{% endif %}>全局广播(255.255.255.255)</option>
@@ -105,7 +105,7 @@
                     自定义指令: <input class="input-label" type="text" name="devices.shutdown.shell_script" value="{{ config.devices.shutdown.shell_script }}">
                 </div>
                 <div id='shutdown_delay_time'>
-                    延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机"><br>
+                    延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机" placeholder="填1为立刻关机"><br>
                 </div>
             </div>
             <hr class="dashed-hr">
@@ -119,11 +119,11 @@
             <h2>日志：</h2>
             启用日志记录: <input class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %} data-target = 'logconfig'><br>
             <div id = 'logconfig' class = 'hidden'>
-                日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错"><br>
+                日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错" placeholder="1:记录服务器返回数据和ping结果、操作、报错 2:记录操作和报错 3:记录报错"><br>
                 <hr class="dashed-hr">
                 启用日志清理: <input class="checkbox-label" type="checkbox" name="functions.log.clear_log.enabled" value="True" {% if config['functions']['log']['clear_log']['enabled'] %} checked{% endif %} data-target='clearlogconfig'><br>
                 <div id='clearlogconfig' class='hidden'>
-                    保留天数: <input class="input-label" type="number" name="functions.log.clear_log.keep_days" value="{{ config.functions.log.clear_log.keep_days }}" min="0" step="1" title="0：只保留当天的日志（每天中午12点清理）"><br>
+                    保留天数: <input class="input-label" type="number" name="functions.log.clear_log.keep_days" value="{{ config.functions.log.clear_log.keep_days }}" min="0" step="1" title="0：只保留当天的日志（每天中午12点清理）" placeholder="0:只保留当天的日志(每天中午12点清理)"><br>
                 </div>
             </div>
             <h2>推送：</h2>
@@ -133,15 +133,15 @@
             </div>
             <div id = 'pushconfig' class = 'hidden'>
                 <hr class="dashed-hr">
+                巴法断线重连推送: <input id="bemfa_reconnect_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.bemfa_reconnect" value="True" {% if config['functions']['push_notifications']['bemfa_reconnect'] %} checked{% endif %}><br>
+                <hr class="dashed-hr">
                 <div class='line-container'>
                     Server酱Turbo: <input id="serverchanturbo_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %} data-target = 'serverchan_turboconfig'><br>
                     <a id="go_serverchanturbo" class="textlink" href="https://sct.ftqq.com/sendkey" target="_blank">前往Server酱Turbo</a>
                 </div>
                 <div id = 'serverchan_turboconfig' class = 'hidden'>
-                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey"
-                        value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}"><br>
-                    消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel"
-                        value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}"><br>
+                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey" value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}" placeholder="SCTXXXXXXXXXX"><br>
+                    消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel" value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}" placeholder="默认:9(微信服务号)"><br>
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
@@ -149,7 +149,7 @@
                     <a id="go_serverchan3" class="textlink" href="https://sc3.ft07.com/" target="_blank">前往Server酱3</a>
                 </div>
                 <div id = 'serverchan3config' class = 'hidden'>
-                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}"><br>
+                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}" placeholder="sctpXXXXXXXXX"><br>
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
@@ -159,6 +159,14 @@
                 <div id = 'qmsgconfig' class = 'hidden'>
                     Key: <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
                     QQ: <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    企业微信群机器人: <input id="wechat_webhook_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.WeChat_webhook.enabled" value="True" {% if config['functions']['push_notifications']['WeChat_webhook']['enabled'] %} checked{% endif %} data-target='wechat_webhook_config'><br>
+                    <a id="go_wechat_webhook" class="textlink" href="https://open.work.weixin.qq.com/help2/pc/18401" target="_blank">前往企业微信群机器人</a>
+                </div>
+                <div id='wechat_webhook_config' class='hidden'>
+                    Webhook地址: <input class="input-label" type="text" name="functions.push_notifications.WeChat_webhook.url" value="{{ config.functions.push_notifications.WeChat_webhook.url }}" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
                 </div>
             </div>
             <hr class="default-hr">

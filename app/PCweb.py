@@ -1,5 +1,5 @@
 import os, json
-from PCfunctions import trans_str, get_time, pcwol, pcshutdown, pcping, send_message, write_log, extra_log
+from PCfunctions import trans_str, get_time, pcwol, pcshutdown, pcping, send_message, send_message_main, write_log, extra_log
 from flask import Flask, request, render_template, redirect, url_for, flash, send_file, Response, send_from_directory, jsonify
 from flask_cors import CORS
 
@@ -63,6 +63,7 @@ def config():
         yaml_config['functions']['log']['clear_log']['enabled'] = bool(request.form.get('functions.log.clear_log.enabled'))
         yaml_config['functions']['log']['clear_log']['keep_days'] = trans_str(request.form.get('functions.log.clear_log.keep_days'))
         yaml_config['functions']['push_notifications']['enabled'] = bool(request.form.get('functions.push_notifications.enabled'))
+        yaml_config['functions']['push_notifications']['bemfa_reconnect'] = bool(request.form.get('functions.push_notifications.bemfa_reconnect'))
         yaml_config['functions']['push_notifications']['ServerChan_turbo']['enabled'] = bool(request.form.get('functions.push_notifications.ServerChan_turbo.enabled'))
         yaml_config['functions']['push_notifications']['ServerChan_turbo']['SendKey'] = trans_str(request.form.get('functions.push_notifications.ServerChan_turbo.SendKey'))
         yaml_config['functions']['push_notifications']['ServerChan_turbo']['channel'] = trans_str(request.form.get('functions.push_notifications.ServerChan_turbo.channel'))
@@ -71,6 +72,8 @@ def config():
         yaml_config['functions']['push_notifications']['Qmsg']['enabled'] = bool(request.form.get('functions.push_notifications.Qmsg.enabled'))
         yaml_config['functions']['push_notifications']['Qmsg']['key'] = trans_str(request.form.get('functions.push_notifications.Qmsg.key'))
         yaml_config['functions']['push_notifications']['Qmsg']['qq'] = trans_str(request.form.get('functions.push_notifications.Qmsg.qq'))
+        yaml_config['functions']['push_notifications']['WeChat_webhook']['enabled'] = bool(request.form.get('functions.push_notifications.WeChat_webhook.enabled'))
+        yaml_config['functions']['push_notifications']['WeChat_webhook']['url'] = trans_str(request.form.get('functions.push_notifications.WeChat_webhook.url'))
         # 保存配置
         save_yaml = WebData.fd.write_config_yaml(yaml_config)
         if save_yaml == True:
@@ -208,7 +211,7 @@ def testpush():
     web_key = request.args.get('key')
     if web_key != WebData.web_key:
         return '请在url中填入正确的key', 401
-    rs = send_message('PowerControl消息推送测试')
+    rs = send_message_main('PowerControl消息推送测试')
     rs = {key: value for key, value in rs.items() if value is not None}
     if rs:
         return Response(

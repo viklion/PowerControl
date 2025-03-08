@@ -33,6 +33,7 @@ functions:
       keep_days: 7
   push_notifications:
     enabled: False
+    bemfa_reconnect: True
     ServerChan_turbo:
       enabled: False
       SendKey: YOUR SENDKEY
@@ -44,3 +45,6 @@ functions:
       enabled: False
       key: YOUR KEY
       qq: 123456789
+    WeChat_webhook:
+      enabled: False
+      url: Ê¾Àý https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx

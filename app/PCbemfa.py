@@ -87,6 +87,14 @@ class PCbemfa():
             except Exception as e:
                 extra_log("关闭bemfa设备状态定时更新任务失败："+str(e),3, '_bemfa')
 
+    # 重置重连次数
+    def reset_reconnect_count(self):
+        self.fd.bemfa_reconnect_count = 0
+
+    # 重置重连次数定时任务
+    def add_reset_reconnect_count_job(self):
+        self.fd.scheduler.add_job(self.reset_reconnect_count, 'cron', hour=0, minute=0, id='reset_reconnect_count_job')
+
     # 收到消息后执行开关机
     def power_control(self, state):
         if state == 'on' :
@@ -143,9 +151,15 @@ class PCbemfa():
         if self.enabled:
             if not retry:
                 extra_log("bemfa服务启动",2, '_bemfa')
+                self.add_reset_reconnect_count_job()
             elif retry:
-                extra_log("正在重新订阅bemfa，如重连后无法米家控制，请重启容器",2, '_bemfa')
-                send_message( '重新订阅bemfa提醒', desp=f'已重新订阅bemfa，如遇米家无法控制，请重启容器。\n\n断连时间：{get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。', retry=True)
+                self.fd.bemfa_reconnect_count += 1
+                extra_log(f"正在重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)",2, '_bemfa')
+                if self.fd.push_bemfa_reconnect:
+                    if self.fd.bemfa_reconnect_count <= 10: 
+                        send_message( f'重新订阅bemfa提醒', desp=f'已重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)\n\n断连时间：{get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达10次后将不再推送，请查看日志。', retry=True)
+                    elif self.fd.bemfa_reconnect_count == 11:
+                        extra_log("今日重连推送已达10次，将不再推送", 2, '_bemfa')
                 self.remove_send_heartbeat_packet_job()
                 self.remove_update_bemfa_job()
                 try:

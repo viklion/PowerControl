@@ -44,6 +44,7 @@ class PCfuncs():
         if PCfuncs.bemfa_enabled:
             PCfuncs.bemfa_uid = trans_str(yd['bemfa']['uid'])
             PCfuncs.bemfa_topic = trans_str(yd['bemfa']['topic'])
+            PCfuncs.bemfa_reconnect_count = 0
         PCfuncs.device_name = trans_str(yd['devices']['name'])
         PCfuncs.device_ip = trans_str(yd['devices']['ip'])
         PCfuncs.wol_enabled = checkbool(yd['devices']['wol']['enabled'])
@@ -74,6 +75,7 @@ class PCfuncs():
                 PCfuncs.log_keep_days = int(yd['functions']['log']['clear_log']['keep_days'])
         PCfuncs.push_enabled = checkbool(yd['functions']['push_notifications']['enabled'])
         if PCfuncs.push_enabled:
+            PCfuncs.push_bemfa_reconnect = checkbool(yd['functions']['push_notifications']['bemfa_reconnect'])
             PCfuncs.push_serverchan_turbo_enabled = checkbool(yd['functions']['push_notifications']['ServerChan_turbo']['enabled'])
             if PCfuncs.push_serverchan_turbo_enabled:
                 PCfuncs.push_serverchan_turbo_SendKey = trans_str(yd['functions']['push_notifications']['ServerChan_turbo']['SendKey'])
@@ -85,10 +87,13 @@ class PCfuncs():
             if PCfuncs.push_qmsg_enabled:
                 PCfuncs.push_qmsg_key = trans_str(yd['functions']['push_notifications']['Qmsg']['key'])
                 PCfuncs.push_qmsg_qq = trans_str(yd['functions']['push_notifications']['Qmsg']['qq'])
-        
+            PCfuncs.push_wechat_webhook_enabled = checkbool(yd['functions']['push_notifications']['WeChat_webhook']['enabled'])
+            if PCfuncs.push_wechat_webhook_enabled:
+                PCfuncs.push_wechat_webhook_url = trans_str(yd['functions']['push_notifications']['WeChat_webhook']['url'])
+
         # 本机ip
         PCfuncs.local_ip = get_ip_address()
-        
+
         # 判断处理参数
         if PCfuncs.device_name:
             PCfuncs.device_name = f'[{PCfuncs.device_name}]'
@@ -237,7 +242,7 @@ class PCfuncs():
             if self.clear_log_enabled:
                 try:
                     self.scheduler.add_job(clear_log, 'cron', hour=12, next_run_time=datetime.now(), id='clear_log_job')
-                    print_and_log("日志定时清理已启动（每天中午12点）", 2)
+                    print_and_log("日志定时清理已启动(每天中午12点)", 2)
                 except Exception as e:
                     print_and_log("启动定时清理日志任务出错：" + str(e),3)
 
@@ -293,6 +298,10 @@ def trans_str(thing):
     return str(thing).strip()
 
 # 日志记录
+# def write_log(content, level, nameadd = ''):
+#     if PCfuncs.log_enabled:
+#         log = threading.Thread(target=write_log_main, args=(content, level, nameadd,))
+#         log.start()
 def write_log(content, level, nameadd = ''):
     if PCfuncs.log_enabled:
         if PCfuncs.log_level == 1 or level >= PCfuncs.log_level:
@@ -355,56 +364,106 @@ def extra_log(content, level, nameadd):
 
 # 消息推送
 def send_message(title, desp='', retry=False):
-    response = {
-        'serverchan_turbo':None,
-        'serverchan3':None,
-        'qmsg':None
-        }
     if PCfuncs.push_enabled:
-        if PCfuncs.push_serverchan_turbo_enabled:
-            try:
-                data = {
-                        'title': PCfuncs.device_name + title,
-                        'desp': get_time() + ' ' + desp,
-                        'channel': PCfuncs.push_serverchan_turbo_channel
-                    }
-                response['serverchan_turbo'] = rs = requests.post(f'https://sctapi.ftqq.com/{PCfuncs.push_serverchan_turbo_SendKey}.send', data=data).json()
-                write_log("Server酱Turbo推送返回:" + str(rs), 1, '_message')
-                success = True
-            except Exception as e:
-                response['serverchan_turbo'] = str(e)
-                print_and_log("Server酱Turbo发送消息出错", 3)
-                write_log("Server酱Turbo发送消息出错：" + str(e), 1, '_message')
-                success = False
-        if PCfuncs.push_serverchan3_enabled:
-            try:
-                response['serverchan3'] = rs = sc_send(f"{PCfuncs.push_serverchan3_SendKey}", PCfuncs.device_name + title, get_time() + ' ' + desp, {"tags": "PowerControl"})
-                write_log("Server酱3推送返回:" + str(rs), 1, '_message')
-                success = True
-            except Exception as e:
-                response['serverchan3'] = str(e)
-                print_and_log("Server酱3发送消息出错", 3)
-                write_log("Server酱3发送消息出错：" + str(e), 1, '_message')
-                success = False
-        if PCfuncs.push_qmsg_enabled:
-            try:
-                data = {
-                        'msg': PCfuncs.device_name + title + '\n' + get_time() + ' ' + desp,
-                        'qq': PCfuncs.push_qmsg_qq
-                    }
-                response['qmsg'] = rs = requests.post(f'https://qmsg.zendee.cn/send/{PCfuncs.push_qmsg_key}', data=data).json()
-                write_log("Qmsg酱推送返回:" + str(rs), 1, '_message')
-                success = True
-            except Exception as e:
-                response['qmsg'] = str(e)
-                print_and_log("Qmsg酱发送消息出错", 3)
-                write_log("Qmsg酱发送消息出错：" + str(e), 1, '_message')
-                success = False
-        if retry:
-            if not success:
-                retry_send = threading.Timer(60, send_message, args=(title, desp, retry,))
-                retry_send.start()
+        if not retry:
+            send = threading.Thread(target=send_message_main, args=(title, desp,))
+            send.start()
+        elif retry:
+            re_send = threading.Thread(target=re_send_message_main, args=(title, desp,))
+            re_send.start()
+def send_message_main(title, desp=''):
+    response = {}
+    if PCfuncs.push_enabled:
+        response['serverchan_turbo'] = send_message_serverchan_turbo(title, desp)
+        response['serverchan3'] = send_message_serverchan3(title, desp)
+        response['qmsg'] = send_message_qmsg(title, desp)
+        response['wechat_webhook'] = send_message_wechat_webhook(title, desp)
     return response
+
+# Server酱Turbo推送
+def send_message_serverchan_turbo(title, desp=''):
+    if PCfuncs.push_serverchan_turbo_enabled:
+        try:
+            data = {
+                    'title': PCfuncs.device_name + title,
+                    'desp': get_time() + ' ' + desp,
+                    'channel': PCfuncs.push_serverchan_turbo_channel
+                }
+            rs = requests.post(f'https://sctapi.ftqq.com/{PCfuncs.push_serverchan_turbo_SendKey}.send', data=data).json()
+            write_log("Server酱Turbo推送返回:" + str(rs), 1, '_message')
+            return rs
+        except Exception as e:
+            rs = str(e)
+            print_and_log("Server酱Turbo推送消息出错", 3)
+            write_log("Server酱Turbo推送消息出错：" + rs, 1, '_message')
+            return rs
+
+# Server酱3推送
+def send_message_serverchan3(title, desp=''):
+    if PCfuncs.push_serverchan3_enabled:
+        try:
+            rs = sc_send(f"{PCfuncs.push_serverchan3_SendKey}", PCfuncs.device_name + title, get_time() + ' ' + desp, {"tags": "PowerControl"})
+            write_log("Server酱3推送返回:" + str(rs), 1, '_message')
+            return rs
+        except Exception as e:
+            rs = str(e)
+            print_and_log("Server酱3推送消息出错", 3)
+            write_log("Server酱3推送消息出错：" + rs, 1, '_message')
+            return rs
+
+# Qmsg酱推送
+def send_message_qmsg(title, desp=''):
+    if PCfuncs.push_qmsg_enabled:
+        try:
+            data = {
+                    'msg': PCfuncs.device_name + title + '\n' + get_time() + ' ' + desp,
+                    'qq': PCfuncs.push_qmsg_qq
+                }
+            rs = requests.post(f'https://qmsg.zendee.cn/send/{PCfuncs.push_qmsg_key}', data=data).json()
+            # 移除 'ad' 广告字段
+            if 'ad' in rs:
+                del rs['ad']
+            write_log("Qmsg酱推送返回:" + str(rs), 1, '_message')
+            return rs
+        except Exception as e:
+            rs = str(e)
+            print_and_log("Qmsg酱推送消息出错", 3)
+            write_log("Qmsg酱推送消息出错：" + rs, 1, '_message')
+            return rs
+
+# 企业微信群机器人推送
+def send_message_wechat_webhook(title, desp=''):
+    if PCfuncs.push_wechat_webhook_enabled:
+        try:
+            headers = {"Content-Type": "application/json"}
+            data = {
+                    'msgtype': 'text',
+                    'text': {
+                        'content': f'{PCfuncs.device_name}{title}\n{get_time()} {desp}',
+                        },
+                }
+            rs = requests.post(PCfuncs.push_wechat_webhook_url, json=data, headers=headers).json()
+            write_log("企业微信群机器人推送返回:" + str(rs), 1, '_message')
+            return rs
+        except Exception as e:
+            rs = str(e)
+            print_and_log("企业微信群机器人推送消息出错", 3)
+            write_log("企业微信群机器人推送消息出错：" + rs, 1, '_message')
+            return rs
+
+def re_send_message_main(title, desp):
+    while True:
+        try:
+            rs = str(ping('www.baidu.com', timeout = 1, count = 1))
+        except:
+            time.sleep(10)
+            continue
+        if 'timed out' in rs:
+            time.sleep(10)
+            continue
+        elif 'Reply' in rs:
+            send_message(title, desp)
+            break
 
 # 关机
 def pcshutdown():
