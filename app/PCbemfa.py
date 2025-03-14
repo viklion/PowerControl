@@ -155,11 +155,12 @@ class PCbemfa():
             elif retry:
                 self.fd.bemfa_reconnect_count += 1
                 extra_log(f"正在重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)",2, '_bemfa')
-                if self.fd.push_bemfa_reconnect:
-                    if self.fd.bemfa_reconnect_count <= 10: 
-                        send_message( f'重新订阅bemfa提醒', desp=f'已重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)\n\n断连时间：{get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达10次后将不再推送，请查看日志。', retry=True)
-                    elif self.fd.bemfa_reconnect_count == 11:
-                        extra_log("今日重连推送已达10次，将不再推送", 2, '_bemfa')
+                if self.fd.push_enabled:
+                    if self.fd.push_bemfa_reconnect:
+                        if self.fd.bemfa_reconnect_count <= 10: 
+                            send_message( f'重新订阅bemfa提醒', desp=f'已重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)\n\n断连时间：{get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达10次后将不再推送，请查看日志。', retry=True)
+                        elif self.fd.bemfa_reconnect_count == 11:
+                            extra_log("今日重连推送已达10次，将不再推送", 2, '_bemfa')
                 self.remove_send_heartbeat_packet_job()
                 self.remove_update_bemfa_job()
                 try:
