@@ -1,4 +1,5 @@
-![logo](https://pic.viklion.com/s/2024/12/20/676553945ec8d.png)
+![logo](https://github.com/user-attachments/assets/8738de3a-23a3-48d1-bb91-23b152551122)
+
 # PowerControl
 docker容器远程网络唤醒设备，远程关闭windows设备，通过访问网页控制，并可依赖巴法云接入米家，通过米家远程操作（需要小爱音箱）<br>
 **米家控制受米家、巴法平台稳定性因素影响*<br>
@@ -45,3 +46,10 @@ services:
 
 ## 配置
 访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
+
+## 界面
+![index](https://github.com/user-attachments/assets/3df4b928-0cf9-4deb-a478-5681dc77b586)
+
+![config](https://github.com/user-attachments/assets/ac7eba15-5e32-4495-a015-931a4e3ca7a6)
+
+
