@@ -20,7 +20,11 @@ devices:
     account: youraccount
     password: yourpassword
     shell_script: yourscript
+    shell_script_allowed:
+      - sshpass
+      - curl
     time: 60
+    timeout: 2
   ping:
     enabled: True
     time: 60

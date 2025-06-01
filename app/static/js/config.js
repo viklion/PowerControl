@@ -252,3 +252,19 @@ function confirmDownload() {
 }
 
 // ----------------------------------------------------------------------------------------------------
+// 实时更新wol目标地址
+function update_wol_dest() {
+    const ipInput = document.getElementById('device_ip').value;
+    const broadcastIpDirect = document.getElementById('broadcast_ip_direct');
+    const broadcastDeviceIp = document.getElementById('broadcast_device_ip');
+
+    // 更新定向广播选项
+    const broadcastIp = ipInput.slice(0, ipInput.lastIndexOf('.') + 1) + '255';
+    broadcastIpDirect.textContent = '定向广播(' + broadcastIp + ')';
+
+    // 更新设备IP选项
+    broadcastDeviceIp.textContent = '设备ip(' + ipInput + ')';
+}
+
+// 页面加载时更新
+window.onload = update_wol_dest;

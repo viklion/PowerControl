@@ -44,7 +44,6 @@ class PCfuncs():
         if PCfuncs.bemfa_enabled:
             PCfuncs.bemfa_uid = trans_str(yd['bemfa']['uid'])
             PCfuncs.bemfa_topic = trans_str(yd['bemfa']['topic'])
-            PCfuncs.bemfa_reconnect_count = 0
         PCfuncs.device_name = trans_str(yd['devices']['name'])
         PCfuncs.device_ip = trans_str(yd['devices']['ip'])
         PCfuncs.wol_enabled = checkbool(yd['devices']['wol']['enabled'])
@@ -64,6 +63,8 @@ class PCfuncs():
                 PCfuncs.shutdown_pc_password = trans_str(yd['devices']['shutdown']['password'])
             elif PCfuncs.shutdown_method_shell:
                 PCfuncs.shell_script = trans_str(yd['devices']['shutdown']['shell_script'])
+                PCfuncs.shell_script_allowed = tuple(yd['devices']['shutdown']['shell_script_allowed'])
+            PCfuncs.shutdown_timeout = int(yd['devices']['shutdown']['timeout'])
         PCfuncs.ping_enabled = checkbool(yd['devices']['ping']['enabled'])
         if PCfuncs.ping_enabled:
             PCfuncs.ping_time = int(yd['devices']['ping']['time'])
@@ -298,10 +299,6 @@ def trans_str(thing):
     return str(thing).strip()
 
 # 日志记录
-# def write_log(content, level, nameadd = ''):
-#     if PCfuncs.log_enabled:
-#         log = threading.Thread(target=write_log_main, args=(content, level, nameadd,))
-#         log.start()
 def write_log(content, level, nameadd = ''):
     if PCfuncs.log_enabled:
         if PCfuncs.log_level == 1 or level >= PCfuncs.log_level:
@@ -380,6 +377,21 @@ def send_message_main(title, desp=''):
         response['wechat_webhook'] = send_message_wechat_webhook(title, desp)
     return response
 
+# 断网下等待网络恢复重新发送
+def re_send_message_main(title, desp):
+    while True:
+        try:
+            rs = str(ping('www.baidu.com', timeout = 1, count = 1))
+        except:
+            time.sleep(10)
+            continue
+        if 'timed out' in rs:
+            time.sleep(10)
+            continue
+        elif 'Reply' in rs:
+            send_message(title, desp)
+            break
+
 # Server酱Turbo推送
 def send_message_serverchan_turbo(title, desp=''):
     if PCfuncs.push_serverchan_turbo_enabled:
@@ -451,20 +463,6 @@ def send_message_wechat_webhook(title, desp=''):
             write_log("企业微信群机器人推送消息出错：" + rs, 1, '_message')
             return rs
 
-def re_send_message_main(title, desp):
-    while True:
-        try:
-            rs = str(ping('www.baidu.com', timeout = 1, count = 1))
-        except:
-            time.sleep(10)
-            continue
-        if 'timed out' in rs:
-            time.sleep(10)
-            continue
-        elif 'Reply' in rs:
-            send_message(title, desp)
-            break
-
 # 关机
 def pcshutdown():
     if PCfuncs.shutdown_enabled:
@@ -477,7 +475,7 @@ def pcshutdown():
                     "-U", f"{PCfuncs.shutdown_pc_account}%{PCfuncs.shutdown_pc_password}", "-I", PCfuncs.device_ip
                 ]
                 # 使用 subprocess.run() 执行命令并获取输出
-                result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=2)
+                result = subprocess.run(command, check=True, capture_output=True, text=True, timeout=PCfuncs.shutdown_timeout)
                 return result.stdout.replace('\n', '').replace('\r', '')
             except Exception as e:
                 return str(e)
@@ -486,7 +484,7 @@ def pcshutdown():
                 # 创建一个UDP socket
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 # 设置超时时间
-                sock.settimeout(3)
+                sock.settimeout(PCfuncs.shutdown_timeout)
                 # 目标主机和端口
                 host = PCfuncs.device_ip
                 port = 17678
@@ -508,11 +506,10 @@ def pcshutdown():
                 # 关闭socket
                 sock.close()
         elif PCfuncs.shutdown_method_shell:
-            shell_allowed = ("sshpass", "curl")
-            if PCfuncs.shell_script.startswith(shell_allowed):
+            if PCfuncs.shell_script.startswith(PCfuncs.shell_script_allowed):
                 try:
                     # 执行并获取shell命令的结果
-                    result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=2)
+                    result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=PCfuncs.shutdown_timeout)
                     if result.stdout:
                         return 'succeeded:' + result.stdout
                     else:
@@ -544,4 +541,4 @@ def pcwol():
 def pcping():
     if PCfuncs.ping_enabled:
         # ping设备
-        return str(ping(PCfuncs.device_ip, timeout = 1, count = 1)).replace('\n', '').replace('\r', '|')
+        return str(ping(PCfuncs.device_ip, timeout = 1, count = 1)).replace('\r\n', '→').replace('→→', ' → ')

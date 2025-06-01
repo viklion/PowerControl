@@ -12,6 +12,7 @@ class PCbemfa():
             self.uid = self.fd.bemfa_uid
             self.topic = self.fd.bemfa_topic
             self.ping_enabled = self.fd.ping_enabled
+            self.bemfa_reconnect_count = 0
             extra_log("bemfa初始化成功",2, '_bemfa')
 
     # 订阅
@@ -89,7 +90,7 @@ class PCbemfa():
 
     # 重置重连次数
     def reset_reconnect_count(self):
-        self.fd.bemfa_reconnect_count = 0
+        self.bemfa_reconnect_count = 0
 
     # 重置重连次数定时任务
     def add_reset_reconnect_count_job(self):
@@ -104,7 +105,7 @@ class PCbemfa():
                     extra_log('已发送唤醒指令(bemfa)',2, '_bemfa')
                     send_message('已发送唤醒指令')
                 else:
-                    extra_log('发送唤醒指令失败(bemfa)' + ' || ' + rs ,3, '_bemfa')
+                    extra_log('发送唤醒指令失败(bemfa)' + ' → ' + rs ,3, '_bemfa')
                     send_message('发送唤醒指令失败')
             else:
                 extra_log('未启用网络唤醒(bemfa)' ,3, '_bemfa')
@@ -113,10 +114,10 @@ class PCbemfa():
             rs = pcshutdown()
             if rs:
                 if 'succeeded' in rs:
-                    extra_log("已发送关机指令(bemfa)" + ' || ' + rs ,2, '_bemfa')
+                    extra_log("已发送关机指令(bemfa)" + ' → ' + rs ,2, '_bemfa')
                     send_message('已发送关机指令')
                 else:
-                    extra_log("关机指令发送失败(bemfa)" + ' || ' + rs ,3, '_bemfa')
+                    extra_log("关机指令发送失败(bemfa)" + ' → ' + rs ,3, '_bemfa')
                     send_message('关机指令发送失败')
             else:
                 extra_log('未启用远程关机(bemfa)' ,3, '_bemfa')
@@ -153,20 +154,25 @@ class PCbemfa():
                 extra_log("bemfa服务启动",2, '_bemfa')
                 self.add_reset_reconnect_count_job()
             elif retry:
-                self.fd.bemfa_reconnect_count += 1
-                extra_log(f"正在重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)",2, '_bemfa')
-                if self.fd.push_enabled:
-                    if self.fd.push_bemfa_reconnect:
-                        if self.fd.bemfa_reconnect_count <= 10: 
-                            send_message( f'重新订阅bemfa提醒', desp=f'已重新订阅bemfa(今日第{self.fd.bemfa_reconnect_count}次)\n\n断连时间：{get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达10次后将不再推送，请查看日志。', retry=True)
-                        elif self.fd.bemfa_reconnect_count == 11:
-                            extra_log("今日重连推送已达10次，将不再推送", 2, '_bemfa')
+                self.bemfa_reconnect_count += 1
+                extra_log(f"正在重新订阅bemfa(今日第{self.bemfa_reconnect_count}次)",2, '_bemfa')
                 self.remove_send_heartbeat_packet_job()
                 self.remove_update_bemfa_job()
+                if self.fd.push_enabled:
+                    if self.fd.push_bemfa_reconnect:
+                        if self.bemfa_reconnect_count <= 5: 
+                            send_message( f'重新订阅bemfa提醒', desp=f'正在重新订阅bemfa(今日第{self.bemfa_reconnect_count}次)\n\n断连时间：{get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达5次后将不再推送，请查看日志。', retry=True)
+                        elif self.bemfa_reconnect_count == 6:
+                            extra_log("今日重连推送已达5次，将不再推送", 2, '_bemfa')
                 try:
                     self.tcp_client_socket.close()
                 except Exception as e:
                     extra_log("关闭TCP连接失败，Error: " + str(e), 3, '_bemfa')
+                if self.bemfa_reconnect_count > 5:
+                    if self.bemfa_reconnect_count == 6:
+                        extra_log(rf"今日重连已达5次，后续重连将有60秒的等待时间",2, '_bemfa')
+                    extra_log(rf"等待60秒...",2, '_bemfa')
+                    time.sleep(60)
             self.connTCP()
             self.add_send_heartbeat_packet_job()
             self.add_update_bemfa_job()

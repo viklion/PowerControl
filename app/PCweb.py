@@ -48,6 +48,7 @@ def config():
         yaml_config['devices']['wol']['enabled'] = bool(request.form.get('devices.wol.enabled'))
         yaml_config['devices']['wol']['mac'] = trans_str(request.form.get('devices.wol.mac'))
         yaml_config['devices']['wol']['destination'] = trans_str(request.form.get('devices.wol.destination'))
+        yaml_config['devices']['wol']['port'] = int(request.form.get('devices.wol.port'))
         yaml_config['devices']['shutdown']['enabled'] = bool(request.form.get('devices.shutdown.enabled'))
         yaml_config['devices']['shutdown']['method']['netrpc'] = bool(request.form.get('devices.shutdown.method.netrpc'))
         yaml_config['devices']['shutdown']['method']['udp'] = bool(request.form.get('devices.shutdown.method.udp'))
@@ -55,13 +56,14 @@ def config():
         yaml_config['devices']['shutdown']['account'] = trans_str(request.form.get('devices.shutdown.account'))
         yaml_config['devices']['shutdown']['password'] = trans_str(request.form.get('devices.shutdown.password'))
         yaml_config['devices']['shutdown']['shell_script'] = trans_str(request.form.get('devices.shutdown.shell_script'))
-        yaml_config['devices']['shutdown']['time'] = trans_str(request.form.get('devices.shutdown.time'))
+        yaml_config['devices']['shutdown']['time'] = int(request.form.get('devices.shutdown.time'))
+        yaml_config['devices']['shutdown']['timeout'] = int(request.form.get('devices.shutdown.timeout'))
         yaml_config['devices']['ping']['enabled'] = bool(request.form.get('devices.ping.enabled'))
-        yaml_config['devices']['ping']['time'] = trans_str(request.form.get('devices.ping.time'))
+        yaml_config['devices']['ping']['time'] = int(request.form.get('devices.ping.time'))
         yaml_config['functions']['log']['enabled'] = bool(request.form.get('functions.log.enabled'))
-        yaml_config['functions']['log']['level'] = trans_str(request.form.get('functions.log.level'))
+        yaml_config['functions']['log']['level'] = int(request.form.get('functions.log.level'))
         yaml_config['functions']['log']['clear_log']['enabled'] = bool(request.form.get('functions.log.clear_log.enabled'))
-        yaml_config['functions']['log']['clear_log']['keep_days'] = trans_str(request.form.get('functions.log.clear_log.keep_days'))
+        yaml_config['functions']['log']['clear_log']['keep_days'] = int(request.form.get('functions.log.clear_log.keep_days'))
         yaml_config['functions']['push_notifications']['enabled'] = bool(request.form.get('functions.push_notifications.enabled'))
         yaml_config['functions']['push_notifications']['bemfa_reconnect'] = bool(request.form.get('functions.push_notifications.bemfa_reconnect'))
         yaml_config['functions']['push_notifications']['ServerChan_turbo']['enabled'] = bool(request.form.get('functions.push_notifications.ServerChan_turbo.enabled'))
@@ -108,11 +110,11 @@ def shutdown():
         if 'succeeded' in rs:
             message = 'success'
             message_cn = '已发送关机指令'
-            extra_log(f'{message_cn}(web) || {rs}',2, '_web')
+            extra_log(f'{message_cn}(web) → {rs}',2, '_web')
         else:
             message = 'error'
             message_cn = '发送关机指令失败'
-            extra_log(f'{message_cn}(web) || {rs}' ,3, '_web')
+            extra_log(f'{message_cn}(web) → {rs}' ,3, '_web')
     else:
         message = 'error'
         message_cn = '未启用远程关机'
@@ -147,7 +149,7 @@ def wol():
         else:
             message = 'error'
             message_cn = '发送唤醒指令失败'
-            extra_log(f'{message_cn}(web) || {rs}' , 3, '_web')
+            extra_log(f'{message_cn}(web) → {rs}' , 3, '_web')
     else:
         message = 'error'
         message_cn = '未启用网络唤醒'
@@ -181,8 +183,8 @@ def ping():
             device_status_cn = "在线"
             device_status = "on"
         elif 'timed out' in ping_result:
-            device_status_cn = "离线",
-            device_status = "off",
+            device_status_cn = "离线"
+            device_status = "off"
         rs_json = {"device_name": WebData.fd.device_name,
                     "device_ip": WebData.fd.device_ip,
                     "device_status_cn": device_status_cn,
@@ -229,7 +231,7 @@ def change_log():
         with open('change.log', 'r', encoding='GBK') as file:
             log_content = file.read()
     except Exception as e:
-        log_content = "读取change.log文件失败" + ' || ' + str(e)
+        log_content = "读取change.log文件失败" + ' → ' + str(e)
         extra_log(log_content , 3, '_web')
     return render_template('changelog.html', log_content=log_content)
 
