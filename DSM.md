@@ -1,5 +1,6 @@
 # 群晖添加容器详细指引（[常规](https://github.com/viklion/PowerControl/blob/main/DSM.md#常规部署) 或 [compose](https://github.com/viklion/PowerControl/blob/main/DSM.md#compose部署)）
 ## 常规部署
+> * *如需非root用户启动容器，可选择命令行部署或compose部署*
 1. 打开Container Manager
 
    点击注册表
@@ -43,8 +44,6 @@
 1. 网络选择`host`
 
    ![dsm06](https://github.com/user-attachments/assets/9413fe65-fdc6-4113-bf33-53cc090f87bc)
-
-1. 如需非root用户启动容器，可选择命令行部署或compose部署
 
 
 ## compose部署
