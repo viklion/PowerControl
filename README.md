@@ -6,7 +6,11 @@ docker容器远程网络唤醒设备，远程关闭windows设备，通过访问�
 `linux/amd64, linux/arm/v7, linux/arm64, linux/386`
 
 ## 部署
-[视频教程(bilibili)](https://www.bilibili.com/video/BV1cykZY7Er9)
+* [视频教程(bilibili)](https://www.bilibili.com/video/BV1cykZY7Er9)
+
+* 小白级详细部署教程：[UNRAID](https://github.com/viklion/PowerControl/blob/main/UNRAID.md) • [群晖](https://github.com/viklion/PowerControl/blob/main/DSM.md) • [飞牛](https://github.com/viklion/PowerControl/blob/main/FNOS.md)
+
+<hr>
 
 不要直接复制命令运行，需要修改参数<br>
 > 1、将容器/app/data目录映射到你的主机目录，存放配置文件和日志文件:<br>
