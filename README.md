@@ -16,18 +16,18 @@ docker容器远程网络唤醒设备，远程关闭windows设备，通过访问�
 &nbsp;&nbsp;&nbsp;&nbsp;`WEB_KEY：密钥`
 
 **不设置环境变量则使用默认参数`port：7678`，`key：admin`*
-### 1、Docker
+### 1、Docker CLI
 + 默认root用户运行
 ```
-docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=admin --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
 ```
 + 设置指定user运行（-u uid:gid）<br>
 **重要：如果切换非root运行，请务必检查映射目录的读写权限（配置文件、日志文件），如遇写入错误，请递归修改权限*
 ```
-docker run -d -u 1000:100 -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+docker run -d -u 1000:100 -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=admin --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
 ```
 
-### 2、Docker-Compose
+### 2、Docker Compose
 ```
 services:
   powercontrol:
@@ -37,7 +37,7 @@ services:
       - /your/path:/app/data
     environment:
       - WEB_PORT=7678
-      - WEB_KEY=yourkey
+      - WEB_KEY=admin
     # 默认root用户运行，去掉下行的#，设置指定user运行（uid:gid）
     #user: 1000:100
     restart: unless-stopped
