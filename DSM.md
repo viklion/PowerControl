@@ -49,9 +49,9 @@
 ## compose部署
 1. 打开Container Manager
 
-   点击项目
+   点击`项目`
 
-   点击新增
+   点击`新增`
 
    ![dsm08](https://github.com/user-attachments/assets/84b7cd1c-eeed-4887-a3e3-a2a72a8371a5)
 
@@ -61,7 +61,7 @@
 
    来源：选择`创建docker-compose.yml`
 
-   点击github首页中Docker Compose右上角复制按钮，粘贴到下方
+   点击本项目github首页中Docker Compose右上角复制按钮，粘贴到下方
 
    修改相关参数（如何查看映射文件夹完整路径、如何查看uid和gid见下方）
 
@@ -73,7 +73,7 @@
 
    定位到需要存放容器配置和日志的文件夹
 
-   右键点击属性
+   右键文件夹，点击`属性`
 
    复制`位置`中的路径
 
