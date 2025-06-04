@@ -45,6 +45,7 @@
 
    ![dsm06](https://github.com/user-attachments/assets/9413fe65-fdc6-4113-bf33-53cc090f87bc)
 
+1. 容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
 
 ## compose部署
 1. 打开Container Manager
@@ -64,6 +65,8 @@
    点击本项目github首页中Docker Compose右上角复制按钮，粘贴到下方
 
    修改相关参数（如何查看映射文件夹完整路径、如何查看uid和gid见下方）
+
+   容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
 
    ![dsm09](https://github.com/user-attachments/assets/d956f512-90c5-40e4-adfb-49382b79c132)
 
