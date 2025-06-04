@@ -27,4 +27,4 @@
 
    ![ist03](https://github.com/user-attachments/assets/246ca6c2-8bca-42ad-94c8-eb908f932230)
 
-1. 访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
+1. 容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
