@@ -7,7 +7,7 @@
 
    ![ist01](https://github.com/user-attachments/assets/53e79294-d497-4770-94f1-774586779a6b)
 
-1. 容器名称：`powercontrol`
+1. 容器名称：`powercontrol`（可自由更改）
 
    Docker镜像，选择`viklion/powercontrol:latest`
 
