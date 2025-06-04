@@ -8,7 +8,7 @@ docker容器远程网络唤醒设备，远程关闭windows设备，通过访问�
 ## 部署
 * [视频教程(bilibili)](https://www.bilibili.com/video/BV1cykZY7Er9)
 
-* 小白级详细部署教程：[UNRAID](https://github.com/viklion/PowerControl/blob/main/UNRAID.md) • [群晖](https://github.com/viklion/PowerControl/blob/main/DSM.md) • [飞牛](https://github.com/viklion/PowerControl/blob/main/FNOS.md)
+* 小白级详细部署教程：[UNRAID](https://github.com/viklion/PowerControl/blob/main/UNRAID.md) • [群晖](https://github.com/viklion/PowerControl/blob/main/DSM.md) • [飞牛](https://github.com/viklion/PowerControl/blob/main/FNOS.md) • [iStoreOS](https://github.com/viklion/PowerControl/blob/main/iStoreOS.md)
 
 <hr>
 
