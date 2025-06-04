@@ -45,6 +45,8 @@
 
    ![20250603183549_7](https://github.com/user-attachments/assets/23c93184-85f6-449f-8b10-10b7b1ae1f2d)
 
+1. 容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
+
 ## compose部署
 1. 打开docker
 
@@ -61,6 +63,8 @@
    点击本项目github首页中Docker Compose右上角复制按钮，粘贴到下方
 
    修改相关参数（如何查看映射文件夹完整路径、如何查看uid和gid见下方）
+
+   容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
 
    ![fn01](https://github.com/user-attachments/assets/f0020dbc-35e3-4f0c-b0f1-4ec3716a2931)
 
