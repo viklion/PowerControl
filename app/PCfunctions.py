@@ -279,8 +279,8 @@ def get_ip_address():
 # 读取版本信息
 def get_version():
     try:
-        with open("VERSION", "r") as f:
-            return f.read().strip()
+        version = str(os.getenv('VERSION', '版本号未知'))
+        return f"V{version}"
     except:
         return "版本号获取失败"
 
