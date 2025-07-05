@@ -1,6 +1,6 @@
 # 飞牛添加容器详细指引（[常规](https://github.com/viklion/PowerControl/blob/main/FNOS.md#常规部署) 或 [compose](https://github.com/viklion/PowerControl/blob/main/FNOS.md#compose部署)）
 ## 常规部署
-> * *如需非root用户启动容器，可选择命令行部署或compose部署*
+
 1. 打开docker
 
    点击`镜像仓库`
@@ -39,6 +39,10 @@
 
    `WEB_KEY`  `填入你想设置的密钥，默认：admin`
 
+   >（以下选填）非root用户启动，[查询uid和gid](https://github.com/viklion/PowerControl/blob/main/FNOS.md#查询uid和gid)：  
+   > `PUID`  `填入uid`  
+   > `PGID`  `填入gid`
+
    ![20250603183550_6](https://github.com/user-attachments/assets/3eac7a64-9f0a-49dd-a4de-f3edeed7d34a)
 
 1. 网络选择`host`
@@ -66,7 +70,7 @@
 
    容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
 
-   ![fn01](https://github.com/user-attachments/assets/f0020dbc-35e3-4f0c-b0f1-4ec3716a2931)
+   ![fnos001](https://github.com/user-attachments/assets/4d617542-de63-47bc-a103-b3c2927782d8)
 
 1. 查看映射文件夹完整路径
 
@@ -84,7 +88,7 @@
 
    ![fn03](https://github.com/user-attachments/assets/5da4e3b3-eaa0-4240-87c9-fd884a985a32)
 
-1. （选填）如需非root用户启动容器，查询uid和gid
+## 查询uid和gid
 
    ssh连上飞牛
 
