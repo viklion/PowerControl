@@ -55,11 +55,15 @@
 
 1. 额外参数中填入`--restart unless-stopped`
    
-   ![unraid-08](https://github.com/user-attachments/assets/7a485371-2694-4bbb-96e4-bed5132cb77f)
+   ![unraid001](https://github.com/user-attachments/assets/1f775ec6-8668-466f-80ae-160337515108)
 
 1. （选填）非root用户启动容器
 
-   额外参数中填入`-u uid:gid`
+   添加环境变量PUID和PGID
+
+   ![unraid002](https://github.com/user-attachments/assets/fbab42ea-3651-4990-b114-519e1b0cf1a3)
+
+   ![unraid003](https://github.com/user-attachments/assets/c8df3a31-1dad-4b59-910d-871a26d3bbbf)
 
    如何查询uid和gid
 
