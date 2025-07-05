@@ -25,10 +25,10 @@ docker容器远程网络唤醒设备，远程关闭windows设备，通过访问�
 ```
 docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=admin --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
 ```
-+ 设置指定user运行（-u uid:gid）<br>
++ 设置指定user运行（环境变量PUID和PGID）<br>
 **重要：如果切换非root运行，请务必检查映射目录的读写权限（配置文件、日志文件），如遇写入错误，请递归修改权限*
 ```
-docker run -d -u 1000:100 -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=admin --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey -e PUID=1000 -e PGID=100 --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
 ```
 
 ### 2、Docker Compose
@@ -42,14 +42,17 @@ services:
     environment:
       - WEB_PORT=7678
       - WEB_KEY=admin
-    # 默认root用户运行，去掉下行的#，设置指定user运行（uid:gid）
-    #user: 1000:100
+      # 默认root用户运行，去掉下两行的#，设置指定user运行
+      #- PUID=1000
+      #- PGID=100
     restart: unless-stopped
     network_mode: host
 ```
 
 ## 配置
 访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
+
+一般无需手动修改config.yaml配置文件，都可在web配置，[配置文件参数详解](https://github.com/viklion/PowerControl/blob/main/YAML.md)
 
 ## 界面
 ![index](https://github.com/user-attachments/assets/3df4b928-0cf9-4deb-a478-5681dc77b586)
