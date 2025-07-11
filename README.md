@@ -28,7 +28,7 @@ docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=admin --networ
 + 设置指定user运行（环境变量PUID和PGID）  
 **重要：切换非root运行，如遇写入错误，请递归修改映射目录的读写权限（配置文件、日志文件）*
 ```
-docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey -e PUID=1000 -e PGID=100 --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
+docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=admin -e PUID=1000 -e PGID=100 --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
 ```
 
 ### 2、Docker Compose
