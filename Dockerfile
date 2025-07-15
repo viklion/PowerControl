@@ -28,7 +28,7 @@ COPY --chmod=755 doc /app/static/
 COPY --chmod=755 app LICENSE /app/
 
 # 版本
-ENV VERSION=2.93
+ENV VERSION=2.94
 
 # 容器启动时运行的命令
 ENTRYPOINT ["/app/entrypoint.sh"]

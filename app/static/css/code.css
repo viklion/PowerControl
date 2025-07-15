@@ -16,6 +16,11 @@ h3 {
     margin-bottom: -15px;
 }
 
+h5 {
+    margin-bottom: -15px;
+    margin-left: 10px;
+}
+
 .line-container {
     display: flex;
     align-items: center;

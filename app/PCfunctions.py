@@ -509,17 +509,20 @@ def pcshutdown():
             if PCfuncs.shell_script.startswith(PCfuncs.shell_script_allowed):
                 try:
                     # 执行并获取shell命令的结果
-                    result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=PCfuncs.shutdown_timeout)
+                    result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=max(PCfuncs.shutdown_timeout, 5))
                     if result.stdout:
                         return 'succeeded:' + result.stdout
                     else:
-                        return 'succeeded: 已执行指令'
+                        return 'succeeded: 已发送指令'
                 except subprocess.TimeoutExpired as e:
                     # 处理sshpass超时但已经成功执行的报错
                     if 'sshpass' in PCfuncs.shell_script:
-                        return 'succeeded: 已执行指令'
+                        return 'succeeded: 已发送指令'
                     else:
                         return str(e)
+                except subprocess.CalledProcessError as e:
+                    # 捕获并返回subprocess错误输出
+                    return f"Error: {e.stderr.replace("\n", "")}"
                 except Exception as e:
                     return str(e)
             else:

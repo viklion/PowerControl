@@ -19,29 +19,30 @@
       <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
         title="深色/浅色模式切换">
     </div>
+
 {% raw %}
-    <!-- 第一个代码块 -->
+    <!-- 代码块 -->
     <h3>1、docker-cli：</h3>
+    <h5># 默认root用户运行</h5>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-1">复制代码</button>
-        <code id="code-block-1">
+        <button class="copy-btn" data-clipboard-target="#code-block-1a">复制代码</button>
+        <code id="code-block-1a">
 docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
-# 默认root用户运行
         </code>
     </pre>
+    <h5># 设置变量PUID和PGID,指定user运行</h5>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
-        <code id="code-block-2">
+        <button class="copy-btn" data-clipboard-target="#code-block-1b">复制代码</button>
+        <code id="code-block-1b">
 docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey -e PUID=1000 -e PGID=100 --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
-# 设置变量PUID和PGID,指定user运行
         </code>
     </pre>
 
-    <!-- 第二个代码块 -->
+    <!-- 代码块 -->
     <h3>2、docker-compose（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-3">复制代码</button>
-        <code id="code-block-3">
+        <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
+        <code id="code-block-2">
 services:
   powercontrol:
     image: viklion/powercontrol:latest
@@ -59,8 +60,31 @@ services:
         </code>
     </pre>
 
-    <!-- 第三个代码块 -->
-    <h3>3、homeassistant configuration.yaml（注意检查缩进）</h3>
+    <!-- 代码块 -->
+    <h3>3、自定义指令sshpass</h3>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-3a">复制代码</button>
+        <code id="code-block-3a">
+sshpass -p "登录密码" ssh -p 端口 -o "StrictHostKeyChecking=no" 登录名@192.168.xx.xx "echo 'sudo密码' | sudo -S poweroff"
+        </code>
+    </pre>
+    <h5># 示例：立刻关机</h5>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-3b">复制代码</button>
+        <code id="code-block-3b">
+sshpass -p "abc123" ssh -p 22 -o "StrictHostKeyChecking=no" viklion@192.168.10.11 "echo 'abc123' | sudo -S poweroff"
+        </code>
+    </pre>
+    <h5># 示例：延迟关机，修改sleep后的秒数</h5>
+    <pre>
+        <button class="copy-btn" data-clipboard-target="#code-block-3c">复制代码</button>
+        <code id="code-block-3c">
+sshpass -p "abc123" ssh -p 22 -o "StrictHostKeyChecking=no" viklion@192.168.10.11 "echo 'abc123' | sudo -S sleep 30 && echo 'abc123' | sudo -S poweroff"
+        </code>
+    </pre>
+
+    <!-- 代码块 -->
+    <h3>4、homeassistant configuration.yaml（注意检查缩进）</h3>
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
         <code id="code-block-4">
@@ -90,15 +114,15 @@ switch:
         icon_template: mdi:desktop-tower-monitor
         value_template: "{{ states('input_text.powercontrol_state') == 'on' }}"
         turn_on:
-          - service: shell_command.ha_wol_pc
-          - service: input_text.set_value
+          - action: shell_command.ha_wol_pc
+          - action: input_text.set_value
             target:
               entity_id: input_text.powercontrol_state
             data:
               value: "on"
         turn_off:
-          - service: shell_command.ha_shutdown_pc
-          - service: input_text.set_value
+          - action: shell_command.ha_shutdown_pc
+          - action: input_text.set_value
             target:
               entity_id: input_text.powercontrol_state
             data:
@@ -106,21 +130,21 @@ switch:
         </code>
     </pre>
 
-    <!-- 第四个代码块 -->
-    <h3>4、homeassistant automations.yaml（注意检查缩进）</h3>
+    <!-- 代码块 -->
+    <h3>5、homeassistant automations.yaml（注意检查缩进）</h3>
     <pre>
         <button class="copy-btn" data-clipboard-target="#code-block-5">复制代码</button>
         <code id="code-block-5">
 - id: '20250108'
   alias: 更新电脑在线状态
-  trigger:
-    - platform: time_pattern
+  triggers:
+    - trigger: time_pattern
       minutes: "/1"
-  condition:
+  conditions:
     - condition: template
       value_template: "{{ states('sensor.powercontrol_pc_state') != states('input_text.powercontrol_state') }}"
-  action:
-    - service: input_text.set_value
+  actions:
+    - action: input_text.set_value
       target:
         entity_id: input_text.powercontrol_state
       data:
