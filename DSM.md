@@ -1,6 +1,6 @@
 # 群晖添加容器详细指引（[常规](https://github.com/viklion/PowerControl/blob/main/DSM.md#常规部署) 或 [compose](https://github.com/viklion/PowerControl/blob/main/DSM.md#compose部署)）
 ## 常规部署
-> * *如需非root用户启动容器，可选择命令行部署或compose部署*
+
 1. 打开Container Manager
 
    点击注册表
@@ -39,6 +39,10 @@
 
    `WEB_KEY`  `填入你想设置的密钥，默认：admin`
 
+   >（以下选填）非root用户启动，[查询uid和gid](https://github.com/viklion/PowerControl/blob/main/DSM.md#查询uid和gid)：  
+   > `PUID`  `填入uid`  
+   > `PGID`  `填入gid`
+
    ![dsm05](https://github.com/user-attachments/assets/bba761ff-bc54-4952-92ae-1ff0d183c75f)
 
 1. 网络选择`host`
@@ -68,7 +72,7 @@
 
    容器启动后访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
 
-   ![dsm09](https://github.com/user-attachments/assets/d956f512-90c5-40e4-adfb-49382b79c132)
+   ![dsm001](https://github.com/user-attachments/assets/b843a5b2-b54a-4797-8aab-8bbba324f447)
 
 1. 查看映射文件夹完整路径
 
@@ -86,7 +90,7 @@
 
    ![dsm11](https://github.com/user-attachments/assets/58bb28b1-dcdc-43ff-a487-10fc4e617b3e)
 
-1. （选填）如需非root用户启动容器，查询uid和gid
+## 查询uid和gid
 
    ssh连上群晖
 
