@@ -54,121 +54,166 @@
         <form id="pcconfig" method="post">
             <h2>巴法：</h2>
             <div class='line-container'>
-                接入巴法云: <input id="bemfa_enabled" class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %} data-target = 'bemfaconfig'><br>
-                <a id="go_bemfa" class="textlink" href="https://cloud.bemfa.com/" target="_blank">前往巴法控制台</a>
+                接入巴法云： <input id="bemfa_enabled" class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %} data-target = 'bemfaconfig'>
+                <label for="bemfa_enabled"></label>
+                <a id="go_bemfa" class="textlink" href="https://cloud.bemfa.com/" target="_blank">➔前往巴法控制台</a>
             </div>
             <div id = 'bemfaconfig' class = 'hidden'>
-                巴法云用户私钥: <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}"><br>
-                巴法云设备主题: <input class="input-label" type="text" name="bemfa.topic" value="{{ config.bemfa.topic }}"><br>
+                巴法云用户私钥： <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}"><br>
+                巴法云设备主题： <input class="input-label" type="text" name="bemfa.topic" value="{{ config.bemfa.topic }}"><br>
             </div>
             <h2>设备：</h2>
-            设备名称: <input class="input-label" type="text" name="devices.name" value="{{ config.devices.name }}"><br>
-            设备ip地址: <input class="input-label" type="text" name="devices.ip" value="{{ config.devices.ip }}" id="device_ip" oninput="update_wol_dest()"><br>
+            设备名称： <input class="input-label" type="text" name="devices.name" value="{{ config.devices.name }}"><br>
+            设备ip地址： <input class="input-label" type="text" name="devices.ip" value="{{ config.devices.ip }}" id="device_ip" oninput="update_wol_dest()"><br>
             <hr class="dashed-hr">
             <div class='line-container'>
-                启用网络唤醒: <input id="wol_enabled" class="checkbox-label" type="checkbox" name="devices.wol.enabled" value="True" {% if config['devices']['wol']['enabled'] %} checked{% endif %} data-target = 'wolconfig'>
-                <a id="go_wol" class="textlink" href="/wol" target="_blank">测试开机</a><br>
+                启用网络唤醒： <input id="wol_enabled" class="checkbox-label" type="checkbox" name="devices.wol.enabled" value="True" {% if config['devices']['wol']['enabled'] %} checked{% endif %} data-target = 'wolconfig'>
+                <label for="wol_enabled"></label>
+                <a id="go_wol" class="textlink" href="/wol" target="_blank">➔测试开机</a>
             </div>
             <div id = 'wolconfig' class = 'hidden'>
-                设备网卡mac地址: <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx-xx，也可以是xx:xx" placeholder="xx-xx或xx:xx"><br>
-                目标地址: 
-                <select class="input-label" name="devices.wol.destination">
-                    <option value="broadcast_ip_global" {% if config.devices.wol.destination=='broadcast_ip_global' %}selected{% endif %}>全局广播(255.255.255.255)</option>
-                    <option id="broadcast_ip_direct" value="broadcast_ip_direct" {% if config.devices.wol.destination=='broadcast_ip_direct' %}selected{% endif %}>定向广播()</option>
-                    <option id="broadcast_device_ip" value="device_ip" {% if config.devices.wol.destination=='device_ip' %}selected{% endif %}>设备ip()</option>
+                唤醒方法：
+                <select id="wol_method" class="input-label" name="devices.wol.method">
+                    <option value="wakeonlan" {% if config.devices.wol.method.wakeonlan==true %}selected{% endif %}>内置网络唤醒</option>
+                    <option value="shell" {% if config.devices.wol.method.shell==true %}selected{% endif %}>自定义指令</option>
                 </select><br>
-                端口: <input class="input-label" type="number" name="devices.wol.port" value="{{ config.devices.wol.port }}" min="1" step="1" max="65535" title="一般无需修改，默认:9" placeholder="一般无需修改，默认:9"><br>
-                <a class="textlink" href="{{ url_for('download') }}?file=wolmonitor" onclick="return confirmDownload();">下载唤醒魔包接收测试软件，查阅教程使用</a>
+                <div id='wakeonlanconfig' class='hidden'>
+                    设备网卡mac地址： <input class="input-label" type="text" name="devices.wol.mac" value="{{ config.devices.wol.mac }}" title="可以是xx-xx，也可以是xx:xx" placeholder="xx-xx或xx:xx"><br>
+                    目标地址： 
+                    <select class="input-label" name="devices.wol.destination">
+                        <option value="broadcast_ip_global" {% if config.devices.wol.destination=='broadcast_ip_global' %}selected{% endif %}>全局广播(255.255.255.255)</option>
+                        <option id="broadcast_ip_direct" value="broadcast_ip_direct" {% if config.devices.wol.destination=='broadcast_ip_direct' %}selected{% endif %}>定向广播()</option>
+                        <option id="broadcast_device_ip" value="device_ip" {% if config.devices.wol.destination=='device_ip' %}selected{% endif %}>设备ip()</option>
+                    </select><br>
+                    端口： <input class="input-label" type="number" name="devices.wol.port" value="{{ config.devices.wol.port }}" min="1" step="1" max="65535" title="一般无需修改，默认:9" placeholder="一般无需修改，默认:9"><br>
+                    <a class="textlink" href="{{ url_for('download') }}?file=wolmonitor" onclick="return confirmDownload();">➔下载唤醒魔包接收测试软件，查阅教程使用</a>
+                </div>
+                <div id='wol_shell_script' class='hidden'>
+                    自定义指令： <input class="input-label" type="text" name="devices.wol.shell_script" value="{{ config.devices.wol.shell_script }}" title="默认只允许sshpass和curl，可修改yaml配置" placeholder="默认只允许sshpass和curl，可修改yaml配置">
+                </div>
             </div>
             <hr class="dashed-hr">
             <div class='line-container'>
-                启用远程关机: <input id="shutdown_enabled" class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %} data-target = 'shutdownconfig'>
-                <a id="go_shutdown" class="textlink" href="/shutdown" target="_blank">测试关机</a><br>
+                启用远程关机： <input id="shutdown_enabled" class="checkbox-label" type="checkbox" name="devices.shutdown.enabled" value="True" {% if config['devices']['shutdown']['enabled'] %} checked{% endif %} data-target = 'shutdownconfig'>
+                <label for="shutdown_enabled"></label>
+                <a id="go_shutdown" class="textlink" href="/shutdown" target="_blank">➔测试关机</a>
             </div>
             <div id = 'shutdownconfig' class = 'hidden'>
-                <div class='line-container'>
-                    <span>关机方法：</span>
-                    <label for="netrpc">关机账户</label>
-                    <input id='netrpc' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.netrpc" value="True" {% if config['devices']['shutdown']['method']['netrpc'] %} checked{% endif %} data-target = 'netrpcconfig'>
-                    <label for="udp">配套软件</label>
-                    <input id='udp' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.udp" value="False" {% if config['devices']['shutdown']['method']['udp'] %} checked{% endif %} data-target = 'dl_pcshutdown'><br>
-                    <label for="shell">自定义指令</label>
-                    <input id='shell' class="checkbox-label2" type="checkbox" name="devices.shutdown.method.shell" value="False" {% if config['devices']['shutdown']['method']['shell'] %} checked{% endif %} data-target = 'shell_script'><br>
-                </div>
+                关机方法：
+                <select id="shutdown_method" class="input-label" name="devices.shutdown.method">
+                    <option value="netrpc" {% if config.devices.shutdown.method.netrpc==true %}selected{% endif %}>关机账户[Windows]</option>
+                    <option value="udp" {% if config.devices.shutdown.method.udp==true %}selected{% endif %}>配套软件[Windows]</option>
+                    <option value="shell" {% if config.devices.shutdown.method.shell==true %}selected{% endif %}>自定义指令[Linux MacOS ...]</option>
+                </select><br>
                 <div id = 'netrpcconfig' class = 'hidden'>
-                    账户: <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
-                    密码: <input class="input-label" type="password" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}" onfocus="this.type='text'" onblur="this.type='password'"><br>
+                    账户： <input class="input-label" type="text" name="devices.shutdown.account" value="{{ config.devices.shutdown.account }}"><br>
+                    密码： <input class="input-label" type="password" name="devices.shutdown.password" value="{{ config.devices.shutdown.password }}" onfocus="this.type='text'" onblur="this.type='password'"><br>
                 </div>
                 <div id='dl_pcshutdown' class='hidden'>
-                    <a class="textlink" href="{{ url_for('download') }}?file=pcshutdown" onclick="return confirmDownload();">下载配套服务程序，并按教程使用</a>
+                    <a class="textlink" href="{{ url_for('download') }}?file=pcshutdown" onclick="return confirmDownload();">➔下载配套服务程序，并按教程使用</a>
                 </div>
-                <div id='shell_script' class='hidden'>
-                    自定义指令: <input class="input-label" type="text" name="devices.shutdown.shell_script" value="{{ config.devices.shutdown.shell_script }}" title="默认只允许sshpass和curl" placeholder="默认只允许sshpass和curl">
+                <div id='shutdown_shell_script' class='hidden'>
+                    自定义指令： <input class="input-label" type="text" name="devices.shutdown.shell_script" value="{{ config.devices.shutdown.shell_script }}" title="默认只允许sshpass和curl，可修改yaml配置" placeholder="默认只允许sshpass和curl，可修改yaml配置">
+                    <br>
+                    <a class="textlink" href="/getcommand" target="_blank">➔快速生成指令</a>
                 </div>
                 <div id='shutdown_delay_time'>
-                    延迟关机时长(秒): <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机" placeholder="填1为立刻关机"><br>
+                    延迟关机时长(秒)： <input class="input-label" type="number" name="devices.shutdown.time" value="{{ config.devices.shutdown.time }}" min="1" step="1" title="填1为立刻关机" placeholder="填1为立刻关机"><br>
                 </div>
-                指令超时时长(秒): <input class="input-label" type="number" name="devices.shutdown.timeout" value="{{ config.devices.shutdown.timeout }}" min="1" step="1" max="10" title="指令发送超过该时长则判定发送失败，默认:2" placeholder="指令发送超过该时长则判定发送失败，默认:2"><br>
+                指令超时时长(秒)： <input class="input-label" type="number" name="devices.shutdown.timeout" value="{{ config.devices.shutdown.timeout }}" min="1" step="1" max="10" title="指令发送超过该时长则判定发送失败，默认:2" placeholder="指令发送超过该时长则判定发送失败，默认:2"><br>
             </div>
             <hr class="dashed-hr">
             <div class='line-container'>
-                启用ping检测: <input id="ping_enabled" class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %} data-target = 'pingconfig'>
-                <a id="go_ping" class="textlink" href="/ping" target="_blank">测试ping</a><br>
+                启用ping检测： <input id="ping_enabled" class="checkbox-label" type="checkbox" name="devices.ping.enabled" value="True" {% if config['devices']['ping']['enabled'] %} checked{% endif %} data-target = 'pingconfig'>
+                <label for="ping_enabled"></label>
+                <a id="go_ping" class="textlink" href="/ping" target="_blank">➔测试ping</a>
             </div>
             <div id = 'pingconfig' class = 'hidden'>
-                ping间隔时长(秒): <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
+                ping方法：
+                <select id="ping_method" class="input-label" name="devices.ping.method">
+                    <option value="pcping" {% if config.devices.ping.method.pcping==true %}selected{% endif %}>内置ping</option>
+                    <option value="shell" {% if config.devices.ping.method.shell==true %}selected{% endif %}>自定义指令</option>
+                </select><br>
+                <div id='ping_shell_script' class='hidden'>
+                    自定义指令： <input class="input-label" type="text" name="devices.ping.shell_script"
+                        value="{{ config.devices.ping.shell_script }}" title="默认只允许sshpass和curl，可修改yaml配置" placeholder="默认只允许sshpass和curl，可修改yaml配置"><br>
+                    判断在线关键字： <input class="input-label" type="text" name="devices.ping.on_keyword"
+                        value="{{ config.devices.ping.on_keyword }}"><br>
+                    判断离线关键字： <input class="input-label" type="text" name="devices.ping.off_keyword"
+                        value="{{ config.devices.ping.off_keyword }}"><br>
+                </div>
+                ping间隔时长(秒)： <input class="input-label" type="number" name="devices.ping.time" value="{{ config.devices.ping.time }}" min="1" step="1"><br>
             </div>
             <h2>日志：</h2>
-            启用日志记录: <input class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %} data-target = 'logconfig'><br>
+                <div class='line-container'>
+                启用日志记录： <input id="log_enabled" class="checkbox-label" type="checkbox" name="functions.log.enabled" value="True" {% if config['functions']['log']['enabled'] %} checked{% endif %} data-target = 'logconfig'>
+                <label for="log_enabled"></label>
+            </div>
             <div id = 'logconfig' class = 'hidden'>
-                日志等级: <input class="input-label" type="number" name="functions.log.level" value="{{ config.functions.log.level }}" min="1" step="1" max="3" title="1：记录服务器返回数据和ping结果、操作、报错   2：记录操作和报错   3：记录报错" placeholder="1:记录服务器返回数据和ping结果、操作、报错 2:记录操作和报错 3:记录报错"><br>
+                日志等级：
+                <select class="input-label" name="functions.log.level">
+                    <option value="1" {% if config.functions.log.level==1 %}selected{% endif %}>记录服务器返回数据、ping结果、详细操作、报错</option>
+                    <option value="2" {% if config.functions.log.level==2 %}selected{% endif %}>记录操作和报错</option>
+                    <option value="3" {% if config.functions.log.level==3 %}selected{% endif %}>记录报错</option>
+                </select><br>
                 <hr class="dashed-hr">
-                启用日志清理: <input class="checkbox-label" type="checkbox" name="functions.log.clear_log.enabled" value="True" {% if config['functions']['log']['clear_log']['enabled'] %} checked{% endif %} data-target='clearlogconfig'><br>
+                <div class='line-container'>
+                    启用日志清理： <input id="logclear_enabled" class="checkbox-label" type="checkbox" name="functions.log.clear_log.enabled" value="True" {% if config['functions']['log']['clear_log']['enabled'] %} checked{% endif %} data-target='clearlogconfig'>
+                    <label for="logclear_enabled"></label>
+                </div>
                 <div id='clearlogconfig' class='hidden'>
-                    保留天数: <input class="input-label" type="number" name="functions.log.clear_log.keep_days" value="{{ config.functions.log.clear_log.keep_days }}" min="0" step="1" title="0：只保留当天的日志（每天中午12点清理）" placeholder="0:只保留当天的日志(每天中午12点清理)"><br>
+                    保留天数： <input class="input-label" type="number" name="functions.log.clear_log.keep_days" value="{{ config.functions.log.clear_log.keep_days }}" min="0" step="1" title="0：只保留当天的日志（每天中午12点清理）" placeholder="0:只保留当天的日志(每天中午12点清理)"><br>
                 </div>
             </div>
             <h2>推送：</h2>
             <div class='line-container'>
-                启用消息推送: <input id="push_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.enabled" value="True" {% if config['functions']['push_notifications']['enabled'] %} checked{% endif %} data-target = 'pushconfig'><br>
-                <a id="go_push" class="textlink" href="/testpush" target="_blank">测试消息推送</a>
+                启用消息推送： <input id="push_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.enabled" value="True" {% if config['functions']['push_notifications']['enabled'] %} checked{% endif %} data-target = 'pushconfig'>
+                <label for="push_enabled"></label>
+                <a id="go_push" class="textlink" href="/testpush" target="_blank">➔测试消息推送</a>
             </div>
             <div id = 'pushconfig' class = 'hidden'>
                 <hr class="dashed-hr">
-                巴法断线重连推送: <input id="bemfa_reconnect_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.bemfa_reconnect" value="True" {% if config['functions']['push_notifications']['bemfa_reconnect'] %} checked{% endif %}><br>
+                <div class='line-container'>
+                    巴法断线重连推送： <input id="bemfa_reconnect_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.bemfa_reconnect" value="True" {% if config['functions']['push_notifications']['bemfa_reconnect'] %} checked{% endif %}>
+                    <label for="bemfa_reconnect_enabled"></label>
+                </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
-                    Server酱Turbo: <input id="serverchanturbo_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %} data-target = 'serverchan_turboconfig'><br>
-                    <a id="go_serverchanturbo" class="textlink" href="https://sct.ftqq.com/sendkey" target="_blank">前往Server酱Turbo</a>
+                    Server酱Turbo： <input id="serverchanturbo_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan_turbo.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan_turbo']['enabled'] %} checked{% endif %} data-target = 'serverchan_turboconfig'>
+                    <label for="serverchanturbo_enabled"></label>
+                    <a id="go_serverchanturbo" class="textlink" href="https://sct.ftqq.com/sendkey" target="_blank">➔前往Server酱Turbo</a>
                 </div>
                 <div id = 'serverchan_turboconfig' class = 'hidden'>
-                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey" value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}" placeholder="SCTXXXXXXXXXX"><br>
-                    消息通道: <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel" value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}" placeholder="默认:9(微信服务号)"><br>
+                    SendKey： <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.SendKey" value="{{ config.functions.push_notifications.ServerChan_turbo.SendKey }}" placeholder="SCTXXXXXXXXXX"><br>
+                    消息通道： <input class="input-label" type="text" name="functions.push_notifications.ServerChan_turbo.channel" value="{{ config.functions.push_notifications.ServerChan_turbo.channel }}" placeholder="默认:9(微信服务号)"><br>
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
-                    Server酱3: <input id="serverchan3_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan3.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan3']['enabled'] %} checked{% endif %} data-target = 'serverchan3config'><br>
-                    <a id="go_serverchan3" class="textlink" href="https://sc3.ft07.com/" target="_blank">前往Server酱3</a>
+                    Server酱3： <input id="serverchan3_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.ServerChan3.enabled" value="True" {% if config['functions']['push_notifications']['ServerChan3']['enabled'] %} checked{% endif %} data-target = 'serverchan3config'>
+                    <label for="serverchan3_enabled"></label>
+                    <a id="go_serverchan3" class="textlink" href="https://sc3.ft07.com/" target="_blank">➔前往Server酱3</a>
                 </div>
                 <div id = 'serverchan3config' class = 'hidden'>
-                    SendKey: <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}" placeholder="sctpXXXXXXXXX"><br>
+                    SendKey： <input class="input-label" type="text" name="functions.push_notifications.ServerChan3.SendKey" value="{{ config.functions.push_notifications.ServerChan3.SendKey }}" placeholder="sctpXXXXXXXXX"><br>
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
-                    Qmsg酱: <input id="qmsg_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.Qmsg.enabled" value="True" {% if config['functions']['push_notifications']['Qmsg']['enabled'] %} checked{% endif %} data-target = 'qmsgconfig'><br>
-                    <a id="go_qmsg" class="textlink" href="https://qmsg.zendee.cn/" target="_blank">前往Qmsg酱</a>
+                    Qmsg酱： <input id="qmsg_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.Qmsg.enabled" value="True" {% if config['functions']['push_notifications']['Qmsg']['enabled'] %} checked{% endif %} data-target = 'qmsgconfig'>
+                    <label for="qmsg_enabled"></label>
+                    <a id="go_qmsg" class="textlink" href="https://qmsg.zendee.cn/" target="_blank">➔前往Qmsg酱</a>
                 </div>
                 <div id = 'qmsgconfig' class = 'hidden'>
-                    Key: <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
-                    QQ: <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
+                    Key： <input class="input-label" type="text" name="functions.push_notifications.Qmsg.key" value="{{ config.functions.push_notifications.Qmsg.key }}"><br>
+                    QQ： <input class="input-label" type="number" name="functions.push_notifications.Qmsg.qq" value="{{ config.functions.push_notifications.Qmsg.qq }}"><br>
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
-                    企业微信群机器人: <input id="wechat_webhook_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.WeChat_webhook.enabled" value="True" {% if config['functions']['push_notifications']['WeChat_webhook']['enabled'] %} checked{% endif %} data-target='wechat_webhook_config'><br>
-                    <a id="go_wechat_webhook" class="textlink" href="https://open.work.weixin.qq.com/help2/pc/18401" target="_blank">前往企业微信群机器人</a>
+                    企业微信群机器人： <input id="wechat_webhook_enabled" class="checkbox-label" type="checkbox" name="functions.push_notifications.WeChat_webhook.enabled" value="True" {% if config['functions']['push_notifications']['WeChat_webhook']['enabled'] %} checked{% endif %} data-target='wechat_webhook_config'>
+                    <label for="wechat_webhook_enabled"></label>
+                    <a id="go_wechat_webhook" class="textlink" href="https://open.work.weixin.qq.com/help2/pc/18401" target="_blank">➔前往企业微信群机器人</a>
                 </div>
                 <div id='wechat_webhook_config' class='hidden'>
-                    Webhook地址: <input class="input-label" type="text" name="functions.push_notifications.WeChat_webhook.url" value="{{ config.functions.push_notifications.WeChat_webhook.url }}" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
+                    Webhook地址： <input class="input-label" type="text" name="functions.push_notifications.WeChat_webhook.url" value="{{ config.functions.push_notifications.WeChat_webhook.url }}" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
                 </div>
             </div>
             <hr class="default-hr">

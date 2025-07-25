@@ -62,7 +62,7 @@ class PCbemfa():
     # 更新巴法云的设备状态
     def update_bemfa(self):
         pc_state = self.fd.pc_state
-        if pc_state:
+        if "on" in pc_state or "off" in pc_state:
             try:
                 substr = f'cmd=2&uid={self.uid}&topic={self.topic}/up&msg={pc_state[1]}\r\n'
                 self.tcp_client_socket.send(substr.encode("utf-8"))
@@ -101,7 +101,7 @@ class PCbemfa():
         if state == 'on' :
             rs = pcwol()
             if rs:
-                if rs == 'done':
+                if 'done' in rs:
                     extra_log('已发送唤醒指令(bemfa)',2, '_bemfa')
                     send_message('已发送唤醒指令')
                 else:

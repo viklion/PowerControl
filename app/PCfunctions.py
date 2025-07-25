@@ -38,7 +38,7 @@ class PCfuncs():
             self.write_config_yaml(yd)
             p_print('配置文件已更新新内容')
 
-        # 参数
+        # 读取参数
         PCfuncs.version = get_version()
         PCfuncs.bemfa_enabled = checkbool(yd['bemfa']['enabled'])
         if PCfuncs.bemfa_enabled:
@@ -48,10 +48,15 @@ class PCfuncs():
         PCfuncs.device_ip = trans_str(yd['devices']['ip'])
         PCfuncs.wol_enabled = checkbool(yd['devices']['wol']['enabled'])
         if PCfuncs.wol_enabled:
-            PCfuncs.wol_mac = trans_str(yd['devices']['wol']['mac'])
-            PCfuncs.wol_destination = trans_str(yd['devices']['wol']['destination'])
-            PCfuncs.wol_port = int(yd['devices']['wol']['port'])
-            PCfuncs.wol_interface = trans_str(yd['devices']['wol']['interface']).lower()
+            PCfuncs.wol_method_wakeonlan = checkbool(yd['devices']['wol']['method']['wakeonlan'])
+            PCfuncs.wol_method_shell = checkbool(yd['devices']['wol']['method']['shell'])
+            if PCfuncs.wol_method_wakeonlan:
+                PCfuncs.wol_mac = trans_str(yd['devices']['wol']['mac'])
+                PCfuncs.wol_destination = trans_str(yd['devices']['wol']['destination'])
+                PCfuncs.wol_port = int(yd['devices']['wol']['port'])
+                PCfuncs.wol_interface = trans_str(yd['devices']['wol']['interface']).lower()
+            elif PCfuncs.wol_method_shell:
+                PCfuncs.wol_shell_script = trans_str(yd['devices']['wol']['shell_script'])
         PCfuncs.shutdown_enabled = checkbool(yd['devices']['shutdown']['enabled'])
         if PCfuncs.shutdown_enabled:
             PCfuncs.shutdown_method_netrpc = checkbool(yd['devices']['shutdown']['method']['netrpc'])
@@ -62,12 +67,18 @@ class PCfuncs():
                 PCfuncs.shutdown_pc_account = trans_str(yd['devices']['shutdown']['account'])
                 PCfuncs.shutdown_pc_password = trans_str(yd['devices']['shutdown']['password'])
             elif PCfuncs.shutdown_method_shell:
-                PCfuncs.shell_script = trans_str(yd['devices']['shutdown']['shell_script'])
-                PCfuncs.shell_script_allowed = tuple(yd['devices']['shutdown']['shell_script_allowed'])
+                PCfuncs.shutdown_shell_script = trans_str(yd['devices']['shutdown']['shell_script'])
             PCfuncs.shutdown_timeout = int(yd['devices']['shutdown']['timeout'])
         PCfuncs.ping_enabled = checkbool(yd['devices']['ping']['enabled'])
         if PCfuncs.ping_enabled:
             PCfuncs.ping_time = int(yd['devices']['ping']['time'])
+            PCfuncs.ping_method_pcping = checkbool(yd['devices']['ping']['method']['pcping'])
+            PCfuncs.ping_method_shell = checkbool(yd['devices']['ping']['method']['shell'])
+            if PCfuncs.ping_method_shell:
+                PCfuncs.ping_shell_script = trans_str(yd['devices']['ping']['shell_script'])
+                PCfuncs.ping_on_keyword = trans_str(yd['devices']['ping']['on_keyword'])
+                PCfuncs.ping_off_keyword = trans_str(yd['devices']['ping']['off_keyword'])
+        PCfuncs.shell_allowed = tuple(yd['devices']['shell_allowed'])
         PCfuncs.log_enabled = checkbool(yd['functions']['log']['enabled'])
         if PCfuncs.log_enabled:
             PCfuncs.log_level = int(yd['functions']['log']['level'])
@@ -98,23 +109,24 @@ class PCfuncs():
         # 判断处理参数
         if PCfuncs.device_name:
             PCfuncs.device_name = f'[{PCfuncs.device_name}]'
-        if PCfuncs.wol_destination == 'broadcast_ip_global':
-            PCfuncs.wol_destination = '255.255.255.255'
-        elif PCfuncs.wol_destination == 'broadcast_ip_direct':
-            PCfuncs.wol_destination = PCfuncs.device_ip.rsplit('.', 1)[0] + '.255'
-        elif PCfuncs.wol_destination == 'device_ip':
-            PCfuncs.wol_destination = PCfuncs.device_ip
-        if PCfuncs.wol_interface == 'default':
-            PCfuncs.wol_interface = PCfuncs.local_ip
-        elif PCfuncs.wol_interface == 'none':
-            PCfuncs.wol_interface = None
+        if PCfuncs.wol_method_wakeonlan:
+            if PCfuncs.wol_destination == 'broadcast_ip_global':
+                PCfuncs.wol_destination = '255.255.255.255'
+            elif PCfuncs.wol_destination == 'broadcast_ip_direct':
+                PCfuncs.wol_destination = PCfuncs.device_ip.rsplit('.', 1)[0] + '.255'
+            elif PCfuncs.wol_destination == 'device_ip':
+                PCfuncs.wol_destination = PCfuncs.device_ip
+            if PCfuncs.wol_interface == 'default':
+                PCfuncs.wol_interface = PCfuncs.local_ip
+            elif PCfuncs.wol_interface == 'none':
+                PCfuncs.wol_interface = None
 
         print_and_log('----------------------------------', 2)
         print_and_log('PowerControl启动', 2)
         send_message('PowerControl启动')
         if self.yaml_changed:
             write_log('配置文件已更新新内容', 2)
-        print_and_log('获取本机ip：'+PCfuncs.local_ip, 2)
+        print_and_log('获取本机ip：'+ PCfuncs.local_ip, 2)
 
         # 启动定时任务
         self.add_ping_job()
@@ -213,14 +225,16 @@ class PCfuncs():
         try:
             ping_result = pcping()
             write_log('\n' + ping_result + '\n' + '----------------------------------', 1 ,'_ping')
-            if 'Reply' in ping_result:
+            if 'Reply' in ping_result or 'receive on' in ping_result:
                 is_power_off = False
                 new_state = ["在线","on"]
-            elif 'timed out' in ping_result:
+            elif 'timed out' in ping_result or 'receive off' in ping_result:
                 if not is_power_off:
                     self.ping_check(True)
                     return
                 new_state = ["离线","off"]
+            else:
+                new_state = ["未知","unknown"]
             if self.pc_state != new_state:
                 self.pc_state = new_state
                 print_and_log(f"设备状态更新：{self.pc_state[0]}",2)
@@ -344,7 +358,7 @@ def clear_log():
                     # 对比日期，删除早于保留日期的文件
                     if file_date < keep_date:
                         os.remove(file_path)
-                        print_and_log(f"已删除日志: {filename}", 2)
+                        print_and_log(f"已自动删除日志: {filename}", 2)
                 except Exception as e:
                     # 如果发生异常输出错误信息
                     print_and_log(f"删除日志 {filename} 出错: {str(e)}", 3)
@@ -506,25 +520,25 @@ def pcshutdown():
                 # 关闭socket
                 sock.close()
         elif PCfuncs.shutdown_method_shell:
-            if PCfuncs.shell_script.startswith(PCfuncs.shell_script_allowed):
+            if PCfuncs.shutdown_shell_script.startswith(PCfuncs.shell_allowed):
                 try:
                     # 执行并获取shell命令的结果
-                    result = subprocess.run(PCfuncs.shell_script, shell=True, capture_output=True, text=True, check=True, timeout=max(PCfuncs.shutdown_timeout, 5))
+                    result = subprocess.run(PCfuncs.shutdown_shell_script, shell=True, capture_output=True, text=True, check=True, timeout=max(PCfuncs.shutdown_timeout, 5))
                     if result.stdout:
-                        return 'succeeded:' + result.stdout
+                        return 'succeeded:' + result.stdout.replace("\n", "→")
                     else:
                         return 'succeeded: 已发送指令'
                 except subprocess.TimeoutExpired as e:
                     # 处理sshpass超时但已经成功执行的报错
-                    if 'sshpass' in PCfuncs.shell_script:
+                    if 'sshpass' in PCfuncs.shutdown_shell_script:
                         return 'succeeded: 已发送指令'
                     else:
-                        return str(e)
+                        return str(e).replace("\n", "→")
                 except subprocess.CalledProcessError as e:
                     # 捕获并返回subprocess错误输出
-                    return f"Error: {e.stderr.replace("\n", "")}"
+                    return f"Error: {e.stderr.replace("\n", "→")}"
                 except Exception as e:
-                    return str(e)
+                    return str(e).replace("\n", "→")
             else:
                 return "Error:不允许的指令"
     return None
@@ -532,16 +546,60 @@ def pcshutdown():
 # 网络唤醒
 def pcwol():
     if PCfuncs.wol_enabled:
-        try:
-            # 唤醒设备
-            send_magic_packet(PCfuncs.wol_mac, ip_address = PCfuncs.wol_destination, port = PCfuncs.wol_port, interface = PCfuncs.wol_interface)
-            return 'done'
-        except Exception as e:
-            return str(e)
+        if PCfuncs.wol_method_wakeonlan:
+            try:
+                # 唤醒设备
+                send_magic_packet(PCfuncs.wol_mac, ip_address = PCfuncs.wol_destination, port = PCfuncs.wol_port, interface = PCfuncs.wol_interface)
+                return 'done'
+            except Exception as e:
+                return str(e).replace("\n", "→")
+        elif PCfuncs.wol_method_shell:
+            if PCfuncs.wol_shell_script.startswith(PCfuncs.shell_allowed):
+                try:
+                    # 执行并获取shell命令的结果
+                    result = subprocess.run(PCfuncs.wol_shell_script, shell=True, capture_output=True, text=True, check=True, timeout=5)
+                    if result.stdout:
+                        return 'done: ' + result.stdout.replace("\n", "→")
+                    else:
+                        return 'done: 已发送指令'
+                except subprocess.TimeoutExpired as e:
+                    # 处理sshpass超时但已经成功执行的报错
+                    if 'sshpass' in PCfuncs.wol_shell_script:
+                        return 'done: 已发送指令'
+                    else:
+                        return str(e).replace("\n", "→")
+                except subprocess.CalledProcessError as e:
+                    # 捕获并返回subprocess错误输出
+                    return f"Error: {e.stderr.replace("\n", "→")}"
+                except Exception as e:
+                    return str(e).replace("\n", "→")
+            else:
+                return "Error:不允许的指令"
     return None
 
 # ping
 def pcping():
     if PCfuncs.ping_enabled:
-        # ping设备
-        return str(ping(PCfuncs.device_ip, timeout = 1, count = 1)).replace('\r\n', '→').replace('→→', ' → ')
+        if PCfuncs.ping_method_pcping:
+            # ping设备
+            return str(ping(PCfuncs.device_ip, timeout = 1, count = 1)).replace('\r\n', '→').replace('→→', ' → ')
+        elif PCfuncs.ping_method_shell:
+            if PCfuncs.ping_shell_script.startswith(PCfuncs.shell_allowed):
+                try:
+                    # 执行并获取shell命令的结果
+                    result = subprocess.run(PCfuncs.ping_shell_script, shell=True, capture_output=True, text=True, check=False, timeout=2)
+                    if PCfuncs.ping_on_keyword in result.stdout:
+                        return 'receive on：' + result.stdout.replace("\n", "→")
+                    elif PCfuncs.ping_off_keyword in result.stdout:
+                        return 'receive off：' + result.stdout.replace("\n", "→")
+                    else:
+                        return 'receive unknown：' + result.stdout.replace("\n", "→")
+                except subprocess.TimeoutExpired as e:
+                    return 'timed out：' + str(e).replace("\n", "→")
+                except subprocess.CalledProcessError as e:
+                    # 捕获并返回subprocess错误输出
+                    return f"Error: {e.stderr.replace("\n", "→")}"
+                except Exception as e:
+                    return str(e).replace("\n", "→")
+            else:
+                return "Error:不允许的指令"

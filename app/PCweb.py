@@ -46,13 +46,16 @@ def config():
         yaml_config['devices']['name'] = trans_str(request.form.get('devices.name'))
         yaml_config['devices']['ip'] = trans_str(request.form.get('devices.ip'))
         yaml_config['devices']['wol']['enabled'] = bool(request.form.get('devices.wol.enabled'))
+        yaml_config['devices']['wol']['method']['wakeonlan'] = request.form.get('devices.wol.method') == 'wakeonlan'
+        yaml_config['devices']['wol']['method']['shell'] = request.form.get('devices.wol.method') == 'shell'
         yaml_config['devices']['wol']['mac'] = trans_str(request.form.get('devices.wol.mac'))
         yaml_config['devices']['wol']['destination'] = trans_str(request.form.get('devices.wol.destination'))
         yaml_config['devices']['wol']['port'] = int(request.form.get('devices.wol.port'))
+        yaml_config['devices']['wol']['shell_script'] = trans_str(request.form.get('devices.wol.shell_script'))
         yaml_config['devices']['shutdown']['enabled'] = bool(request.form.get('devices.shutdown.enabled'))
-        yaml_config['devices']['shutdown']['method']['netrpc'] = bool(request.form.get('devices.shutdown.method.netrpc'))
-        yaml_config['devices']['shutdown']['method']['udp'] = bool(request.form.get('devices.shutdown.method.udp'))
-        yaml_config['devices']['shutdown']['method']['shell'] = bool(request.form.get('devices.shutdown.method.shell'))
+        yaml_config['devices']['shutdown']['method']['netrpc'] = request.form.get('devices.shutdown.method') == 'netrpc'
+        yaml_config['devices']['shutdown']['method']['udp'] = request.form.get('devices.shutdown.method') == 'udp'
+        yaml_config['devices']['shutdown']['method']['shell'] = request.form.get('devices.shutdown.method') == 'shell'
         yaml_config['devices']['shutdown']['account'] = trans_str(request.form.get('devices.shutdown.account'))
         yaml_config['devices']['shutdown']['password'] = trans_str(request.form.get('devices.shutdown.password'))
         yaml_config['devices']['shutdown']['shell_script'] = trans_str(request.form.get('devices.shutdown.shell_script'))
@@ -60,6 +63,11 @@ def config():
         yaml_config['devices']['shutdown']['timeout'] = int(request.form.get('devices.shutdown.timeout'))
         yaml_config['devices']['ping']['enabled'] = bool(request.form.get('devices.ping.enabled'))
         yaml_config['devices']['ping']['time'] = int(request.form.get('devices.ping.time'))
+        yaml_config['devices']['ping']['method']['pcping'] = request.form.get('devices.ping.method') == 'pcping'
+        yaml_config['devices']['ping']['method']['shell'] = request.form.get('devices.ping.method') == 'shell'
+        yaml_config['devices']['ping']['shell_script'] = trans_str(request.form.get('devices.ping.shell_script'))
+        yaml_config['devices']['ping']['on_keyword'] = trans_str(request.form.get('devices.ping.on_keyword'))
+        yaml_config['devices']['ping']['off_keyword'] = trans_str(request.form.get('devices.ping.off_keyword'))
         yaml_config['functions']['log']['enabled'] = bool(request.form.get('functions.log.enabled'))
         yaml_config['functions']['log']['level'] = int(request.form.get('functions.log.level'))
         yaml_config['functions']['log']['clear_log']['enabled'] = bool(request.form.get('functions.log.clear_log.enabled'))
@@ -110,15 +118,15 @@ def shutdown():
         if 'succeeded' in rs:
             message = 'success'
             message_cn = '已发送关机指令'
-            extra_log(f'{message_cn}(web) → {rs}',2, '_web')
+            extra_log(f'{message_cn}(api) → {rs}',2, '_web')
         else:
             message = 'error'
             message_cn = '发送关机指令失败'
-            extra_log(f'{message_cn}(web) → {rs}' ,3, '_web')
+            extra_log(f'{message_cn}(api) → {rs}' ,3, '_web')
     else:
         message = 'error'
         message_cn = '未启用远程关机'
-        extra_log(f'{message_cn}(web)' ,3, '_web')
+        extra_log(f'{message_cn}(api)' ,3, '_web')
     rs_json = {"device_name": WebData.fd.device_name,
                 "device_ip": WebData.fd.device_ip,
                 "message_cn": message_cn,
@@ -142,18 +150,18 @@ def wol():
     write_log(f'ip：{user_ip} 访问网络唤醒接口', 1, '_web')
     rs = pcwol()
     if rs:
-        if rs == 'done':
+        if 'done' in rs:
             message = 'success'
             message_cn = '已发送唤醒指令'
-            extra_log(f'{message_cn}(web)', 2, '_web')
+            extra_log(f'{message_cn}(api)', 2, '_web')
         else:
             message = 'error'
             message_cn = '发送唤醒指令失败'
-            extra_log(f'{message_cn}(web) → {rs}' , 3, '_web')
+            extra_log(f'{message_cn}(api) → {rs}' , 3, '_web')
     else:
         message = 'error'
         message_cn = '未启用网络唤醒'
-        extra_log(f'{message_cn}(web)' ,3, '_web')
+        extra_log(f'{message_cn}(api)' ,3, '_web')
     rs_json = {"device_name": WebData.fd.device_name,
                 "device_ip": WebData.fd.device_ip,
                 "message_cn": message_cn,
@@ -179,12 +187,15 @@ def ping():
         return '未启用ping!', 403
     try:
         ping_result = pcping()
-        if 'Reply' in ping_result:
+        if 'Reply' in ping_result or 'receive on' in ping_result:
             device_status_cn = "在线"
             device_status = "on"
-        elif 'timed out' in ping_result:
+        elif 'timed out' in ping_result or 'receive off' in ping_result:
             device_status_cn = "离线"
             device_status = "off"
+        else:
+            device_status_cn = "未知"
+            device_status = "unknown"
         rs_json = {"device_name": WebData.fd.device_name,
                     "device_ip": WebData.fd.device_ip,
                     "device_status_cn": device_status_cn,
@@ -291,6 +302,69 @@ def view_log_content(filename):
         ), 200
     except Exception as e:
         return str(e), 500
+
+# 删除日志文件
+@app.route('/logs/delete/<filename>', methods=['DELETE'])
+def delete_log(filename):
+    web_key = request.args.get('key')
+    if web_key != WebData.web_key:
+        return '请在url中填入正确的key', 401
+    
+    log_dir = WebData.fd.log_path
+    log_path = os.path.join(log_dir, filename)
+
+    # 检查文件是否存在
+    if not os.path.isfile(log_path):
+        return "文件不存在", 404
+
+    try:
+        os.remove(log_path)
+        extra_log(f'已手动删除日志: {filename}', 2, '_web')
+        return '日志文件已删除', 200
+    except Exception as e:
+        return 'error：' + str(e), 500
+
+# 快速生成关机指令
+@app.route('/getcommand', methods=['GET', 'POST'])
+def get_command():
+    if request.method == 'POST':
+        try:
+            # 获取表单数据
+            os_type = trans_str(request.form['os_type'])
+            power_type = trans_str(request.form['power_type'])
+            ip_addr = trans_str(request.form['ip_addr'])
+            ssh_port = int(request.form['ssh_port'])
+            login_name = trans_str(request.form['login_name'])
+            login_passwd = trans_str(request.form['login_passwd'])
+            sudo_passwd = trans_str(request.form['sudo_passwd'])
+            delay_time = max(1, int(float(request.form['delay_time'] or 1)))
+
+            if os_type == 'Linux':
+                if power_type == 'shutdown':
+                    command_main = 'poweroff'
+                elif power_type == 'reboot':
+                    command_main = 'reboot'
+                elif power_type == 'sleep':
+                    command_main = 'systemctl suspend'
+
+                command_complete = f"""sshpass -p "{login_passwd}" ssh -o "StrictHostKeyChecking=no" -p {ssh_port} {login_name}@{ip_addr} "echo '{sudo_passwd}' | sudo -S sleep {delay_time} && echo '{sudo_passwd}' | sudo -S {command_main}" """
+
+            elif os_type == 'MacOS':
+                if power_type == 'shutdown':
+                    command_main = 'shutdown -h'
+                elif power_type == 'reboot':
+                    command_main = 'shutdown -r'
+                elif power_type == 'sleep':
+                    command_main = 'shutdown -s'
+
+                command_complete = f"""sshpass -p "{login_passwd}" ssh -o "StrictHostKeyChecking=no" -p {ssh_port} {login_name}@{ip_addr} "echo '{sudo_passwd}' | sudo -S {command_main} +{delay_time}s" """
+
+            return command_complete
+
+        except Exception as e:
+            return "出错了：" + str(e)
+
+    return render_template('getcommand.html')
 
 '''---------------------------------------------------------------------------------'''
 class WebData():

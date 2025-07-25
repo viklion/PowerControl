@@ -33,8 +33,13 @@
                 <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
                     title="深色/浅色模式切换">
             </div>
+            <button id="deleteButton" style="display: none;">删除日志</button>
             <pre id="fileContent">点击日志文件查看内容。</pre>
         </div>
+    </div>
+    <div id="scrollButtons" class="scroll-buttons">
+        <button id="scrollTop" class="scroll-btn" onclick="scrollToTop()">↑</button>
+        <button id="scrollBottom" class="scroll-btn" onclick="scrollToBottom()">↓</button>
     </div>
 </body>
 </html>

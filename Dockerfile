@@ -18,17 +18,17 @@ RUN apk add --no-cache --update shadow libcap tzdata samba sshpass curl openssh-
     useradd -r powercontrol -g powercontrol -d /app
 
 # 安装python模块
-COPY --chmod=755 requirements.txt entrypoint.sh /app/
-RUN chmod +x entrypoint.sh && \
-    pip install --no-cache-dir -r requirements.txt
+COPY --chmod=755 requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制文件
 COPY --chmod=755 software /app/static/
 COPY --chmod=755 doc /app/static/
-COPY --chmod=755 app LICENSE /app/
+COPY --chmod=755 app LICENSE entrypoint.sh /app/
+RUN chmod +x entrypoint.sh
 
 # 版本
-ENV VERSION=2.94
+ENV VERSION=3.0
 
 # 容器启动时运行的命令
 ENTRYPOINT ["/app/entrypoint.sh"]

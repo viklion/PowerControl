@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/getcommand.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/getcommand.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/clipboard.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/default.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>自定义指令快速生成</title>
+</head>
+
+<body class="dark-mode">
+    <div class="head-container-wrapper">
+        <!-- 左侧模糊提示 -->
+        <div class="blur-left"></div>
+        <div class="head-container">
+            <a>
+                <img id="theme-toggle" src="{{ url_for('static', filename='icon.png') }}" alt="PowerControl" class="icon-image" title="深色/浅色模式切换">
+            </a>
+            <a id="index" class="textlink" href="/" target="_blank">主页</a>
+            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
+            <a id="pdf" class="textlink" href="/pdf" target="_blank">pdf教程</a>
+            <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
+            <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
+            <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
+        </div>
+        <!-- 右侧模糊提示 -->
+        <div class="blur-right"></div>
+    </div>
+    <div style="margin-left: 20px; margin-right: 20px;">
+        <br>
+        <h1>自定义指令快速生成</h1>
+        <br>
+        <form id="getcommand" method="post">
+            <div class="form-row">
+                <label for="os_type">操作系统：</label>
+                <select class="input-label" name="os_type">
+                    <option value="Linux">Linux</option>
+                    <option value="MacOS">MacOS</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="power_type">电源操作：</label>
+                <select class="input-label" name="power_type">
+                    <option value="shutdown">关机</option>
+                    <option value="sleep">睡眠</option>
+                    <option value="reboot">重启</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label for="ip_addr">ip地址：</label>
+                <input class="input-label" type="text" name="ip_addr">
+            </div>
+            <div class="form-row">
+                <label for="ssh_port">ssh端口：</label>
+                <input class="input-label" type="number" name="ssh_port" value="22" min="1" step="1" max="65535">
+            </div>
+            <div class="form-row">
+                <label for="login_name">登录账户：</label>
+                <input class="input-label" type="text" name="login_name">
+            </div>
+            <div class="form-row">
+                <label for="login_passwd">登录密码：</label>
+                <input class="input-label" type="text" name="login_passwd">
+            </div>
+            <div class="form-row">
+                <label for="sudo_passwd">sudo密码：</label>
+                <input class="input-label" type="text" name="sudo_passwd">
+            </div>
+            <div class="form-row">
+                <label for="delay_time">延迟时长：</label>
+                <input class="input-label" type="number" name="delay_time" value="1" min="1" step="1">
+            </div>
+        </form>
+        <br>
+        <button type="button" id="givemecommand">生成指令</button>
+        <br>
+        <div id="commandOutput"></div>
+    </div>
+</body>
+
+</html>

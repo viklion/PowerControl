@@ -137,71 +137,104 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ----------------------------------------------------------------------------------------------------
-// 获取复选框和目标内容元素
-const netrpcCheckbox = document.getElementById('netrpc');
-const udpCheckbox = document.getElementById('udp');
-const shellCheckbox = document.getElementById('shell');
-const netrpcConfig = document.getElementById('netrpcconfig');
-const dl_pcshutdown = document.getElementById('dl_pcshutdown');
-const shell_script = document.getElementById('shell_script');
-const shutdown_delay_time = document.getElementById('shutdown_delay_time');
-
-// 更新netrpcconfig的显示状态
-function ifshow_method_shutdown() {
-    function showElement(element) {
-        element.classList.remove('hidden');
-        element.classList.add('visible');
-    }
-
-    function hideElement(element) {
-        element.classList.remove('visible');
-        element.classList.add('hidden');
-    }
-
-    hideElement(netrpcConfig);
-    hideElement(dl_pcshutdown);
-    hideElement(shell_script);
-    hideElement(shutdown_delay_time);
-
-    if (netrpcCheckbox.checked) {
-        showElement(netrpcConfig);
-        showElement(shutdown_delay_time);
-    } else if (udpCheckbox.checked) {
-        showElement(dl_pcshutdown);
-        showElement(shutdown_delay_time);
-    } else if (shellCheckbox.checked) {
-        showElement(shell_script);
-    }
+// 隐藏or显示元素
+function showElement(element) {
+    element.classList.remove('hidden');
+    element.classList.add('visible');
 }
 
-// 勾选一个复选框时，取消另一个复选框的勾选
-function only_one_check(checkedCheckbox) {
-    const checkboxes = [netrpcCheckbox, udpCheckbox, shellCheckbox];
-    checkboxes.forEach(checkbox => {
-        // 如果当前复选框被勾选的复选框，则勾选
-        if (checkbox !== checkedCheckbox) {
-            checkbox.checked = false;
-        }
-    });
-    ifshow_method_shutdown();
+function hideElement(element) {
+    element.classList.remove('visible');
+    element.classList.add('hidden');
+}
+
+// ----------------------------------------------------------------------------------------------------
+// 下拉框选择事件
+// wol
+// 获取元素
+const wolMethodSelect = document.getElementById('wol_method');
+const wakeonlanConfig = document.getElementById('wakeonlanconfig');
+const wol_shell_script = document.getElementById('wol_shell_script');
+
+// 更新显示状态
+function ifshow_method_wol() {
+
+    hideElement(wakeonlanConfig);
+    hideElement(wol_shell_script);
+
+    if (wolMethodSelect.value === 'wakeonlan') {
+        showElement(wakeonlanConfig);
+    } else if (wolMethodSelect.value === 'shell') {
+        showElement(wol_shell_script);
+    }
 }
 
 // 监听
-function handleCheckboxChange(checkbox) {
-    if (checkbox.checked) {
-        only_one_check(checkbox);
-    } else {
-        checkbox.checked = true;  // 禁止取消勾选
+function handleSelectChangeWol() {
+    ifshow_method_wol();
+}
+
+// shutdown
+// 获取元素
+const shutdownMethodSelect = document.getElementById('shutdown_method');
+const netrpcConfig = document.getElementById('netrpcconfig');
+const dl_pcshutdown = document.getElementById('dl_pcshutdown');
+const shutdown_shell_script = document.getElementById('shutdown_shell_script');
+const shutdown_delay_time = document.getElementById('shutdown_delay_time');
+
+// 更新显示状态
+function ifshow_method_shutdown() {
+    hideElement(netrpcConfig);
+    hideElement(dl_pcshutdown);
+    hideElement(shutdown_shell_script);
+    hideElement(shutdown_delay_time);
+
+    if (shutdownMethodSelect.value === 'netrpc') {
+        showElement(netrpcConfig);
+        showElement(shutdown_delay_time);
+    } else if (shutdownMethodSelect.value === 'udp') {
+        showElement(dl_pcshutdown);
+        showElement(shutdown_delay_time);
+    } else if (shutdownMethodSelect.value === 'shell') {
+        showElement(shutdown_shell_script);
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// 监听
+function handleSelectChangeShutdown() {
     ifshow_method_shutdown();
+}
 
-    // 添加change事件监听
-    netrpcCheckbox.addEventListener('change', () => handleCheckboxChange(netrpcCheckbox));
-    udpCheckbox.addEventListener('change', () => handleCheckboxChange(udpCheckbox));
-    shellCheckbox.addEventListener('change', () => handleCheckboxChange(shellCheckbox));
+// ping
+// 获取元素
+const pingMethodSelect = document.getElementById('ping_method');
+const ping_shell_script = document.getElementById('ping_shell_script');
+
+// 更新显示状态
+function ifshow_method_ping() {
+
+    hideElement(ping_shell_script);
+
+    if (pingMethodSelect.value === 'shell') {
+        showElement(ping_shell_script);
+    }
+}
+
+// 监听
+function handleSelectChangePing() {
+    ifshow_method_ping();
+}
+
+// 页面加载初始调用
+document.addEventListener('DOMContentLoaded', () => {
+    ifshow_method_wol();
+    ifshow_method_shutdown();
+    ifshow_method_ping();
+
+    // 监听select的change事件
+    wolMethodSelect.addEventListener('change', handleSelectChangeWol);
+    shutdownMethodSelect.addEventListener('change', handleSelectChangeShutdown);
+    pingMethodSelect.addEventListener('change', handleSelectChangePing);
 });
 
 // ----------------------------------------------------------------------------------------------------
@@ -228,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.body.appendChild(tempSpan);
 
             // 计算并设置input宽度
-            input.style.width = `${tempSpan.offsetWidth + 10}px`;
+            input.style.width = `${tempSpan.offsetWidth + 20}px`;
 
             document.body.removeChild(tempSpan);
         }

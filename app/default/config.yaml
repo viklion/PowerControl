@@ -7,10 +7,14 @@ devices:
   ip: 192.168.100.100
   wol:
     enabled: True
+    method: 
+      wakeonlan: True
+      shell: False
     mac: 00-11-22-33-44-55
     destination: broadcast_ip_global
     port: 9
     interface: default
+    shell_script: yourscript
   shutdown:
     enabled: True
     method: 
@@ -20,14 +24,20 @@ devices:
     account: youraccount
     password: yourpassword
     shell_script: yourscript
-    shell_script_allowed:
-      - sshpass
-      - curl
     time: 60
     timeout: 2
   ping:
     enabled: True
     time: 60
+    method: 
+      pcping: True
+      shell: False
+    shell_script: yourscript
+    on_keyword: 'on'
+    off_keyword: 'off'
+  shell_allowed:
+    - sshpass
+    - curl
 functions:
   log:
     enabled: True

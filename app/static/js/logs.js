@@ -40,6 +40,13 @@ function loadFileContent(filename, listItem) {
             // 将处理后的日志内容插入到页面
             document.getElementById('fileContent').innerHTML = formattedLines.join('<br>');
 
+            // 显示删除按钮并绑定当前文件名
+            const deleteButton = document.getElementById('deleteButton');
+            deleteButton.style.display = 'block'; // 显示删除按钮
+            deleteButton.onclick = function () {
+                deleteFile(filename); // 将当前文件名传给删除函数
+            };
+
             // 使用 DOM 的 scrollTop 属性将内容区域滚动到顶部
             const contentArea = document.getElementById('contentArea');
             contentArea.scrollTop = 0;  // 直接将 scrollTop 设置为 0
@@ -49,6 +56,35 @@ function loadFileContent(filename, listItem) {
     // 点击文件后自动隐藏文件列表（仅移动端）
     if (window.innerWidth <= 768) {
         toggleSidebar();
+    }
+}
+
+// 删除日志文件
+function deleteFile(filename) {
+    if (confirm('确定要删除该日志文件吗?')) {
+        // 获取当前页面的 URL
+        const currentUrl = new URL(window.location.href);
+        // 获取 URL 中的 key 参数
+        const key = currentUrl.searchParams.get('key');
+        const deleteUrl = `/logs/delete/${filename}?key=${key}`;
+
+        // 发送删除请求
+        fetch(deleteUrl, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`已手动删除日志：${filename}`);
+                    // 删除文件后刷新页面
+                    window.location.reload();
+                } else {
+                    alert('删除失败，请稍后重试');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('删除过程中发生错误');
+            });
     }
 }
 
@@ -104,3 +140,15 @@ document.addEventListener('click', function (event) {
 
 // 初始加载时处理屏幕尺寸
 window.dispatchEvent(new Event('resize'));
+
+// 滚动到页面顶部
+function scrollToTop() {
+    const contentArea = document.getElementById('contentArea');
+    contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 滚动到页面底部
+function scrollToBottom() {
+    const contentArea = document.getElementById('contentArea');
+    contentArea.scrollTo({ top: contentArea.scrollHeight, behavior: 'smooth' });
+}
