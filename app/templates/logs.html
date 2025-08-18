@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,11 +28,19 @@
         <!-- 右侧文件内容展示 -->
         <div class="content" id="contentArea">
             <div class="line-container">
-                <h2 id="fileName">左侧选择日志文件</h2>
                 <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
                     title="深色/浅色模式切换">
+                <h2 id="fileName">左侧选择日志文件</h2>
             </div>
-            <button id="deleteButton" style="display: none;">删除日志</button>
+            <div class="line-container">
+                <button id="selectAllBtn" style="display: none;">全选</button>
+                <button id="deselectAllBtn" style="display: none;">全不选</button>
+                <button id="deleteButton" style="display: none;">删除日志</button>
+            </div>
+            <div class="line-container">
+                <div id="deviceCheckboxes" class="checkbox-container"></div>
+            </div>
+            
             <pre id="fileContent">点击日志文件查看内容。</pre>
         </div>
     </div>

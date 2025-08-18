@@ -1,0 +1,20 @@
+log:
+    level: INFO
+    keep_days: 7
+message:
+    enabled: False
+    bemfa_reconnect: True
+    ServerChan_turbo:
+        enabled: False
+        SendKey: YOUR SENDKEY
+        channel: 9
+    ServerChan3:
+        enabled: False
+        SendKey: YOUR SENDKEY
+    Qmsg:
+        enabled: False
+        key: YOUR KEY
+        qq: 123456789
+    WeChat_webhook:
+        enabled: False
+        url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx

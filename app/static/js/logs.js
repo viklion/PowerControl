@@ -1,62 +1,112 @@
 // logs.html
 
-// 加载文件内容
+// 全局保存日志内容
+let allLines = [];
+
+// 加载日志文件
 function loadFileContent(filename, listItem) {
-    // 取消其他文件的选中状态
-    const allItems = document.querySelectorAll('.file-list li');
-    allItems.forEach(item => item.classList.remove('selected'));
-
-    // 高亮当前选择的文件
+    // 取消其他文件选中状态
+    document.querySelectorAll('.file-list li').forEach(item => item.classList.remove('selected'));
     listItem.classList.add('selected');
-
-    // 更新文件名
     document.getElementById('fileName').textContent = filename;
 
-    // 获取当前页面的 URL
     const currentUrl = new URL(window.location.href);
-    // 获取 URL 中的 key 参数
     const key = currentUrl.searchParams.get('key');
-    // 构造 fetch 请求的 URL，带上 key 参数
-    const fetchUrl = `/logs/${filename}?key=${key}`;
+    const fetchUrl = `/logs/get/${filename}?key=${key}`;
 
-    // 请求文件内容
     fetch(fetchUrl)
         .then(response => response.json())
         .then(data => {
-            // 获取日志内容
-            let logContent = data.log_content;
+            allLines = data.log_content.split('\n');
+            renderLogs(allLines);
 
-            // 将日志内容按行分割
-            const lines = logContent.split('\n');
+            // 提取设备名（排除重复主程序）
+            const devices = [...new Set(allLines
+                .map(line => {
+                    const match = line.match(/\[(.*?)\]/);
+                    return match ? match[1] : null;
+                })
+                .filter(name => name)
+            )];
 
-            // 遍历每一行，检查是否包含 '[Error]'，如果是，则添加红色样式
-            const formattedLines = lines.map(line => {
-                if (line.includes('[Error]')) {
-                    return `<span class="error-line">${line}</span>`;
-                }
-                return line;
-            });
+            // 渲染复选框、日志行
+            renderDeviceCheckboxes(devices);
+            // 全选 / 全不选按钮设置可见
+            document.getElementById('selectAllBtn').style.display = 'block';
+            document.getElementById('deselectAllBtn').style.display = 'block';
 
-            // 将处理后的日志内容插入到页面
-            document.getElementById('fileContent').innerHTML = formattedLines.join('<br>');
-
-            // 显示删除按钮并绑定当前文件名
+            // 删除按钮
             const deleteButton = document.getElementById('deleteButton');
-            deleteButton.style.display = 'block'; // 显示删除按钮
-            deleteButton.onclick = function () {
-                deleteFile(filename); // 将当前文件名传给删除函数
-            };
+            deleteButton.style.display = 'block';
+            deleteButton.onclick = () => deleteFile(filename);
 
-            // 使用 DOM 的 scrollTop 属性将内容区域滚动到顶部
-            const contentArea = document.getElementById('contentArea');
-            contentArea.scrollTop = 0;  // 直接将 scrollTop 设置为 0
+            document.getElementById('contentArea').scrollTop = 0;
         })
         .catch(error => alert('无法加载文件内容: ' + error));
 
-    // 点击文件后自动隐藏文件列表（仅移动端）
-    if (window.innerWidth <= 768) {
-        toggleSidebar();
-    }
+    if (window.innerWidth <= 768) toggleSidebar();
+}
+
+// 渲染复选框
+function renderDeviceCheckboxes(devices) {
+    const container = document.getElementById('deviceCheckboxes');
+    container.innerHTML = '';
+
+    // 创建复选框
+    devices.forEach(device => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = device;
+        checkbox.id = `filter_${device}`;
+        checkbox.className = 'checkbox-label';
+        checkbox.checked = true; // 默认选中
+        checkbox.addEventListener('change', applyFilter);
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `filter_${device}`);
+        label.textContent = device;
+
+        container.appendChild(checkbox);
+        container.appendChild(label);
+    });
+
+    // 全选 / 全不选按钮
+    document.getElementById('selectAllBtn').onclick = () => {
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+        applyFilter();
+    };
+    document.getElementById('deselectAllBtn').onclick = () => {
+        container.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        applyFilter();
+    };
+}
+
+// 根据勾选过滤日志
+function applyFilter() {
+    const checkedDevices = Array.from(document.querySelectorAll('#deviceCheckboxes input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+
+    const filtered = allLines.filter(line => {
+        const match = line.match(/\[(.*?)\]/); // 只取第一个方括号
+        if (!match) return false;
+        const source = match[1]; // 日志来源
+        return checkedDevices.includes(source);
+    });
+
+    renderLogs(filtered);
+}
+
+// 渲染日志内容
+function renderLogs(lines) {
+    const formattedLines = lines.map(line => {
+        if (line.includes('[DEBUG]')) return `<span class="debug-line">${line}</span>`;
+        if (line.includes('[INFO]')) return `<span class="info-line">${line}</span>`;
+        if (line.includes('[WARNING]')) return `<span class="warning-line">${line}</span>`;
+        if (line.includes('[ERROR]')) return `<span class="error-line">${line}</span>`;
+        return line;
+    });
+
+    document.getElementById('fileContent').innerHTML = formattedLines.join('<br>');
 }
 
 // 删除日志文件

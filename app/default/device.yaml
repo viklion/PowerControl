@@ -1,0 +1,42 @@
+main:
+  enabled: True
+  alias:
+bemfa:
+  enabled: False
+  uid: aaabbbcccdddeeefffggg
+  topic: mypc001
+device:
+  name: Çë¸ü»»Ãû³ÆÎðÖØ¸´
+  ip: 192.168.100.100
+  wol:
+    enabled: True
+    method: 
+      wakeonlan: True
+      shell: False
+    mac: 00-11-22-33-44-55
+    destination: broadcast_ip_global
+    port: 9
+    interface: default
+    shell_script: yourscript
+  shutdown:
+    enabled: True
+    method: 
+      netrpc: True
+      udp: False
+      shell: False
+    account: youraccount
+    password: yourpassword
+    shell_script: yourscript
+    time: 60
+    timeout: 2
+  ping:
+    enabled: True
+    time: 60
+    method: 
+      pcping: True
+      shell: False
+    shell_script: yourscript
+    on_keyword: 'on'
+    off_keyword: 'off'
+message:
+    enabled: False

@@ -15,9 +15,9 @@
 </head>
 <body class="dark-mode">
     <div class="line-container">
-      <h1>代码</h1>
       <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
         title="深色/浅色模式切换">
+      <h1>代码</h1>
     </div>
 
 {% raw %}
@@ -89,8 +89,8 @@ sshpass -p "abc123" ssh -p 22 -o "StrictHostKeyChecking=no" viklion@192.168.10.1
         <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
         <code id="code-block-4">
 shell_command:
-  ha_wol_pc: "curl http://192.168.2.75:1856/wol?key=1111"
-  ha_shutdown_pc: "curl http://192.168.2.75:1856/shutdown?key=1111"
+  ha_wol_pc: "curl http://192.168.2.75:1856/wol/设备id或设备别名?key=1111"
+  ha_shutdown_pc: "curl http://192.168.2.75:1856/shutdown/设备id或设备别名?key=1111"
 
 input_text:
   powercontrol_state:
@@ -100,7 +100,7 @@ input_text:
 sensor:
   - platform: rest
     name: "powercontrol_pc_state"
-    resource: "http://192.168.2.75:1856/ping?key=1111"
+    resource: "http://192.168.2.75:1856/ping/设备id或设备别名?key=1111"
     method: GET
     scan_interval: 60
     value_template: "{{ value_json.device_status }}"

@@ -1,0 +1,71 @@
+/* overview.css */
+/* overview.html */
+
+.device-container {
+    display: grid;
+    gap: 20px;
+    padding-bottom: 50px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    justify-items: center;
+    margin-top: -30px;
+}
+
+.device-card {
+    background-color: #fafafa;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    width: 300px;
+    box-sizing: border-box;
+    transition: transform 0.2s;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.device-card:hover {
+    transform: translateY(-5px);
+}
+
+.device-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    text-align: left;
+}
+
+.device-card p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.status-on {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-off {
+    color: #ff6666;
+    font-weight: bold;
+}
+
+.status-unknown {
+    color: gray;
+    font-weight: bold;
+}
+
+input[type="submit"],
+button {
+    width: 80px;
+    height: 30px;
+}
+
+@media (max-width: 768px) {
+    input[type="submit"],
+    button {
+        font-size: 12px;
+        height: 30px;
+    }
+}
+
+body.dark-mode .device-card {
+    background-color: #3f3f3f;
+}

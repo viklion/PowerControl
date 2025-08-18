@@ -1,3 +1,4 @@
+/* logs.css */
 /* logs.html */
 
 body {
@@ -10,6 +11,8 @@ body {
 
 h2 {
     color: #4CAF50;
+    margin-top: 0;
+    margin-bottom: 3px;
 }
 
 .container {
@@ -23,7 +26,7 @@ h2 {
     align-items: center;
     margin: 10px 0;
     gap: 10px;
-    justify-content: space-between;
+    justify-content: left;
 }
 
 .icon-image {
@@ -74,6 +77,76 @@ h2 {
     color: white;
 }
 
+.input-label {
+    width: 120px;
+    min-width: 100px;
+    max-width: 100%;
+    border: 1px solid #dddddd00;
+    border-radius: 4px;
+    font-size: 18px;
+    margin: 5px 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 10px;
+    transition: width 0.2s ease-in-out;
+    text-overflow: ellipsis;
+    text-align: center;
+    outline: none;
+    box-sizing: border-box;
+    background-color: #f9f9f9;
+}
+
+/* 隐藏原生勾选框 */
+.checkbox-label {
+    display: none;
+}
+
+.checkbox-label+label {
+    position: relative;
+    display: inline-block;
+    padding-left: 25px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.checkbox-label+label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 18px;
+    height: 15px;
+    border: 2px solid #28a74566;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:checked+label::before {
+    border-color: #28a74566;
+}
+
+.checkbox-label:checked+label::after {
+    content: '✓';
+    position: absolute;
+    left: 4px;
+    top: -2px;
+    font-size: 18px;
+    color: #f9703d;
+    transition: opacity 0.2s ease;
+    font-weight: bolder;
+}
+
+.checkbox-label:not(:checked)+label::after {
+    content: '';
+}
+
+.checkbox-label+label:active::before {
+    border-color: #f9703d91;
+}
+
 .content {
     flex: 1;
     background-color: white;
@@ -91,10 +164,19 @@ h2 {
     font-size: 14px;
     line-height: 1.6;
 }
-
-.error-line {
-    color: red;
+.debug-line {
+    color: #00c3c3;
 }
+.info-line {
+    color: #333;
+}
+.warning-line {
+    color: #ff9f00;
+}
+.error-line {
+    color: #ff6666;
+}
+
 
 button {
     background-color: #218838;
@@ -164,6 +246,15 @@ button:active {
     .scroll-buttons {
         right: 15px;
     }
+
+    .input-label {
+        font-size: 16px;
+    }
+
+    .checkbox-label:checked+label::after {
+        left: 3px;
+        font-size: 20px;
+    }
 }
 
 /* 切换按钮样式 */
@@ -215,8 +306,17 @@ body.dark-mode .content pre {
     background-color: #555555;
 }
 
-body.dark-mode .error-line {
+body.dark-mode .debug-line {
+    color: #9dffffd6;
+}
+body.dark-mode .info-line {
+    color: #ffffffd6;
+}
+body.dark-mode .warning-line {
     color: #ffff99d6;
+}
+body.dark-mode .error-line {
+    color: #fa7a7ad6;
 }
 
 body.dark-mode .file-list li {
@@ -232,8 +332,9 @@ body.dark-mode .file-list li.selected {
     color: white;
 }
 
-body.dark-mode button {
-    color: #2e2d3b;
+body.dark-mode .input-label {
+    background-color: #555555;
+    color: #ffffffd6;
 }
 
 @media (hover: hover) {
@@ -255,5 +356,9 @@ body.dark-mode button {
 
     body.dark-mode .file-list li:hover {
         background-color: #4CAF50;
+    }
+
+    .checkbox-label+label:hover::before {
+        border-color: #f9703d91;
     }
 }

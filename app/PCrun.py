@@ -1,35 +1,99 @@
-import os, threading
-from PCfunctions import PCfuncs, p_print
+# PCrun.py
+import os, threading, time
+from PClog import PClog
+from PCdata import PCdata
+from PCfunctions import PCfuncs
+from PCyaml import PCyaml
+from PCmessage import PCmessage
+from PCthread import PCthread
 from PCweb import PCweb
-from PCbemfa import PCbemfa
+from apscheduler.schedulers.background import BackgroundScheduler
+
+# 全局数据存储
+PC_data = PCdata()
+
+# 启动时间
+PC_data.update(['main','start_time'],time.time())
+
+# 日志
+PC_log = PClog()
+PC_logger = PC_log.get_main_logger('主程序', level='DEBUG')
+PC_data.update(['main','logger'],PC_logger)
+
+# 日志分割线
+PC_logger.debug('----------------------------------------------')
+PC_logger.debug('PowerControl初始化')
+
+# 定时器
+scheduler = BackgroundScheduler()
+PC_data.update(['main','scheduler'],scheduler)
+scheduler.start()
 
 # 读取环境变量
-web_port = int(os.getenv('WEB_PORT', '7678'))
-web_key = str(os.getenv('WEB_KEY', 'admin'))
-p_print("WEB_PORT: "+ str(web_port))
-p_print("WEB_KEY: "+ web_key)
+VERSION = str(os.getenv('VERSION', '版本号未知'))
+WEB_PORT = int(os.getenv('WEB_PORT', '7678'))
+WEB_KEY = str(os.getenv('WEB_KEY', 'admin'))
+PC_logger.debug("VERSION: "+ VERSION)
+PC_logger.debug("WEB_PORT: "+ str(WEB_PORT))
+PC_logger.debug("WEB_KEY: "+ WEB_KEY)
+PC_data.update(['main','VERSION'],VERSION)
+PC_data.update(['main','WEB_PORT'],WEB_PORT)
+PC_data.update(['main','WEB_KEY'],WEB_KEY)
 
-# 初始化配置
-funcs_data = PCfuncs()
-# 初始化web
-pc_web = PCweb(web_port, web_key, funcs_data)
-# 初始化bemfa
-pc_bemfa = PCbemfa(funcs_data)
+# 存储目录路径
+default_path = os.path.join(os.getcwd(), 'default')
+data_path = os.path.join(os.getcwd(), 'data')
+os.makedirs(data_path, exist_ok=True)
+PC_data.update(['main','default_path'],default_path)
+PC_data.update(['main','data_path'],data_path)
+
+# 初始化功能模块
+PC_funcs = PCfuncs()
+PC_yaml = PCyaml()
+PC_message = PCmessage()
+PC_thread = PCthread()
+PC_web = PCweb()
+
+'''启动准备'''
+# 检查目录权限
+PC_funcs.check_permission(data_path,'r')
+PC_funcs.check_permission(data_path,'w')
+# 检查是否存在主程序和至少一个设备配置文件
+PC_yaml.check_main_yaml()
+PC_yaml.check_device_yaml_exist_one()
+# 更新主程序配置文件
+PC_yaml.update_yaml('main', 'main')
+# 读取主程序配置文件
+main_yaml = PC_yaml.read_yaml('main')
+PC_data.update(['main','yaml'],main_yaml)
+# 更新日志配置
+logger_level = PC_data.get(['main','yaml','log','level'])
+logger_days = int(PC_data.get(['main','yaml','log','keep_days']))
+PC_log.set_all_loggers_level(logger_level)
+PC_logger.debug(f'设置日志级别：{logger_level}')
+PC_log.set_file_handler(backup_count=logger_days)
+PC_log.start_queue_listener()
+PC_log.reset_handlers(PC_logger)
+PC_logger.info(f'PowerControl启动')
+PC_message.send_message('Main', 'PowerControl启动')
+# bemfa重连消息推送次数清零定时任务
+PC_data.update(['main','bemfa_reconnect_message_count'],0)
+scheduler.add_job(PC_funcs.clear_bemfa_reconnect_message_count, 'cron', hour=0, minute=0)
+PC_logger.debug('bemfa重连消息推送次数重置服务已启动')
+# 获取本地ip地址
+local_ip = PC_funcs.get_ip_address()
+PC_data.update(['main','local_ip'],local_ip)
+# 兼容旧版本
+PC_yaml.compatibility_check()
+# 更新所有设备配置文件
+PC_yaml.update_all_device_yaml()
 
 # 启动web
-def run_web():
-    pc_web.run()
-# 接入巴法
-def run_bemfa():
-    pc_bemfa.run()
+PC_web_thread = threading.Thread(target=PC_web.run, daemon=True)
+PC_web_thread.start()
 
-# 创建线程
-thread_web = threading.Thread(target=run_web)
-thread_bemfa = threading.Thread(target=run_bemfa)
+# 启动全部设备服务
+PC_thread.start_all()
 
-# 启动线程
-thread_web.start()
-thread_bemfa.start()
-
-thread_web.join()
-thread_bemfa.join()
+# 维持主线程
+PC_web_thread.join()

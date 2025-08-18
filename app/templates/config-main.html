@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/config.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/config.main.js') }}" defer></script>
+    <script>
+        const DEVICE_ID = "{{ device_id }}";
+    </script>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <title>PowerControl全局配置页</title>
+</head>
+
+<body class="dark-mode">
+    <div class="head-container-wrapper">
+        <!-- 左侧模糊提示 -->
+        <div class="blur-left"></div>
+        <div class="head-container">
+            <a>
+                <img id="theme-toggle" src="{{ url_for('static', filename='icon.png') }}" alt="PowerControl"
+                    class="icon-image" title="深色/浅色模式切换">
+            </a>
+            <a id="main" class="textlink" target="_blank">总览</a>
+            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
+            <a id="pdf" class="textlink" href="/pdf" target="_blank">pdf教程</a>
+            <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
+            <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
+            <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
+            <a id="logs" class="textlink" target="_blank">操作日志</a>
+        </div>
+        <!-- 右侧模糊提示 -->
+        <div class="blur-right"></div>
+    </div>
+    <div style="margin-left: 20px; margin-right: 20px;">
+        <h1>PowerControl全局配置<br>
+            <small>{{ VERSION }}</small>
+        </h1>
+        <h3>by viklion</h3>
+        <p style="margin-bottom: -20px;">[{{ device_name }}]</p>
+        <p style="margin-bottom: -20px;">[ID:{{ device_id }}]</p>
+        <br>
+        <p style="margin-bottom: -20px;">{{ run_time }}</p>
+        <br>
+        <div id="flash-messages">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li style="margin-top: 10px;">{{ message | replace('\n', '<br>')| safe }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </div>
+        <div class="line-container" style="margin-top: 16px; margin-bottom: 26px;">
+            <input type="submit" value="保存" onclick="submit_pcconfig()">
+        </div>
+        <form id="pcconfig" method="post">
+            <h2>日志：</h2>
+            日志等级：
+            <select class="input-label" name="log.level">
+                <option value="DEBUG" {% if config.log.level|upper=="DEBUG" %}selected{% endif %}>DEBUG</option>
+                <option value="INFO" {% if config.log.level|upper=="INFO" %}selected{% endif %}>INFO</option>
+                <option value="WARNING" {% if config.log.level|upper=="WARNING" %}selected{% endif %}>WARNING</option>
+                <option value="ERROR" {% if config.log.level|upper=="ERROR" %}selected{% endif %}>ERROR</option>
+            </select>
+            <span class="tooltip">❔︎
+                <span class="tooltiptext">日志等级:调试选DEBUG,平常选INFO</span>
+            </span>
+            <br>
+            <hr class="dashed-hr">
+            保留天数： <input class="input-label" type="number" name="log.keep_days" value="{{ config.log.keep_days }}" min="0" step="1" title="0：只保留当天日志文件（每天0点轮替）" placeholder="0:只保留当天日志文件（每天0点轮替）">
+            <span class="tooltip">❔︎
+                <span class="tooltiptext">0:只保留当天日志文件(每天0点轮替)</span>
+            </span>
+            <br>
+            <h2>推送：</h2>
+            <div class='line-container'>
+                启用消息推送： <input id="push_enabled" class="checkbox-label" type="checkbox" name="message.enabled" value="True" {% if config['message']['enabled'] %} checked{% endif %} data-target='pushconfig'>
+                <label for="push_enabled"></label>
+                <a id="go_push" class="textlink" target="_blank">➔测试消息推送</a>
+            </div>
+            <div id='pushconfig' class='hidden'>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    巴法断线重连推送： <input id="bemfa_reconnect_enabled" class="checkbox-label" type="checkbox" name="message.bemfa_reconnect" value="True" {% if config['message']['bemfa_reconnect'] %} checked{% endif %}>
+                    <label for="bemfa_reconnect_enabled"></label>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Server酱Turbo： <input id="serverchanturbo_enabled" class="checkbox-label" type="checkbox" name="message.ServerChan_turbo.enabled" value="True" {% if config['message']['ServerChan_turbo']['enabled'] %} checked{% endif %} data-target='serverchan_turboconfig'>
+                    <label for="serverchanturbo_enabled"></label>
+                    <a id="go_serverchanturbo" class="textlink" href="https://sct.ftqq.com/sendkey"
+                        target="_blank">➔前往Server酱Turbo</a>
+                </div>
+                <div id='serverchan_turboconfig' class='hidden'>
+                    SendKey： <input class="input-label" type="text" name="message.ServerChan_turbo.SendKey"
+                        value="{{ config.message.ServerChan_turbo.SendKey }}" placeholder="SCTXXXXXXXXXX"><br>
+                    消息通道： <input class="input-label" type="text" name="message.ServerChan_turbo.channel"
+                        value="{{ config.message.ServerChan_turbo.channel }}" placeholder="默认:9(微信服务号)">
+                        <span class="tooltip">❔︎
+                            <span class="tooltiptext">具体查看Server酱的通道说明,默认:9(微信服务号)</span>
+                        </span>
+                        <br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Server酱3： <input id="serverchan3_enabled" class="checkbox-label" type="checkbox"
+                        name="message.ServerChan3.enabled" value="True" {% if
+                        config['message']['ServerChan3']['enabled'] %} checked{% endif %}
+                        data-target='serverchan3config'>
+                    <label for="serverchan3_enabled"></label>
+                    <a id="go_serverchan3" class="textlink" href="https://sc3.ft07.com/" target="_blank">➔前往Server酱3</a>
+                </div>
+                <div id='serverchan3config' class='hidden'>
+                    SendKey： <input class="input-label" type="text" name="message.ServerChan3.SendKey"
+                        value="{{ config.message.ServerChan3.SendKey }}" placeholder="sctpXXXXXXXXX"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Qmsg酱： <input id="qmsg_enabled" class="checkbox-label" type="checkbox"
+                        name="message.Qmsg.enabled" value="True" {% if
+                        config['message']['Qmsg']['enabled'] %} checked{% endif %} data-target='qmsgconfig'>
+                    <label for="qmsg_enabled"></label>
+                    <a id="go_qmsg" class="textlink" href="https://qmsg.zendee.cn/" target="_blank">➔前往Qmsg酱</a>
+                </div>
+                <div id='qmsgconfig' class='hidden'>
+                    Key： <input class="input-label" type="text" name="message.Qmsg.key"
+                        value="{{ config.message.Qmsg.key }}"><br>
+                    QQ： <input class="input-label" type="number" name="message.Qmsg.qq"
+                        value="{{ config.message.Qmsg.qq }}"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    企业微信群机器人： <input id="wechat_webhook_enabled" class="checkbox-label" type="checkbox"
+                        name="message.WeChat_webhook.enabled" value="True" {% if
+                        config['message']['WeChat_webhook']['enabled'] %} checked{% endif %}
+                        data-target='wechat_webhook_config'>
+                    <label for="wechat_webhook_enabled"></label>
+                    <a id="go_wechat_webhook" class="textlink" href="https://open.work.weixin.qq.com/help2/pc/18401"
+                        target="_blank">➔前往企业微信群机器人</a>
+                </div>
+                <div id='wechat_webhook_config' class='hidden'>
+                    Webhook地址： <input class="input-label" type="text" name="message.WeChat_webhook.url"
+                        value="{{ config.message.WeChat_webhook.url }}"
+                        placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
+                </div>
+            </div>
+            <hr class="default-hr">
+            <div class="line-container">
+                <input type="submit" value="保存">
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

@@ -1,4 +1,6 @@
+/* code.css */
 /* code.html */
+
 body {
     font-family: sans-serif;
     background-color: white;
@@ -26,7 +28,7 @@ h5 {
     align-items: center;
     margin: 10px 0;
     gap: 10px;
-    justify-content: space-between;
+    justify-content: left;
 }
 
 .icon-image {
