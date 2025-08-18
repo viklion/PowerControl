@@ -1,7 +1,7 @@
 ![logo](https://github.com/user-attachments/assets/8738de3a-23a3-48d1-bb91-23b152551122)
 
 # PowerControl
-docker容器远程网络唤醒设备，远程关闭Windows、Linux、MacOS，可通过访问api控制，并可依赖巴法云接入米家，通过米家远程操作（需要小爱音箱），支持接入homeassistant  
+docker容器远程网络唤醒或关闭Windows、Linux、MacOS设备，支持添加多设备，可通过访问api控制，并可依赖巴法云接入米家，通过米家远程操作（需要小爱音箱），支持接入homeassistant  
 **米家控制受米家、巴法平台稳定性因素影响*  
 `linux/amd64, linux/arm/v7, linux/arm64, linux/386`
 
@@ -19,7 +19,8 @@ docker容器远程网络唤醒设备，远程关闭Windows、Linux、MacOS，可
 &nbsp;&nbsp;&nbsp;&nbsp;`WEB_PORT：网页端口`  
 &nbsp;&nbsp;&nbsp;&nbsp;`WEB_KEY：密钥`
 
-**不设置环境变量则使用默认参数`port：7678`，`key：admin`*
+**不设置环境变量则使用默认参数`port：7678`，`key：admin`*  
+**网络模式支持host、ipvlan、macvlan，不支持bridge*
 ### 1、Docker CLI
 + 默认root用户运行
 ```
@@ -50,13 +51,13 @@ services:
 ```
 
 ## 配置
-访问`ip:端口`进入首页，顶部跳转教程，输入KEY跳转配置
+访问`ip:端口`进入首页，输入KEY跳转设备总览页，点击卡片进入配置页
 
-一般无需手动修改config.yaml配置文件，都可在web配置，[配置文件参数详解](https://github.com/viklion/PowerControl/blob/main/YAML.md)
+一般无需手动修改配置文件，都可在web配置，[配置文件参数详解](https://github.com/viklion/PowerControl/blob/main/YAML.md)
 
 ## 界面
 ![index](https://github.com/user-attachments/assets/3df4b928-0cf9-4deb-a478-5681dc77b586)
 
-![config](https://github.com/user-attachments/assets/ac7eba15-5e32-4495-a015-931a4e3ca7a6)
+![overview](https://github.com/user-attachments/assets/55e711fa-c2d3-4030-9525-31b0eded9d5c)
 
-
+![overview](https://github.com/user-attachments/assets/d272cbd9-0133-4785-a5c0-fba1bcd423f4)
