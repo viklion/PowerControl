@@ -1,6 +1,33 @@
 ```
-# config.yaml
+# main.yaml主程序配置文件
 
+log:
+    level: INFO    #日志等级
+    keep_days: 7    #日志保留天数，0为只保留当天的日志
+message:
+    enabled: False    #是否启用消息推送
+    bemfa_reconnect: True    #是否推送巴法重连消息
+    ServerChan_turbo:    #Server酱turbo推送参数配置
+      enabled: False    #是否启用
+      SendKey: YOUR SENDKEY    #Server酱turbo的key
+      channel: 9    #消息通道，默认为9（微信服务号）
+    ServerChan3:     #Server酱3推送参数配置
+      enabled: False    #是否启用
+      SendKey: YOUR SENDKEY    #Server酱3的key
+    Qmsg:    #qq消息推送参数配置
+      enabled: False    #是否启用
+      key: YOUR KEY    #Qmsg酱的key
+      qq: 123456789    #QQ号
+    WeChat_webhook:    #企业微信机器人消息推送参数配置
+      enabled: False    #是否启用
+      url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
+```
+```
+# device.yaml设备配置文件
+
+main:
+  enabled: True    #设备服务总开关
+  alias:    #api别名
 bemfa:    #巴法参数配置
   enabled: False    #是否连接巴法平台
   uid: aaabbbcccdddeeefffggg    #巴法uid
@@ -38,31 +65,6 @@ devices:    #设备参数配置
     shell_script: yourscript    #自定义指令内容
     on_keyword: 'on'    #判断设备在线关键字
     off_keyword: 'off'    #判断设备离线关键字
-  shell_allowed:    #允许的指令参数配置
-    - sshpass    #非交互式ssh指令
-    - curl    #发送网络请求指令
-functions:    #其他功能参数配置
-  log:    #日志功能参数配置
-    enabled: True    #是否启用日志记录
-    level: 2    #日志等级，1:记录服务器返回数据和ping结果、操作、报错 2:记录操作和报错 3:记录报错
-    clear_log:     #自动清理日志参数配置
-      enabled: False    #是否启用自动清理日志
-      keep_days: 7    #日志保留天数，0为只保留当天的日志
-  push_notifications:    #消息推送参数配置
-    enabled: False    #是否启用消息推送
-    bemfa_reconnect: True    #是否推送巴法重连消息
-    ServerChan_turbo:    #Server酱turbo推送参数配置
-      enabled: False    #是否启用
-      SendKey: YOUR SENDKEY    #Server酱turbo的key
-      channel: 9    #消息通道，默认为9（微信服务号）
-    ServerChan3:     #Server酱3推送参数配置
-      enabled: False    #是否启用
-      SendKey: YOUR SENDKEY    #Server酱3的key
-    Qmsg:    #qq消息推送参数配置
-      enabled: False    #是否启用
-      key: YOUR KEY    #Qmsg酱的key
-      qq: 123456789    #QQ号
-    WeChat_webhook:    #企业微信机器人消息推送参数配置
-      enabled: False    #是否启用
-      url: 示例 https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
+message:
+    enabled: False     #该设备的消息推送开关
 ```
