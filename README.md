@@ -68,6 +68,7 @@ services:
 ## 界面
 ![index](https://github.com/user-attachments/assets/3df4b928-0cf9-4deb-a478-5681dc77b586)
 
-![overview](https://github.com/user-attachments/assets/55e711fa-c2d3-4030-9525-31b0eded9d5c)
+![overview](https://github.com/user-attachments/assets/c9cf79ba-c624-46fe-b47a-00bec12bd265)
 
-![overview](https://github.com/user-attachments/assets/d272cbd9-0133-4785-a5c0-fba1bcd423f4)
+![config](https://github.com/user-attachments/assets/d272cbd9-0133-4785-a5c0-fba1bcd423f4)
+
