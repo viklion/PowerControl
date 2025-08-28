@@ -8,6 +8,7 @@ from PCmessage import PCmessage
 from PCthread import PCthread
 from PCweb import PCweb
 from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 
 # 全局数据存储
 PC_data = PCdata()
@@ -67,19 +68,23 @@ PC_yaml.update_yaml('main', 'main')
 main_yaml = PC_yaml.read_yaml('main')
 PC_data.update(['main','yaml'],main_yaml)
 # 更新日志配置
-logger_level = PC_data.get(['main','yaml','log','level'])
-logger_days = int(PC_data.get(['main','yaml','log','keep_days']))
+logger_level = PC_data.get_main_yaml_log_level()
 PC_log.set_all_loggers_level(logger_level)
 PC_logger.debug(f'设置日志级别：{logger_level}')
-PC_log.set_file_handler(backup_count=logger_days)
+PC_log.set_file_handler()
 PC_log.start_queue_listener()
 PC_log.reset_handlers(PC_logger)
-PC_logger.info(f'PowerControl启动')
-PC_message.send_message('Main', 'PowerControl启动')
+PC_logger.info(f'------PowerControl启动------')
+PC_message.send_message('main', 'PowerControl启动')
 # bemfa重连消息推送次数清零定时任务
 PC_data.update(['main','bemfa_reconnect_message_count'],0)
 scheduler.add_job(PC_funcs.clear_bemfa_reconnect_message_count, 'cron', hour=0, minute=0)
 PC_logger.debug('bemfa重连消息推送次数重置服务已启动')
+# 日志轮转输出定时任务
+scheduler.add_job(PC_logger.info, 'cron', hour=0, minute=0, args=["日志轮转"])
+# 日志清理定时任务
+scheduler.add_job(PC_funcs.remove_log, 'cron', hour=0, minute=0, second=1)
+PC_logger.info("日志定时清理已启动(每天0点)")
 # 获取本地ip地址
 local_ip = PC_funcs.get_ip_address()
 PC_data.update(['main','local_ip'],local_ip)

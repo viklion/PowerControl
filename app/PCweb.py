@@ -104,7 +104,6 @@ def config_main():
             PC_logger.info(f'设置全局日志级别：{PC_data.get_main_yaml_log_level()}')
             PC_log.set_all_loggers_level(PC_data.get_main_yaml_log_level())
             PC_logger.info(f'设置全局日志保留天数：{PC_data.get_main_yaml_log_days()}')
-            PC_log.set_log_backupCount(PC_data.get_main_yaml_log_days())
             flash(PC_funcs.get_time() + '\n' +'配置保存成功，已生效')
         else:
             flash(PC_funcs.get_time() + '\n' +'配置保存失败：' + str(save_yaml))
@@ -205,7 +204,7 @@ def shutdown(device):
             PC_logger.error(f'{message_cn}(api) → {rs}')
     else:
         message = 'error'
-        message_cn = '设备服务未启用或远程关机未启用'
+        message_cn = '设备服务未启用或未运行，或远程关机未启用'
         PC_logger.error(f'{message_cn}(api)')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
@@ -247,7 +246,7 @@ def wol(device):
             PC_logger.error(f'{message_cn}(api) → {rs}')
     else:
         message = 'error'
-        message_cn = '设备服务未启用或网络唤醒未启用'
+        message_cn = '设备服务未启用或未运行，或网络唤醒未启用'
         PC_logger.error(f'{message_cn}(api)')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
@@ -290,7 +289,7 @@ def ping(device):
                 device_status_cn = "未知"
                 device_status = "unknown"
         else:
-            ping_result = '设备服务未启用或ping未启用'
+            ping_result = '设备服务未启用或未运行，或ping未启用'
             device_status_cn = "未知"
             device_status = "unknown"
         rs_json = {"device_name": PC_data.get_device_device_name(device_id),
@@ -322,7 +321,7 @@ def message_test():
     web_key = request.args.get('key')
     if web_key != WEB_KEY:
         return '请在url中填入正确的key', 401
-    rs = PC_message.send_message_main('Main','PowerControl消息推送测试')
+    rs = PC_message.send_message_main('main','PowerControl消息推送测试')
     rs = {key: value for key, value in rs.items() if value is not None}
     if not rs:
         rs['warning'] = '至少启用一个消息推送渠道'
@@ -576,7 +575,6 @@ def update_device_data(device_id):
             PC_logger.info(f'设置全局日志级别：{PC_data.get_main_yaml_log_level()}')
             PC_log.set_all_loggers_level(PC_data.get_main_yaml_log_level())
             PC_logger.info(f'设置全局日志保留天数：{PC_data.get_main_yaml_log_days()}')
-            PC_log.set_log_backupCount(PC_data.get_main_yaml_log_days())
         else:
             PC_yaml.load_yaml(device_id)
     else:

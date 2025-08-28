@@ -77,6 +77,9 @@ class PCdata():
     def get_main_start_time(self):
         return self.get(['main','start_time'])
 
+    def get_main_scheduler(self):
+        return self.get(['main','scheduler'])
+
     def get_main_VERSION(self):
         return self.get(['main','VERSION'])
 
@@ -248,6 +251,10 @@ class PCdata():
 
     def get_device_service_thread(self, device_id):
         return self.get(['device', device_id, 'service', 'thread'])
+
+    def get_device_service_thread_is_alive(self, device_id):
+        device_thread = self.get_device_service_thread(device_id)
+        return device_thread and device_thread.is_alive()
 
     def get_device_service_logger(self, device_id):
         return self.get(['device', device_id, 'service', 'logger'])

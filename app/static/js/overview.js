@@ -233,16 +233,43 @@ function fetchAllDevicesBrief() {
                     const enabledClass = info.enabled ? 'status-on' : 'status-off';
 
                     card.innerHTML = `
-                                <h3>${info.name}</h3>
-                                <p><strong>启用：</strong> <span class="${enabledClass}">${enabledText}</span></p>
-                                <p><strong>设备ID：</strong> ${deviceId}</p>
-                                <p><strong>api别名：</strong> ${aliasText}</p>
-                                <p><strong>状态：</strong> <span class="${statusClass}">${statusText}</span></p>
-                                <p><strong>IP：</strong> ${info.ip || '-'}</p>
-                                <p><strong>服务：</strong> <span class="${runningClass}">${runningText}</span></p>
-                            `;
+                        <div class="card-header">
+                            <h3>${info.name}</h3>
+                            <div class="card-actions">
+                                <button class="action-btn power-on" title="开机" dev-id="${deviceId}">ON</button>
+                                <button class="action-btn power-off" title="关机" dev-id="${deviceId}">OFF</button>
+                            </div>
+                        </div>
+                        <p><strong>启用：</strong> <span class="${enabledClass}">${enabledText}</span></p>
+                        <p><strong>设备ID：</strong> ${deviceId}</p>
+                        <p><strong>api别名：</strong> ${aliasText}</p>
+                        <p><strong>状态：</strong> <span class="${statusClass}">${statusText}</span></p>
+                        <p><strong>IP：</strong> ${info.ip || '-'}</p>
+                        <p><strong>服务：</strong> <span class="${runningClass}">${runningText}</span></p>
+                    `;
                 }
                 container.appendChild(card);
+            });
+            // 给按钮绑定点击事件
+            container.querySelectorAll('.power-on').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation(); // 阻止触发 card.onclick
+                    if (!confirm("确认开机？")) {
+                        return;
+                    }
+                    const id = btn.getAttribute('dev-id');
+                    window.open(`/wol/${id}?key=${KEY}`, '_blank');
+                });
+            });
+            container.querySelectorAll('.power-off').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    e.stopPropagation();
+                    if (!confirm("确认关机？")) {
+                        return;
+                    }
+                    const id = btn.getAttribute('dev-id');
+                    window.open(`/shutdown/${id}?key=${KEY}`, '_blank');
+                });
             });
         })
         .catch(err => {

@@ -88,7 +88,7 @@ class PClog():
             return True
 
     # 设置日志文件
-    def set_file_handler(self, when='midnight', backup_count=7):
+    def set_file_handler(self, when='midnight'):
         log_dir = os.path.join('data', 'logs')
         if log_dir and not os.path.exists(log_dir):
             os.makedirs(log_dir)
@@ -97,7 +97,6 @@ class PClog():
             filename=log_file,
             when=when,
             interval=1,
-            backupCount=backup_count,
             encoding='utf-8'
         )
         self.file_handler.setFormatter(self.formatter)
@@ -126,11 +125,6 @@ class PClog():
         target_level = self.trans_level(level)
         for logger_name in logging.root.manager.loggerDict.keys():
             logging.getLogger(logger_name).setLevel(target_level)
-
-    # 修改保留天数
-    def set_log_backupCount(self, days: int):
-        self.file_handler.backupCount = days
-        # self.file_handler.doRollover()
 
     # 清空日志
     def clear_log_file(self):

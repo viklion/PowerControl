@@ -316,7 +316,7 @@ class PCservice():
                         self.remove_update_bemfa_job()
                         # 如果开启了巴法重连消息推送
                         if self.PC_data.get_main_yaml_message_bemfa_reconnect():
-                            self.PC_message.send_message('Main', f'重新订阅bemfa提醒', desp=f'正在重新订阅bemfa\n\n断连时间：{self.PC_funcs.get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达5次后将不再推送，请查看日志。', type='bemfa_reconnect')
+                            self.PC_message.send_message('main', f'重新订阅bemfa提醒', desp=f'正在重新订阅bemfa\n\n断连时间：{self.PC_funcs.get_time()}\n\n可能的原因：网络发生短暂断开；bemfa服务器偶然断连。\n\n*当天重连推送达5次后将不再推送，请查看日志。', type='bemfa_reconnect')
                         try:
                             self.tcp_client_socket.close()
                         except Exception as e:

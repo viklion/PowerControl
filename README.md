@@ -1,9 +1,19 @@
 ![logo](https://github.com/user-attachments/assets/8738de3a-23a3-48d1-bb91-23b152551122)
 
 # PowerControl
+## 简介
 docker容器远程网络唤醒或关闭Windows、Linux、MacOS设备，支持添加多设备，可通过访问api控制，并可依赖巴法云接入米家，通过米家远程操作（需要小爱音箱），支持接入homeassistant  
 **米家控制受米家、巴法平台稳定性因素影响*  
 `linux/amd64, linux/arm/v7, linux/arm64, linux/386`
+
+## 功能
+1. 多种方式唤醒或关闭Windows、Linux、MacOS设备
+1. 通过巴法云接入米家，使用小爱音箱语音开机/关机
+1. 通过访问api开机/关机，端口转发或反向代理后可远程操作
+1. 支持接入homeassistant，通过homeassistant操作
+1. 通过自定义指令，可打开/关闭虚拟机
+1. 支持多设备管理
+1. 支持消息推送
 
 ## 部署
 * [视频教程(bilibili)](https://www.bilibili.com/video/BV1cykZY7Er9)

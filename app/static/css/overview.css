@@ -17,24 +17,66 @@
     padding: 15px;
     width: 300px;
     box-sizing: border-box;
-    transition: transform 0.2s;
+    transition: transform 0.5s;
     cursor: pointer;
     margin-top: 10px;
 }
 
-.device-card:hover {
+.device-card:active {
     transform: translateY(-5px);
 }
 
 .device-card h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 3px;
     font-size: 18px;
     text-align: left;
+    color: orangered;
 }
 
 .device-card p {
     margin: 4px 0;
     font-size: 14px;
+}
+
+.device-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    /* 标题在左，按钮组在右 */
+    align-items: center;
+}
+
+.device-card .card-actions {
+    display: flex;
+    gap: 6px;
+    /* 按钮之间的间距 */
+}
+
+.device-card .action-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 24px;
+    text-align: center;
+    margin: 0px 0px 10px 0px;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.device-card .power-on {
+    background-color: #28a745;
+    color: white;
+}
+
+.device-card .power-off {
+    background-color: #ff6666;
+    color: white;
+}
+
+.device-card .action-btn:active {
+    opacity: 0.7;
 }
 
 .status-on {
@@ -68,4 +110,17 @@ button {
 
 body.dark-mode .device-card {
     background-color: #3f3f3f;
+}
+body.dark-mode .device-card h3 {
+    color: #f9703ddb;
+}
+
+@media (hover: hover) {
+    .device-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .device-card .action-btn:hover {
+        opacity: 0.7;
+    }
 }

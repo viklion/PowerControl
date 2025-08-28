@@ -32,7 +32,7 @@ class PCmessage():
         # 是否启用全局消息推送
         if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_enabled()):
             # 是否启用设备消息推送
-            if device_id == 'Main' or self.PC_data.get_device_message_enabled(device_id):
+            if device_id == 'main' or self.PC_data.get_device_message_enabled(device_id):
                 self.PC_logger.debug(f'收到来自{device_id}的消息准备推送')
                 if not type:
                     # 线程推送消息
@@ -83,8 +83,8 @@ class PCmessage():
 
     # 判断主程序或设备消息，选择不同logger
     def check_message_from(self, device_id):
-        if device_id == 'Main':
-            device_name = device_id
+        if device_id == 'main':
+            device_name = '主程序'
             logger = self.PC_logger
         else:
             device_name = self.PC_data.get_device_device_name(device_id)

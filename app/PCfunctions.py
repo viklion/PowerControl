@@ -110,11 +110,42 @@ class PCfuncs():
         hours, remainder = divmod(run_timedelta.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         return f"已运行：{days}天{hours}小时{minutes}分钟{seconds}秒"
-    
+
+    # 清理日志
+    def remove_log(self):
+        log_dir = os.path.join('data', 'logs')
+        if os.path.exists(log_dir):
+            keep_days = int(self.PC_data.get_main_yaml_log_days())
+            # 获取今天的日期
+            today = datetime.today()
+            # 需要保留的最早日期
+            if keep_days == 0:  # 只保留当天日志
+                keep_date = datetime(today.year, today.month, today.day)
+            else:
+                keep_date = today - timedelta(days=keep_days)
+            # 遍历日志目录
+            for filename in os.listdir(log_dir):
+                # 只处理.log文件
+                if filename.endswith(".log"):
+                    try:
+                        # 获取文件的完整路径
+                        file_path = os.path.join(log_dir, filename)
+                        # 获取文件的最后修改时间
+                        file_mtime = os.path.getmtime(file_path)
+                        # 将最后修改时间转换为 datetime 对象
+                        file_date = datetime.fromtimestamp(file_mtime)
+                        # 对比日期，删除早于保留日期的文件
+                        if file_date < keep_date:
+                            os.remove(file_path)
+                            self.PC_logger.info(f"已自动清理日志: {filename}")
+                    except Exception as e:
+                        # 如果发生异常输出错误信息
+                        self.PC_logger.error(f"自动清理日志 {filename} 出错: {str(e)}")
+
     # 关机
     def pcshutdown(self, device_id):
         # 设备服务是否启用
-        if self.checkbool(self.PC_data.get_device_main_enabled(device_id)):
+        if self.checkbool(self.PC_data.get_device_main_enabled(device_id)) and self.PC_data.get_device_service_thread_is_alive(device_id):
             # 设备是否启用关机功能
             if self.checkbool(self.PC_data.get_device_device_shutdown_enabled(device_id)):
                 device_ip = self.PC_data.get_device_device_ip(device_id)
@@ -188,7 +219,7 @@ class PCfuncs():
     # 网络唤醒
     def pcwol(self, device_id):
         # 设备服务是否启用
-        if self.checkbool(self.PC_data.get_device_main_enabled(device_id)):
+        if self.checkbool(self.PC_data.get_device_main_enabled(device_id)) and self.PC_data.get_device_service_thread_is_alive(device_id):
             # 网络唤醒是否启用
             if self.checkbool(self.PC_data.get_device_device_wol_enabled(device_id)):
                 # 判断唤醒方法
@@ -241,7 +272,7 @@ class PCfuncs():
     # ping
     def pcping(self, device_id):
         # 设备服务是否启用
-        if self.checkbool(self.PC_data.get_device_main_enabled(device_id)):
+        if self.checkbool(self.PC_data.get_device_main_enabled(device_id)) and self.PC_data.get_device_service_thread_is_alive(device_id):
             # ping是否启用
             if self.checkbool(self.PC_data.get_device_device_ping_enabled(device_id)):
                 # 判断ping方法
