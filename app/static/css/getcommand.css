@@ -13,6 +13,13 @@ body {
     border-radius: 10px;
 }
 
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 h1,
 h3 {
     color: #2e2d3b;

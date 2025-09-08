@@ -59,13 +59,18 @@
         overflow-x: auto;
         /* 添加横向滚动效果 */
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
+        scrollbar-width: none;
         /* 隐藏滚动条 */
         scroll-behavior: smooth;
         /* 平滑滚动效果 */
         overscroll-behavior-x: contain;
         /* 添加横向滚动的 OverScroll 效果 */
         width: 100%;
+        -ms-overflow-style: none;
+    }
+
+    .head-container::-webkit-scrollbar {
+        display: none;
     }
 
     .head-container a {

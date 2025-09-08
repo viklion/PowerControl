@@ -12,7 +12,7 @@
     <title>PowerControl设备总览页</title>
 </head>
 <body class="dark-mode">
-    <div class="head-container-wrapper">
+    <div class="head-container-wrapper no-select">
         <!-- 左侧模糊提示 -->
         <div class="blur-left"></div>
         <div class="head-container">
@@ -32,8 +32,8 @@
         <div class="blur-right"></div>
     </div>
     <div style="margin-left: 20px; margin-right: 20px;">
-        <h1>PowerControl设备总览<br>
-            <small>{{ VERSION }}</small>
+        <h1>PowerControl {{ VERSION }}<br>
+            <small>设备总览</small>
         </h1>
         <h3>by viklion</h3>
         <br>
@@ -50,14 +50,14 @@
             {% endif %}
             {% endwith %}
         </div>
-        <div class="line-container" style="margin-top: 16px; margin-bottom: 26px;">
+        <div class="line-container no-select" style="margin-top: 16px; margin-bottom: 26px;">
             <button id="new_device_top_btn" type="button">新建设备</button>
             <button id="start_all_top_btn" type="button">全部启动</button>
             <button id="stop_all_top_btn" type="button">全部停止</button>
             <button id="restart_all_top_btn" type="button">全部重启</button>
             <button id="restart_container_top_btn" type="button">重启容器</button>
         </div>
-        <div class="device-container" id="deviceContainer">
+        <div class="device-container no-select" id="deviceContainer">
             <!-- 设备卡片会由 JS 动态生成 -->
         </div>
     </div>

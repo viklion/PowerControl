@@ -11,7 +11,7 @@
     <title>PowerControl</title>
 </head>
 <body class="dark-mode">
-    <div class="head-container-wrapper">
+    <div class="head-container-wrapper no-select">
         <!-- 左侧模糊提示 -->
         <div class="blur-left"></div>
         <div class="head-container">
@@ -29,17 +29,17 @@
         <div class="blur-right"></div>
     </div>
     <div style="margin-left: 20px; margin-right: 20px;">
-        <h1>PowerControl<br>
-            <small>{{ VERSION }}</small>
+        <h1>PowerControl {{ VERSION }}<br>
+            <small>欢迎</small>
         </h1>
         <h3>by viklion</h3>
         <p>{{ run_time }}</p>
         <br>
         <div class="line-container">
             <input id="webkey" class="key-input" type="text" placeholder="请输入KEY">
-            <div id="keybtn" class="key-button">跳转总览</div>
+            <div id="keybtn" class="key-button no-select">跳转总览</div>
         </div>
-        <div id="message" class="message"></div>
+        <div id="message" class="message no-select"></div>
     </div>
 </body>
 </html>

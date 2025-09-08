@@ -10,6 +10,13 @@ body {
     margin-right: 20px;
 }
 
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 h1 {
     color: #4CAF50;
 }

@@ -8,6 +8,13 @@ body {
     padding: 0;
 }
 
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 .container {
     max-width: 800px;
     margin: 0 auto;

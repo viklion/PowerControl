@@ -1,4 +1,5 @@
 // config-device.html
+document.addEventListener("touchstart", function () { }, true);
 
 // 获取当前页面的 URL
 let currentUrl = new URL(window.location.href);

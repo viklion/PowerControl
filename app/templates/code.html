@@ -14,7 +14,7 @@
     <title>代码块</title>
 </head>
 <body class="dark-mode">
-    <div class="line-container">
+    <div class="line-container no-select">
       <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
         title="深色/浅色模式切换">
       <h1>代码</h1>
@@ -25,14 +25,14 @@
     <h3>1、docker-cli：</h3>
     <h5># 默认root用户运行</h5>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-1a">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-1a">复制代码</button>
         <code id="code-block-1a">
 docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
         </code>
     </pre>
     <h5># 设置变量PUID和PGID,指定user运行</h5>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-1b">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-1b">复制代码</button>
         <code id="code-block-1b">
 docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey -e PUID=1000 -e PGID=100 --network host --restart unless-stopped --name powercontrol viklion/powercontrol:latest
         </code>
@@ -41,7 +41,7 @@ docker run -d -v /your/path:/app/data -e WEB_PORT=7678 -e WEB_KEY=yourkey -e PUI
     <!-- 代码块 -->
     <h3>2、docker-compose（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-2">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-2">复制代码</button>
         <code id="code-block-2">
 services:
   powercontrol:
@@ -63,21 +63,21 @@ services:
     <!-- 代码块 -->
     <h3>3、自定义指令sshpass</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-3a">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-3a">复制代码</button>
         <code id="code-block-3a">
 sshpass -p "登录密码" ssh -p 端口 -o "StrictHostKeyChecking=no" 登录名@192.168.xx.xx "echo 'sudo密码' | sudo -S poweroff"
         </code>
     </pre>
     <h5># 示例：立刻关机</h5>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-3b">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-3b">复制代码</button>
         <code id="code-block-3b">
 sshpass -p "abc123" ssh -p 22 -o "StrictHostKeyChecking=no" viklion@192.168.10.11 "echo 'abc123' | sudo -S poweroff"
         </code>
     </pre>
     <h5># 示例：延迟关机，修改sleep后的秒数</h5>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-3c">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-3c">复制代码</button>
         <code id="code-block-3c">
 sshpass -p "abc123" ssh -p 22 -o "StrictHostKeyChecking=no" viklion@192.168.10.11 "echo 'abc123' | sudo -S sleep 30 && echo 'abc123' | sudo -S poweroff"
         </code>
@@ -86,7 +86,7 @@ sshpass -p "abc123" ssh -p 22 -o "StrictHostKeyChecking=no" viklion@192.168.10.1
     <!-- 代码块 -->
     <h3>4、homeassistant configuration.yaml（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-4">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-4">复制代码</button>
         <code id="code-block-4">
 shell_command:
   ha_wol_pc: "curl http://192.168.2.75:1856/wol/设备id或设备别名?key=1111"
@@ -133,7 +133,7 @@ switch:
     <!-- 代码块 -->
     <h3>5、homeassistant automations.yaml（注意检查缩进）</h3>
     <pre>
-        <button class="copy-btn" data-clipboard-target="#code-block-5">复制代码</button>
+        <button class="copy-btn no-select" data-clipboard-target="#code-block-5">复制代码</button>
         <code id="code-block-5">
 - id: '20250108'
   alias: 更新电脑在线状态

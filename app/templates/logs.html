@@ -11,11 +11,11 @@
 </head>
 <body class="dark-mode">
     <!-- 切换按钮 -->
-    <button id="toggleButton" onclick="toggleSidebar()">&gt;</button>
+    <button id="toggleButton" class="no-select" onclick="toggleSidebar()">&gt;</button>
 
     <div class="container">
         <!-- 左侧文件列表 -->
-        <div class="sidebar" id="sidebar">
+        <div class="sidebar no-select" id="sidebar">
             <h2>日志文件列表</h2>
             <ul class="file-list" id="fileList">
                 <!-- 文件列表会动态加载 -->
@@ -27,25 +27,29 @@
 
         <!-- 右侧文件内容展示 -->
         <div class="content" id="contentArea">
-            <div class="line-container">
-                <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl" class="icon-image"
-                    title="深色/浅色模式切换">
-                <h2 id="fileName">左侧选择日志文件</h2>
+            <div id="toolbar">
+                <div class="line-container no-select">
+                    <img id="theme-toggle" src="{{ url_for('static', filename='icon-theme.png') }}" alt="PowerControl"
+                        class="icon-image" title="深色/浅色模式切换">
+                    <h2 id="fileName">左侧选择日志文件</h2>
+                </div>
+                <div class="line-container no-select">
+                    <button id="selectAllBtn" style="display: none;">全选</button>
+                    <button id="deselectAllBtn" style="display: none;">全不选</button>
+                    <button id="deleteButton" style="display: none;">删除日志</button>
+                </div>
+                <div class="line-container no-select">
+                    <div id="deviceCheckboxes" class="checkbox-container"></div>
+                </div>
             </div>
-            <div class="line-container">
-                <button id="selectAllBtn" style="display: none;">全选</button>
-                <button id="deselectAllBtn" style="display: none;">全不选</button>
-                <button id="deleteButton" style="display: none;">删除日志</button>
+            <div id="logArea">
+                <pre id="fileContent">点击日志文件查看内容。</pre>
             </div>
-            <div class="line-container">
-                <div id="deviceCheckboxes" class="checkbox-container"></div>
-            </div>
-            
-            <pre id="fileContent">点击日志文件查看内容。</pre>
         </div>
     </div>
-    <div id="scrollButtons" class="scroll-buttons">
+    <div id="scrollButtons" class="scroll-buttons no-select">
         <button id="scrollTop" class="scroll-btn" onclick="scrollToTop()">↑</button>
+        <button id="refreshBottom" class="scroll-btn" onclick="refreshLog()">↻</button>
         <button id="scrollBottom" class="scroll-btn" onclick="scrollToBottom()">↓</button>
     </div>
 </body>

@@ -1,10 +1,15 @@
 // logs.html
+document.addEventListener("touchstart", function () { }, true);
 
 // 全局保存日志内容
+let currentFilename = null;
+let currentListItem = null;
 let allLines = [];
 
 // 加载日志文件
 function loadFileContent(filename, listItem) {
+    currentFilename = filename;
+    currentListItem = listItem;
     // 取消其他文件选中状态
     document.querySelectorAll('.file-list li').forEach(item => item.classList.remove('selected'));
     listItem.classList.add('selected');
@@ -40,7 +45,7 @@ function loadFileContent(filename, listItem) {
             deleteButton.style.display = 'block';
             deleteButton.onclick = () => deleteFile(filename);
 
-            document.getElementById('contentArea').scrollTop = 0;
+            // document.getElementById('contentArea').scrollTop = 0;
         })
         .catch(error => alert('无法加载文件内容: ' + error));
 
@@ -193,12 +198,19 @@ window.dispatchEvent(new Event('resize'));
 
 // 滚动到页面顶部
 function scrollToTop() {
-    const contentArea = document.getElementById('contentArea');
+    const contentArea = document.getElementById('logArea');
     contentArea.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // 滚动到页面底部
 function scrollToBottom() {
-    const contentArea = document.getElementById('contentArea');
+    const contentArea = document.getElementById('logArea');
     contentArea.scrollTo({ top: contentArea.scrollHeight, behavior: 'smooth' });
+}
+
+// 刷新当前日志
+function refreshLog() {
+    if (currentFilename) {
+        loadFileContent(currentFilename, currentListItem);
+    }
 }

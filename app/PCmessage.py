@@ -78,6 +78,7 @@ class PCmessage():
             elif 'Reply' in rs:
                 self.send_message(device_id,title, desp)
                 # 解锁消息锁
+                time.sleep(300)
                 self.PC_data.update(['main', 'message_lock'], False)
                 break
 

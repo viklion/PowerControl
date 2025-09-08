@@ -116,30 +116,27 @@ class PCfuncs():
         log_dir = os.path.join('data', 'logs')
         if os.path.exists(log_dir):
             keep_days = int(self.PC_data.get_main_yaml_log_days())
-            # 获取今天的日期
-            today = datetime.today()
+            # 获取今天的日期（年月日）
+            today = datetime.today().date()
             # 需要保留的最早日期
             if keep_days == 0:  # 只保留当天日志
-                keep_date = datetime(today.year, today.month, today.day)
+                keep_date = today
             else:
                 keep_date = today - timedelta(days=keep_days)
+
             # 遍历日志目录
             for filename in os.listdir(log_dir):
-                # 只处理.log文件
+                # 只处理 .log 文件
                 if filename.endswith(".log"):
                     try:
-                        # 获取文件的完整路径
                         file_path = os.path.join(log_dir, filename)
-                        # 获取文件的最后修改时间
-                        file_mtime = os.path.getmtime(file_path)
-                        # 将最后修改时间转换为 datetime 对象
-                        file_date = datetime.fromtimestamp(file_mtime)
-                        # 对比日期，删除早于保留日期的文件
+                        # 获取文件最后修改日期（年月日）
+                        file_date = datetime.fromtimestamp(os.path.getmtime(file_path)).date()
+                        # 删除早于保留日期的日志文件
                         if file_date < keep_date:
                             os.remove(file_path)
                             self.PC_logger.info(f"已自动清理日志: {filename}")
                     except Exception as e:
-                        # 如果发生异常输出错误信息
                         self.PC_logger.error(f"自动清理日志 {filename} 出错: {str(e)}")
 
     # 关机

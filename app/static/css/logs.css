@@ -9,6 +9,13 @@ body {
     padding: 0;
 }
 
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 h2 {
     color: #4CAF50;
     margin-top: 0;
@@ -43,7 +50,7 @@ h2 {
     border-right: 1px solid #ddd;
     overflow-y: auto;
     z-index: 10;
-    transition: left 0.3s ease,background-color 0.5s;
+    transition: left 0.3s ease, background-color 0.5s;
     position: relative;
 }
 
@@ -148,11 +155,25 @@ h2 {
 }
 
 .content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     flex: 1;
     background-color: white;
     padding: 20px;
     overflow-y: auto;
     transition: background-color 0.5s;
+}
+
+#toolbar {
+    flex: 0 0 auto;
+    background: inherit;
+    z-index: 5;
+}
+
+#logArea {
+    flex: 1 1 auto;
+    overflow-y: auto;
 }
 
 .content pre {
@@ -164,15 +185,19 @@ h2 {
     font-size: 14px;
     line-height: 1.6;
 }
+
 .debug-line {
     color: #00c3c3;
 }
+
 .info-line {
     color: #333;
 }
+
 .warning-line {
     color: #ff9f00;
 }
+
 .error-line {
     color: #ff6666;
 }
@@ -213,10 +238,12 @@ button:active {
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin-right: 20px;
+    opacity: 0.6;
 }
 
 .scroll-btn:active {
-    background-color: #4CAF50;
+    /* background-color: #4CAF50; */
+    opacity: 1;
 }
 
 .scroll-btn:focus {
@@ -309,12 +336,15 @@ body.dark-mode .content pre {
 body.dark-mode .debug-line {
     color: #9dffffd6;
 }
+
 body.dark-mode .info-line {
     color: #ffffffd6;
 }
+
 body.dark-mode .warning-line {
     color: #ffff99d6;
 }
+
 body.dark-mode .error-line {
     color: #fa7a7ad6;
 }
@@ -351,7 +381,8 @@ body.dark-mode .input-label {
     }
 
     .scroll-btn:hover {
-        background-color: #4CAF50;
+        /* background-color: #4CAF50; */
+        opacity: 0.9;
     }
 
     body.dark-mode .file-list li:hover {

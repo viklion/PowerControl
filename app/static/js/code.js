@@ -1,4 +1,5 @@
 // code.html
+document.addEventListener("touchstart", function () { }, true);
 
 // 使用 ClipboardJS 实现多个代码块的复制功能
 var clipboard = new ClipboardJS('.copy-btn', {

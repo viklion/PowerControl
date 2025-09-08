@@ -126,7 +126,7 @@ def config_device(device_id):
     if request.method == 'POST':
         # 获取表单数据
         device_yaml['main']['enabled'] = bool(request.form.get('main.enabled'))
-        device_yaml['main']['alias'] = PC_funcs.trans_str(request.form.get('main.alias')) if PC_funcs.trans_str(request.form.get('main.alias')) else ''
+        device_yaml['main']['alias'] = PC_funcs.trans_str(request.form.get('main.alias')) or ''
         device_yaml['bemfa']['enabled'] = bool(request.form.get('bemfa.enabled'))
         device_yaml['bemfa']['uid'] = PC_funcs.trans_str(request.form.get('bemfa.uid'))
         device_yaml['bemfa']['topic'] = PC_funcs.trans_str(request.form.get('bemfa.topic'))
@@ -182,30 +182,34 @@ def shutdown(device):
     # 获取请求中的密钥
     web_key = request.args.get('key')
     user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if web_key != WEB_KEY:
-        PC_logger.warning(f'ip：{user_ip} 访问关机api失败，错误的KEY：{web_key}')
-        return '请在url中填入正确的key', 401
-    PC_logger.debug(f'ip：{user_ip} 访问关机api')
     device_id = device
     alias_dict = PC_data.get_device_alias_dict()
     for dev_id, alias in alias_dict.items():
-        if alias == device:
+        if alias == device.replace(' ', '-'):
             device_id = dev_id
             break
+    logger = PC_data.get_device_service_logger(device_id) or PC_logger
+
+    if web_key != WEB_KEY:
+        logger.warning(f'ip：{user_ip} 访问关机api失败，错误的KEY：{web_key}')
+        return '请在url中填入正确的key', 401
+    logger.debug(f'ip：{user_ip} 访问关机api')
+
     rs = PC_funcs.pcshutdown(device_id)
     if rs:
         if 'succeeded' in rs:
             message = 'success'
             message_cn = '已发送关机指令'
-            PC_logger.info(f'{message_cn}(api) → {rs}')
+            logger.info(f'{message_cn}(api) → {rs}')
         else:
             message = 'error'
             message_cn = '发送关机指令失败'
-            PC_logger.error(f'{message_cn}(api) → {rs}')
+            logger.error(f'{message_cn}(api) → {rs}')
     else:
+        device_name = PC_data.get_device_device_name(device_id)
         message = 'error'
-        message_cn = '设备服务未启用或未运行，或远程关机未启用'
-        PC_logger.error(f'{message_cn}(api)')
+        message_cn = f'设备[{device_name}]服务未启用或未运行，或远程关机未启用'
+        logger.error(f'{message_cn}(api)')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
                 "method": "shutdown",
@@ -224,30 +228,34 @@ def shutdown(device):
 def wol(device):
     web_key = request.args.get('key')
     user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if web_key != WEB_KEY:
-        PC_logger.warning(f'ip：{user_ip} 访问网络唤醒api失败，错误的KEY：{web_key}')
-        return '请在url中填入正确的key', 401
-    PC_logger.debug(f'ip：{user_ip} 访问网络唤醒api')
     device_id = device
     alias_dict = PC_data.get_device_alias_dict()
     for dev_id, alias in alias_dict.items():
-        if alias == device:
+        if alias == device.replace(' ', '-'):
             device_id = dev_id
             break
+    logger = PC_data.get_device_service_logger(device_id) or PC_logger
+
+    if web_key != WEB_KEY:
+        logger.warning(f'ip：{user_ip} 访问网络唤醒api失败，错误的KEY：{web_key}')
+        return '请在url中填入正确的key', 401
+    logger.debug(f'ip：{user_ip} 访问网络唤醒api')
+
     rs = PC_funcs.pcwol(device_id)
     if rs:
         if 'done' in rs:
             message = 'success'
             message_cn = '已发送唤醒指令'
-            PC_logger.info(f'{message_cn}(api)')
+            logger.info(f'{message_cn}(api)')
         else:
             message = 'error'
             message_cn = '发送唤醒指令失败'
-            PC_logger.error(f'{message_cn}(api) → {rs}')
+            logger.error(f'{message_cn}(api) → {rs}')
     else:
+        device_name = PC_data.get_device_device_name(device_id)
         message = 'error'
-        message_cn = '设备服务未启用或未运行，或网络唤醒未启用'
-        PC_logger.error(f'{message_cn}(api)')
+        message_cn = f'设备[{device_name}]服务未启用或未运行，或网络唤醒未启用'
+        logger.error(f'{message_cn}(api)')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
                 "method": "wol",
@@ -266,16 +274,19 @@ def wol(device):
 def ping(device):
     web_key = request.args.get('key')
     user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if web_key != WEB_KEY:
-        PC_logger.warning(f'ip：{user_ip} 访问ping api失败，错误的KEY：{web_key}')
-        return '请在url中填入正确的key', 401
-    PC_logger.debug(f'ip：{user_ip} 访问ping api')
     device_id = device
     alias_dict = PC_data.get_device_alias_dict()
     for dev_id, alias in alias_dict.items():
-        if alias == device:
+        if alias == device.replace(' ', '-'):
             device_id = dev_id
             break
+    logger = PC_data.get_device_service_logger(device_id) or PC_logger
+
+    if web_key != WEB_KEY:
+        logger.warning(f'ip：{user_ip} 访问ping api失败，错误的KEY：{web_key}')
+        return '请在url中填入正确的key', 401
+    logger.debug(f'ip：{user_ip} 访问ping api')
+
     try:
         ping_result = PC_funcs.pcping(device_id)
         if ping_result:
@@ -476,12 +487,30 @@ def device_new():
     rs = PC_yaml.new_yaml()
     if rs:
         result = True
+        PC_yaml.load_yaml(rs)
     else:
         result = False
     device_id = rs
 
     rs_json = {"result": result,
                 "device_id": device_id
+                }
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+# 获取主程序基本信息
+@app.route('/device/get/main-basic', methods=['GET'])
+def get_device_main_basic():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问获取主程序基本信息api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问获取主程序基本信息api')
+    rs_json = {"version": PC_funcs.get_version(),
+                "run_time": PC_funcs.run_time()
                 }
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
