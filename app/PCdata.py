@@ -126,7 +126,7 @@ class PCdata():
         return self.get(['main','yaml', 'message', 'Qmsg', 'enabled'])
 
     def get_main_yaml_message_Qmsg_Key(self):
-        return self.get(['main','yaml', 'message', 'Qmsg', 'Key'])
+        return self.get(['main','yaml', 'message', 'Qmsg', 'key'])
     
     def get_main_yaml_message_Qmsg_qq(self):
         return self.get(['main','yaml', 'message', 'Qmsg', 'qq'])

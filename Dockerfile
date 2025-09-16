@@ -28,7 +28,7 @@ COPY --chmod=755 app LICENSE entrypoint.sh /app/
 RUN chmod +x entrypoint.sh
 
 # 版本
-ENV VERSION=3.3
+ENV VERSION=3.4
 
 # 容器启动时运行的命令
 ENTRYPOINT ["/app/entrypoint.sh"]
