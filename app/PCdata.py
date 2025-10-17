@@ -137,6 +137,15 @@ class PCdata():
     def get_main_yaml_message_WeChat_webhook_url(self):
         return self.get(['main','yaml', 'message', 'WeChat_webhook', 'url'])
 
+    def get_main_yaml_message_Gotify_enabled(self):
+        return self.get(['main','yaml', 'message', 'Gotify', 'enabled'])
+
+    def get_main_yaml_message_Gotify_url(self):
+        return self.get(['main','yaml', 'message', 'Gotify', 'url'])
+    
+    def get_main_yaml_message_Gotify_token(self):
+        return self.get(['main','yaml', 'message', 'Gotify', 'token'])
+
     def get_main_local_ip(self):
         return self.get(['main','local_ip'])
 

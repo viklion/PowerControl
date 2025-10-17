@@ -148,6 +148,21 @@
                         value="{{ config.message.WeChat_webhook.url }}"
                         placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
                 </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Gotify： <input id="gotify_enabled" class="checkbox-label" type="checkbox" name="message.Gotify.enabled" value="True" {% if config['message']['Gotify']['enabled'] %} checked{% endif %} data-target='gotifyconfig'>
+                    <label for="gotify_enabled"></label>
+                    <a id="go_gotify" class="textlink no-select" href="{{ config.message.Gotify.url }}" target="_blank" title="填写完URL保存后,点击可跳转Gotify">➔前往Gotify</a>
+                    <br>
+                </div>
+                <div id='gotifyconfig' class='hidden'>
+                    URL： <input class="input-label" type="text" name="message.Gotify.url" value="{{ config.message.Gotify.url }}" title="例:http://192.168.10.10:8087,勿省略http(s)://" placeholder="例:http://192.168.10.10:8087,勿省略http(s)://">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">'http://ip:端口',勿省略'http(s)://'，填写完保存后点击前往Gotify可跳转Gotify</span>
+                    </span>
+                    <br>
+                    Token： <input class="input-label" type="text" name="message.Gotify.token" value="{{ config.message.Gotify.token }}" title="APPS中创建的token" placeholder="APPS中创建的token"><br>
+                </div>
             </div>
             <hr class="default-hr">
             <div class="line-container no-select">

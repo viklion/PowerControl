@@ -96,6 +96,9 @@ def config_main():
         device_yaml['message']['Qmsg']['qq'] = PC_funcs.trans_str(request.form.get('message.Qmsg.qq'))
         device_yaml['message']['WeChat_webhook']['enabled'] = bool(request.form.get('message.WeChat_webhook.enabled'))
         device_yaml['message']['WeChat_webhook']['url'] = PC_funcs.trans_str(request.form.get('message.WeChat_webhook.url'))
+        device_yaml['message']['Gotify']['enabled'] = bool(request.form.get('message.Gotify.enabled'))
+        device_yaml['message']['Gotify']['url'] = PC_funcs.trans_str(request.form.get('message.Gotify.url'))
+        device_yaml['message']['Gotify']['token'] = PC_funcs.trans_str(request.form.get('message.Gotify.token'))
 
         # 保存配置
         save_yaml = PC_yaml.save_yaml('main', device_yaml)

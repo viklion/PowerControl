@@ -62,6 +62,7 @@ class PCmessage():
             response['serverchan3'] = self.send_message_serverchan3(device_id, title, desp)
             response['qmsg'] = self.send_message_qmsg(device_id, title, desp)
             response['wechat_webhook'] = self.send_message_wechat_webhook(device_id, title, desp)
+            response['gotify'] = self.send_message_gotify(device_id, title, desp)
         return response
     
     # 断网下等待网络恢复重新发送
@@ -165,4 +166,23 @@ class PCmessage():
             except Exception as e:
                 rs = str(e)
                 logger.error("企业微信群机器人推送消息出错：" + rs)
+                return rs
+
+    # Gotify推送
+    def send_message_gotify(self, device_id, title, desp=''):
+        if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_Gotify_enabled()):
+            device_name, logger = self.check_message_from(device_id)
+            try:
+                url = self.PC_data.get_main_yaml_message_Gotify_url()
+                token = self.PC_data.get_main_yaml_message_Gotify_token()
+                data = {
+                    "title": (None, f'[{device_name}]' + title),
+                    "message": (None, self.PC_funcs.get_time() + ' ' + desp),
+                }
+                rs = requests.post(f"{url}/message?token={token}", files=data).json()
+                logger.debug("Gotify推送返回:" + str(rs))
+                return rs
+            except Exception as e:
+                rs = str(e)
+                logger.error("Gotify推送消息出错：" + rs)
                 return rs

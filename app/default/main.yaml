@@ -18,3 +18,7 @@ message:
     WeChat_webhook:
         enabled: False
         url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
+    Gotify:
+        enabled: False
+        url: http(s)://ip:port
+        token: YOUR APPS TOKEN
