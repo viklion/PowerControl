@@ -411,7 +411,8 @@ function sendBatchAction(action) {
     if (selectedIds.size === 0) {
         swal({
             title: '请先选择至少一个设备',
-            icon: 'warning'
+            icon: 'warning',
+            button: "确认",
         });
         return;
     }
