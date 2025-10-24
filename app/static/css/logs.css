@@ -16,6 +16,10 @@ body {
     -ms-user-select: none;
 }
 
+.swal-button {
+    padding: 5px;
+}
+
 h2 {
     color: #4CAF50;
     margin-top: 0;

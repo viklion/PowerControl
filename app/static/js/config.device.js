@@ -126,27 +126,31 @@ function sendRestartRequest() {
 // 删除按钮
 function sendDeleteRequest() {
     // 弹窗确认
-    if (!confirm("确定要删除该设备服务吗？")) {
-        return; // 用户取消，直接返回
-    }
-    window.scrollTo({ top: 0 });
-    addFlashMessage("正在删除设备服务，请稍候...");
-    // 使用 Fetch API 发送 POST 请求
-    fetch(`/device/delete/${DEVICE_ID}?key=${KEY}`, { method: 'DELETE' })
-        .then(response => {
-            if (!response.ok) addFlashMessage("请求失败：" + response.status);
-            return response.json();
-        })
-        .then(data => {
-            if (data.result) {
-                addFlashMessage("已删除，即将返回总览")
-                setTimeout(function () {
-                    window.location.href = `/config?key=${KEY}`;
-                }, ReloadDelayTime);
-            } else {
-                addFlashMessage("删除出现问题，请查看日志")
-            }
-        })
+    swal({
+        title: "确定要删除该设备服务吗？",
+        buttons: ["取消", "确定删除"],
+        dangerMode: true,
+    }).then((willDelete) => {
+        if (!willDelete) return;
+        window.scrollTo({ top: 0 });
+        addFlashMessage("正在删除设备服务，请稍候...");
+        // 使用 Fetch API 发送 POST 请求
+        fetch(`/device/delete/${DEVICE_ID}?key=${KEY}`, { method: 'DELETE' })
+            .then(response => {
+                if (!response.ok) addFlashMessage("请求失败：" + response.status);
+                return response.json();
+            })
+            .then(data => {
+                if (data.result) {
+                    addFlashMessage("已删除，即将返回总览")
+                    setTimeout(function () {
+                        window.location.href = `/config?key=${KEY}`;
+                    }, ReloadDelayTime);
+                } else {
+                    addFlashMessage("删除出现问题，请查看日志")
+                }
+            })
+    });
 };
 document.getElementById('start_top_btn').addEventListener('click', sendStartRequest);
 document.getElementById('start_bottom_btn').addEventListener('click', sendStartRequest);

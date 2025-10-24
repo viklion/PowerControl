@@ -116,7 +116,13 @@ function renderLogs(lines) {
 
 // 删除日志文件
 function deleteFile(filename) {
-    if (confirm('确定要删除该日志文件吗?')) {
+    swal({
+        title: "确定要删除该日志文件吗?",
+        buttons: ["取消", "确定删除"],
+        dangerMode: true,
+    }).then((willDelete) => {
+        if (!willDelete) return;
+
         // 获取当前页面的 URL
         const currentUrl = new URL(window.location.href);
         // 获取 URL 中的 key 参数
@@ -140,7 +146,7 @@ function deleteFile(filename) {
                 console.error('Error:', error);
                 alert('删除过程中发生错误');
             });
-    }
+    });
 }
 
 // 切换文件列表的显示与隐藏

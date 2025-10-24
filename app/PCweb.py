@@ -209,10 +209,9 @@ def shutdown(device):
             message_cn = '发送关机指令失败'
             logger.error(f'{message_cn}(api) → {rs}')
     else:
-        device_name = PC_data.get_device_device_name(device_id)
-        message = 'error'
-        message_cn = f'设备[{device_name}]服务未启用或未运行，或远程关机未启用'
-        logger.error(f'{message_cn}(api)')
+        message = 'skip'
+        message_cn = f'服务未启用或未运行，或远程关机未启用'
+        logger.warning(f'{message_cn}(api)')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
                 "method": "shutdown",
@@ -255,10 +254,9 @@ def wol(device):
             message_cn = '发送唤醒指令失败'
             logger.error(f'{message_cn}(api) → {rs}')
     else:
-        device_name = PC_data.get_device_device_name(device_id)
-        message = 'error'
-        message_cn = f'设备[{device_name}]服务未启用或未运行，或网络唤醒未启用'
-        logger.error(f'{message_cn}(api)')
+        message = 'skip'
+        message_cn = f'服务未启用或未运行，或网络唤醒未启用'
+        logger.warning(f'{message_cn}(api)')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
                 "method": "wol",
@@ -645,25 +643,6 @@ def delete_device_data(device_id):
             mimetype='application/json; charset=utf-8'
         ), 200
 
-# 启动所有设备服务
-@app.route('/device/start/all', methods=['POST'])
-def start_device_service_all():
-    web_key = request.args.get('key')
-    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if web_key != WEB_KEY:
-        PC_logger.warning(f'ip：{user_ip} 访问启动所有设备服务api失败，错误的KEY：{web_key}')
-        return 'denied', 401
-    PC_logger.debug(f'ip：{user_ip} 访问启动所有设备服务api')
-
-    rs = PC_thread.start_all()
-    rs_json = {
-                "result": rs
-                }
-    return Response(
-            json.dumps(rs_json, ensure_ascii=False),
-            mimetype='application/json; charset=utf-8'
-        ), 200
-
 # 启动设备服务
 @app.route('/device/start/<device_id>', methods=['POST'])
 def start_device_service(device_id):
@@ -676,25 +655,6 @@ def start_device_service(device_id):
 
     rs = PC_thread.start_thread(device_id)
     rs_json = {"device_id": device_id,
-                "result": rs
-                }
-    return Response(
-            json.dumps(rs_json, ensure_ascii=False),
-            mimetype='application/json; charset=utf-8'
-        ), 200
-
-# 停止所有设备服务
-@app.route('/device/stop/all', methods=['POST'])
-def stop_device_service_all():
-    web_key = request.args.get('key')
-    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if web_key != WEB_KEY:
-        PC_logger.warning(f'ip：{user_ip} 访问停止所有设备服务api失败，错误的KEY：{web_key}')
-        return 'denied', 401
-    PC_logger.debug(f'ip：{user_ip} 访问停止所有设备服务api')
-
-    rs = PC_thread.stop_all()
-    rs_json = {
                 "result": rs
                 }
     return Response(
@@ -721,25 +681,6 @@ def stop_device_service(device_id):
             mimetype='application/json; charset=utf-8'
         ), 200
 
-# 重启所有设备服务
-@app.route('/device/restart/all', methods=['POST'])
-def restart_device_service_all():
-    web_key = request.args.get('key')
-    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if web_key != WEB_KEY:
-        PC_logger.warning(f'ip：{user_ip} 访问重启所有设备服务api失败，错误的KEY：{web_key}')
-        return 'denied', 401
-    PC_logger.debug(f'ip：{user_ip} 访问重启所有设备服务api')
-
-    rs = PC_thread.restart_all()
-    rs_json = {
-                "result": rs
-                }
-    return Response(
-            json.dumps(rs_json, ensure_ascii=False),
-            mimetype='application/json; charset=utf-8'
-        ), 200
-
 # 重启设备服务
 @app.route('/device/restart/<device_id>', methods=['POST'])
 def restart_device_service(device_id):
@@ -754,6 +695,318 @@ def restart_device_service(device_id):
     rs_json = {"device_id": device_id,
                 "result": rs
                 }
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+# 关机全部设备
+@app.route('/device/shutdown/all', methods=['POST'])
+def shutdown_device_all():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问关机所有设备api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问关机所有设备api')
+
+    device_id_list = PC_yaml.list_device_id()
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_funcs.pcshutdown(device_id)
+        if rs:
+            if 'succeeded' in rs:
+                message = 'success'
+                message_cn = '已发送关机指令'
+            else:
+                message = 'error'
+                message_cn = '发送关机指令失败'
+        else:
+            message = 'skip'
+            message_cn = f'服务未启用或未运行，或远程关机未启用，跳过'
+
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['device_ip'] = PC_data.get_device_device_ip(device_id)
+        rs_json[device_id]['method'] = 'shutdown'
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+        rs_json[device_id]['result'] = rs
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备全部关机(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备全部关机(api) → {rs_json}')
+    PC_message.send_message('main', '已完成全部关机', "\n" + rs_text)
+    rs_json['text'] = rs_text
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+
+# 开机全部设备
+@app.route('/device/wol/all', methods=['POST'])
+def wol_device_all():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问开机所有设备api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问开机所有设备api')
+
+    device_id_list = PC_yaml.list_device_id()
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_funcs.pcwol(device_id)
+        if rs:
+            if 'done' in rs:
+                message = 'success'
+                message_cn = '已发送唤醒指令'
+            else:
+                message = 'error'
+                message_cn = '发送唤醒指令失败'
+        else:
+            message = 'skip'
+            message_cn = f'服务未启用或未运行，或网络唤醒未启用，跳过'
+
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['device_ip'] = PC_data.get_device_device_ip(device_id)
+        rs_json[device_id]['method'] = 'wol'
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+        rs_json[device_id]['result'] = rs
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备全部开机(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备全部开机(api) → {rs_json}')
+    PC_message.send_message('main', '已完成全部开机', "\n" + rs_text)
+    rs_json['text'] = rs_text
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+
+# 批量关机设备
+@app.route('/device/batch/shutdown', methods=['POST'])
+def shutdown_device_batch():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问批量关机设备api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问批量关机设备api')
+    
+    device_id_list = request.get_json().get('device_ids')
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_funcs.pcshutdown(device_id)
+        if rs:
+            if 'succeeded' in rs:
+                message = 'success'
+                message_cn = '已发送关机指令'
+            else:
+                message = 'error'
+                message_cn = '发送关机指令失败'
+        else:
+            message = 'skip'
+            message_cn = f'服务未启用或未运行，或远程关机未启用，跳过'
+
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['device_ip'] = PC_data.get_device_device_ip(device_id)
+        rs_json[device_id]['method'] = 'shutdown'
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+        rs_json[device_id]['result'] = rs
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备批量关机(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备批量关机(api) → {rs_json}')
+    PC_message.send_message('main', '已完成批量关机', "\n" + rs_text)
+    rs_json['text'] = rs_text
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+
+# 批量开机设备
+@app.route('/device/batch/wol', methods=['POST'])
+def wol_device_batch():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问批量开机设备api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问批量开机设备api')
+
+    device_id_list = request.get_json().get('device_ids')
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_funcs.pcwol(device_id)
+        if rs:
+            if 'done' in rs:
+                message = 'success'
+                message_cn = '已发送唤醒指令'
+            else:
+                message = 'error'
+                message_cn = '发送唤醒指令失败'
+        else:
+            message = 'skip'
+            message_cn = f'服务未启用或未运行，或网络唤醒未启用，跳过'
+
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['device_ip'] = PC_data.get_device_device_ip(device_id)
+        rs_json[device_id]['method'] = 'wol'
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+        rs_json[device_id]['result'] = rs
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备批量开机(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备批量开机(api) → {rs_json}')
+    PC_message.send_message('main', '已完成批量开机', "\n" + rs_text)
+    rs_json['text'] = rs_text
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+
+# 批量启动设备服务
+@app.route('/device/batch/start', methods=['POST'])
+def start_device_service_batch():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问批量启动设备服务api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问批量启动设备服务api')
+
+    device_id_list = request.get_json().get('device_ids')
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_thread.start_thread(device_id)
+        if rs:
+            message = 'success'
+            message_cn = '服务已启动'
+        else:
+            message = 'error'
+            message_cn = '服务启动出现问题'
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备服务批量启动(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备服务批量启动(api) → {rs_json}')
+    rs_json['text'] = rs_text
+
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+# 批量停止设备服务
+@app.route('/device/batch/stop', methods=['POST'])
+def stop_device_service_batch():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问批量停止设备服务api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问批量停止设备服务api')
+
+    device_id_list = request.get_json().get('device_ids')
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_thread.stop_thread(device_id)
+        if rs:
+            message = 'success'
+            message_cn = '服务已停止'
+        else:
+            message = 'error'
+            message_cn = '服务停止出现问题'
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备服务批量停止(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备服务批量停止(api) → {rs_json}')
+    rs_json['text'] = rs_text
+
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+# 批量重启设备服务
+@app.route('/device/batch/restart', methods=['POST'])
+def restart_device_service_batch():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问批量重启设备服务api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问批量重启设备服务api')
+
+    device_id_list = request.get_json().get('device_ids')
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        rs = PC_thread.restart_thread(device_id)
+        if rs:
+            message = 'success'
+            message_cn = '服务已重启'
+        else:
+            message = 'error'
+            message_cn = '服务重启出现问题'
+        rs_json[device_id]['name'] = f"[{PC_data.get_device_device_name(device_id)}]"
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备服务批量重启(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备服务批量重启(api) → {rs_json}')
+    rs_json['text'] = rs_text
+
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+# 批量删除设备配置信息(同时停止服务等)
+@app.route('/device/batch/delete', methods=['POST'])
+def delete_device_batch():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问批量删除设备配置api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问批量删除设备配置api')
+
+    device_id_list = request.get_json().get('device_ids')
+    rs_json = defaultdict(dict)
+    for device_id in device_id_list:
+        if device_id == 'main':
+            continue
+        device_name = f"[{PC_data.get_device_device_name(device_id)}]"
+        del_thread = PC_thread.stop_thread(device_id)
+        del_data = PC_data.delete_device(device_id)
+        del_yaml = PC_yaml.delete_yaml(device_id)
+        if del_thread and del_data and del_yaml:
+            message = 'success'
+            message_cn = '设备配置已删除'
+        else:
+            message = 'error'
+            message_cn = '设备配置删除出现问题'
+        rs_json[device_id]['name'] = device_name
+        rs_json[device_id]['message'] = message
+        rs_json[device_id]['message_cn'] = message_cn
+    
+    rs_list_simple = [f"{v['name']}：{v['message_cn']}" for v in rs_json.values()]
+    rs_text = "\n".join(rs_list_simple)
+    PC_logger.info(f'已完成设备配置批量删除(api) → {rs_list_simple}')
+    PC_logger.debug(f'已完成设备配置批量删除(api) → {rs_json}')
+    rs_json['text'] = rs_text
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
             mimetype='application/json; charset=utf-8'

@@ -1,0 +1,50 @@
+/* SweetAlert */
+.swal-button {
+    padding: 0;
+}
+
+.swal-button:not(.swal-button--cancel):not(.swal-button--danger) {
+    background-color: #28a745;
+}
+
+.swal-button:not(.swal-button--cancel):not(.swal-button--danger):active,
+.swal-button:not(.swal-button--cancel):not(.swal-button--danger):not([disabled]):hover {
+    background-color: #218838;
+}
+
+.swal-button:focus {
+    box-shadow: none;
+}
+
+.swal-modal {
+    width: 450px;
+    background-color: #f4f4f9;
+    box-shadow: 0px 0px 5px 5px rgba(0, 0, 0, 0.1);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+@media (max-width: 515px) {
+    .swal-modal {
+        width: calc(100% - 50px);
+    }
+}
+
+body.dark-mode .swal-modal {
+    background-color: #333;
+}
+
+body.dark-mode .swal-title,
+body.dark-mode .swal-text {
+    color: #ffffffd6;
+}
+
+body.dark-mode .swal-button--cancel {
+    background-color: #a0a0a0;
+}
+
+body.dark-mode .swal-button--danger:not([disabled]):hover {
+    background-color: #ff6666;
+}

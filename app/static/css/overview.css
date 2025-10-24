@@ -1,6 +1,11 @@
 /* overview.css */
 /* overview.html */
 
+input[type="submit"],
+button {
+    margin-bottom: 10px;
+}
+
 .device-container {
     display: grid;
     gap: 20px;
@@ -113,6 +118,11 @@ body.dark-mode .device-card {
 }
 body.dark-mode .device-card h3 {
     color: #f9703ddb;
+}
+
+.device-card.selected {
+    border: 2px solid #4CAF50;
+    background: #4caf500a;
 }
 
 @media (hover: hover) {

@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/config.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/overview.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/overview.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/sweetalert.min.js') }}" defer></script>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <title>PowerControl设备总览页</title>
 </head>
@@ -52,10 +54,22 @@
         </div>
         <div class="line-container no-select" style="margin-top: 16px; margin-bottom: 26px;">
             <button id="new_device_top_btn" type="button">新建设备</button>
-            <button id="start_all_top_btn" type="button">全部启动</button>
-            <button id="stop_all_top_btn" type="button">全部停止</button>
-            <button id="restart_all_top_btn" type="button">全部重启</button>
+            <button id="wol_all_top_btn" type="button">全部开机</button>
+            <button id="shutdown_all_top_btn" type="button">全部关机</button>
             <button id="restart_container_top_btn" type="button">重启容器</button>
+            <button id="batch_operation_top_btn" type="button">批量操作</button>
+        </div>
+        <div id=batch_btn_line class="hidden" style="margin-top: -20px; margin-bottom: 40px;">
+            <hr class="dashed-hr">
+            <div class="line-container no-select">
+                <button id="wol_batch_top_btn" type="button">开机</button>
+                <button id="shutdown_batch_top_btn" type="button">关机</button>
+                <button id="start_batch_top_btn" type="button">启动</button>
+                <button id="stop_batch_top_btn" type="button">停止</button>
+                <button id="restart_batch_top_btn" type="button">重启</button>
+                <button id="delete_batch_top_btn" type="button">删除</button>
+                <button id="select_all_toggle_top_btn" type="button">全选</button>
+            </div>
         </div>
         <div class="device-container no-select" id="deviceContainer">
             <!-- 设备卡片会由 JS 动态生成 -->
