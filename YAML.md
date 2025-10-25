@@ -21,6 +21,10 @@ message:
     WeChat_webhook:    #企业微信机器人消息推送参数配置
       enabled: False    #是否启用
       url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
+    Gotify:    #Gotify消息推送参数配置
+        enabled: False    #是否启用
+        url: http(s)://ip:port    #自建服务地址，勿省略http(s)://
+        token: YOUR APPS TOKEN    #APPS中的token
 ```
 ```
 # device.yaml设备配置文件
@@ -68,3 +72,4 @@ devices:    #设备参数配置
 message:
     enabled: False     #该设备的消息推送开关
 ```
+
