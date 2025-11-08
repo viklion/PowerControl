@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/config.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
     <script src="{{ url_for('static', filename='js/theme.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/sweetalert.min.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/config.main.js') }}" defer></script>
     <script>
         const DEVICE_ID = "{{ device_id }}";
@@ -135,21 +137,6 @@
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>
-                    企业微信群机器人： <input id="wechat_webhook_enabled" class="checkbox-label" type="checkbox"
-                        name="message.WeChat_webhook.enabled" value="True" {% if
-                        config['message']['WeChat_webhook']['enabled'] %} checked{% endif %}
-                        data-target='wechat_webhook_config'>
-                    <label for="wechat_webhook_enabled"></label>
-                    <a id="go_wechat_webhook" class="textlink no-select" href="https://open.work.weixin.qq.com/help2/pc/18401"
-                        target="_blank">➔前往企业微信群机器人</a>
-                </div>
-                <div id='wechat_webhook_config' class='hidden'>
-                    Webhook地址： <input class="input-label" type="text" name="message.WeChat_webhook.url"
-                        value="{{ config.message.WeChat_webhook.url }}"
-                        placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
-                </div>
-                <hr class="dashed-hr">
-                <div class='line-container'>
                     Gotify： <input id="gotify_enabled" class="checkbox-label" type="checkbox" name="message.Gotify.enabled" value="True" {% if config['message']['Gotify']['enabled'] %} checked{% endif %} data-target='gotifyconfig'>
                     <label for="gotify_enabled"></label>
                     <a id="go_gotify" class="textlink no-select" href="{{ config.message.Gotify.url }}" target="_blank" title="填写完URL保存后,点击可跳转Gotify">➔前往Gotify</a>
@@ -161,7 +148,75 @@
                         <span class="tooltiptext">'http://ip:端口',勿省略'http(s)://'，填写完保存后点击前往Gotify可跳转Gotify</span>
                     </span>
                     <br>
-                    Token： <input class="input-label" type="text" name="message.Gotify.token" value="{{ config.message.Gotify.token }}" title="APPS中创建的token" placeholder="APPS中创建的token"><br>
+                    Token： <input class="input-label" type="text" name="message.Gotify.token" value="{{ config.message.Gotify.token }}" title="APPS中创建的token" placeholder="APPS中创建的token">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">APPS中创建的token</span>
+                    </span>
+                    <br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    PushPlus： <input id="pushplus_enabled" class="checkbox-label" type="checkbox" name="message.PushPlus.enabled" value="True" {% if config['message']['PushPlus']['enabled'] %} checked{% endif %} data-target='pushplusconfig'>
+                    <label for="pushplus_enabled"></label>
+                    <a id="go_pushplus" class="textlink no-select" href="https://www.pushplus.plus/push1.html" target="_blank">➔前往PushPlus</a>
+                    <br>
+                </div>
+                <div id='pushplusconfig' class='hidden'>
+                    Token： <input class="input-label" type="text" name="message.PushPlus.token" value="{{ config.message.PushPlus.token }}"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Bark： <input id="bark_enabled" class="checkbox-label" type="checkbox" name="message.Bark.enabled" value="True"
+                        {% if config['message']['Bark']['enabled'] %} checked{% endif %} data-target='barkconfig'>
+                    <label for="bark_enabled"></label>
+                    <a id="go_bark" class="textlink no-select" href="https://bark.day.app/#/?id=bark" target="_blank">➔前往Bark</a>
+                    <br>
+                </div>
+                <div id='barkconfig' class='hidden'>
+                    URL： <input class="input-label" type="text" name="message.Bark.url" value="{{ config.message.Bark.url }}"
+                        title="例:https://api.day.app,勿省略http(s)://" placeholder="例:https://api.day.app,勿省略http(s)://">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">服务地址，官方(https://api.day.app)或自建，勿省略http(s)://</span>
+                    </span>
+                    <br>
+                    Key： <input class="input-label" type="text" name="message.Bark.key" value="{{ config.message.Bark.key }}"
+                        title="Bark app中查看服务器的Key" placeholder="Bark app中查看服务器的Key">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">Bark app中查看服务器的Key</span>
+                    </span>
+                    <br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    企业微信群机器人： <input id="wechat_webhook_enabled" class="checkbox-label" type="checkbox"
+                        name="message.WeChat_webhook.enabled" value="True" {% if config['message']['WeChat_webhook']['enabled'] %}
+                        checked{% endif %} data-target='wechat_webhook_config'>
+                    <label for="wechat_webhook_enabled"></label>
+                    <a id="go_wechat_webhook" class="textlink no-select" href="https://open.work.weixin.qq.com/help2/pc/14931"
+                        target="_blank">➔前往企业微信群机器人</a>
+                </div>
+                <div id='wechat_webhook_config' class='hidden'>
+                    Webhook地址： <input class="input-label" type="text" name="message.WeChat_webhook.url"
+                        value="{{ config.message.WeChat_webhook.url }}"
+                        placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxx"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    企业微信应用： <input id="wechat_app_enabled" class="checkbox-label" type="checkbox" name="message.WeChat_app.enabled" value="True"
+                        {% if config['message']['WeChat_app']['enabled'] %} checked{% endif %} data-target='wechat_appconfig'>
+                    <label for="wechat_app_enabled"></label>
+                    <a id="go_wechat_app" class="textlink no-select" href="https://work.weixin.qq.com" target="_blank">➔前往企业微信</a>
+                    <br>
+                </div>
+                <div id='wechat_appconfig' class='hidden'>
+                    企业ID： <input class="input-label" type="text" name="message.WeChat_app.corpid" value="{{ config.message.WeChat_app.corpid }}" title="我的企业→企业ID" placeholder="我的企业→企业ID">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">我的企业→企业ID</span>
+                    </span>
+                    <br>
+                    应用AgentId： <input class="input-label" type="text" name="message.WeChat_app.agentid" value="{{ config.message.WeChat_app.agentid }}" title="应用AgentId" placeholder="应用AgentId"><br>
+                    应用Secret： <input class="input-label" type="text" name="message.WeChat_app.secret"
+                        value="{{ config.message.WeChat_app.secret }}" title="应用Secret" placeholder="应用Secret"><br>
                 </div>
             </div>
             <hr class="default-hr">

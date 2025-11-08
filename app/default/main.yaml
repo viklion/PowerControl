@@ -22,3 +22,16 @@ message:
         enabled: False
         url: http(s)://ip:port
         token: YOUR APPS TOKEN
+    PushPlus:
+        enabled: False
+        token: YOUR TOKEN
+        channel: wechat
+    Bark:
+        enabled: False
+        url: https://api.day.app
+        key: YOUR KEY
+    WeChat_app:
+        enabled: False
+        corpid: YOUR CORPID
+        agentid: YOUR AGENTID
+        secret: YOUR SECRET

@@ -225,6 +225,7 @@ button:active {
     display: none;
     /* 默认隐藏 */
     width: 120px;
+    overflow-wrap: anywhere;
     background-color: #28a745e0;
     color: white;
     text-align: left;

@@ -6,6 +6,8 @@ from PCdata import PCdata
 from PCfunctions import PCfuncs
 from pythonping import ping
 from serverchan_sdk import sc_send
+from datetime import datetime, timedelta
+from urllib.parse import urljoin
 
 class PCmessage():
     _instance = None
@@ -26,6 +28,8 @@ class PCmessage():
         self.PC_data = PCdata()
         self.PC_funcs = PCfuncs()
         self.PC_logger = self.PC_data.get_main_logger()
+        self.message_wechat_app_access_token = ''
+        self.message_wechat_app_expire_time = ''
 
     # 消息推送
     def send_message(self, device_id, title, desp='', type=''):
@@ -51,7 +55,8 @@ class PCmessage():
                         if bemfa_reconnect_message_count <= 5:
                             re_send = threading.Thread(target=self.re_send_message_bemfa, args=(device_id, title, desp,))
                             re_send.start()
-            self.PC_logger.debug(f'收到来自{device_id}的消息，设备消息推送未启用跳过')
+            else:
+                self.PC_logger.debug(f'收到来自{device_id}的消息，设备消息推送未启用跳过')
         else:
             self.PC_logger.debug(f'收到来自{device_id}的消息，全局消息推送未启用跳过')
     def send_message_main(self, device_id, title, desp=''):
@@ -63,6 +68,9 @@ class PCmessage():
             response['qmsg'] = self.send_message_qmsg(device_id, title, desp)
             response['wechat_webhook'] = self.send_message_wechat_webhook(device_id, title, desp)
             response['gotify'] = self.send_message_gotify(device_id, title, desp)
+            response['pushplus'] = self.send_message_pushplus(device_id, title, desp)
+            response['bark'] = self.send_message_bark(device_id, title, desp)
+            response['wechat_app'] = self.send_message_wechat_app(device_id, title, desp)
         return response
     
     # 断网下等待网络恢复重新发送
@@ -173,16 +181,111 @@ class PCmessage():
         if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_Gotify_enabled()):
             device_name, logger = self.check_message_from(device_id)
             try:
-                url = self.PC_data.get_main_yaml_message_Gotify_url()
+                url_base = self.PC_data.get_main_yaml_message_Gotify_url()
                 token = self.PC_data.get_main_yaml_message_Gotify_token()
+                url = urljoin(url_base, f"/message?token={token}")
                 data = {
                     "title": (None, f'[{device_name}]' + title),
                     "message": (None, self.PC_funcs.get_time() + ' ' + desp),
                 }
-                rs = requests.post(f"{url}/message?token={token}", files=data).json()
+                rs = requests.post(url, files=data).json()
                 logger.debug("Gotify推送返回:" + str(rs))
                 return rs
             except Exception as e:
                 rs = str(e)
                 logger.error("Gotify推送消息出错：" + rs)
+                return rs
+
+    # PushPlus推送
+    def send_message_pushplus(self, device_id, title, desp=''):
+        if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_PushPlus_enabled()):
+            device_name, logger = self.check_message_from(device_id)
+            try:
+                headers = {"Content-Type": "application/json"}
+                data = {
+                        'token': self.PC_data.get_main_yaml_message_PushPlus_token(),
+                        'title': f'[{device_name}]' + title,
+                        'content': self.PC_funcs.get_time() + ' ' + desp,
+                        'channel': self.PC_funcs.trans_str(self.PC_data.get_main_yaml_message_PushPlus_channel())
+                    }
+                rs = requests.post(f'https://www.pushplus.plus/send/', json=data, headers=headers).json()
+                logger.debug("PushPlus推送返回:" + str(rs))
+                return rs
+            except Exception as e:
+                rs = str(e)
+                logger.error("PushPlus推送消息出错：" + rs)
+                return rs
+
+    # Bark推送
+    def send_message_bark(self, device_id, title, desp=''):
+        if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_Bark_enabled()):
+            device_name, logger = self.check_message_from(device_id)
+            try:
+                url = urljoin(self.PC_data.get_main_yaml_message_Bark_url(), "push")
+                key = self.PC_data.get_main_yaml_message_Bark_key()
+                data = {
+                    "title": f'[{device_name}]' + title,
+                    "body": self.PC_funcs.get_time() + ' ' + desp,
+                    "device_key": key
+                }
+                rs = requests.post(url, json=data).json()
+                logger.debug("Bark推送返回:" + str(rs))
+                return rs
+            except Exception as e:
+                rs = str(e)
+                logger.error("Bark推送消息出错：" + rs)
+                return rs
+
+    # 企业微信应用推送
+    def send_message_wechat_app(self, device_id, title, desp=''):
+        if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_WeChat_app_enabled()):
+            device_name, logger = self.check_message_from(device_id)
+            # 判断access_token是否过期
+            if not self.message_wechat_app_access_token or datetime.now() >= self.message_wechat_app_expire_time:
+                # 获取access_token
+                try:
+                    corpid = self.PC_data.get_main_yaml_message_WeChat_app_corpid()
+                    secret = self.PC_data.get_main_yaml_message_WeChat_app_secret()
+                    url = f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corpid}&corpsecret={secret}'
+                    # 发送GET请求
+                    rs = requests.get(url).json()
+                    # 判断返回状态
+                    if rs.get("errcode") == 0:
+                        self.message_wechat_app_access_token = rs.get("access_token")
+                        expires_in = rs.get("expires_in", 0)
+                        # 计算过期时间
+                        self.message_wechat_app_expire_time = datetime.now() + timedelta(seconds=expires_in)
+                        logger.debug(f"企业微信应用推送获取access_token成功")
+                    else:
+                        logger.error(f"企业微信应用推送获取access_token失败: {rs.get('errmsg')} (errcode={rs.get('errcode')})")
+                        return rs
+                except Exception as e:
+                    rs = str(e)
+                    logger.error("企业微信应用推送获取access_token出错：" + rs)
+                    return rs
+            try:
+                agentid = self.PC_data.get_main_yaml_message_WeChat_app_agentid()
+                url = f'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={self.message_wechat_app_access_token}'
+                headers = {"Content-Type": "application/json"}
+                data = {
+                        "touser" : "@all",
+                        "msgtype" : "text",
+                        "agentid" : agentid,
+                        "text": {
+                            "content": f"[{device_name}]{title}\n{self.PC_funcs.get_time()} {desp}",
+                            },
+                    }
+                rs = requests.post(url, json=data, headers=headers).json()
+                if not rs.get("errcode") == 0:
+                    if rs.get("errcode") == 40014:
+                        # access_token失效，下次重新获取
+                        self.message_wechat_app_access_token = ''
+                        self.message_wechat_app_expire_time = ''
+                    logger.error(f"企业微信应用推送失败: {rs.get('errmsg')} (errcode={rs.get('errcode')})")
+                    return rs
+                logger.debug("企业微信应用推送返回:" + str(rs))
+                return rs
+            except Exception as e:
+                rs = str(e)
+                logger.error("企业微信应用推送出错：" + rs)
                 return rs

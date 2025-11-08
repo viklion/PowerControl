@@ -99,6 +99,15 @@ def config_main():
         device_yaml['message']['Gotify']['enabled'] = bool(request.form.get('message.Gotify.enabled'))
         device_yaml['message']['Gotify']['url'] = PC_funcs.trans_str(request.form.get('message.Gotify.url'))
         device_yaml['message']['Gotify']['token'] = PC_funcs.trans_str(request.form.get('message.Gotify.token'))
+        device_yaml['message']['PushPlus']['enabled'] = bool(request.form.get('message.PushPlus.enabled'))
+        device_yaml['message']['PushPlus']['token'] = PC_funcs.trans_str(request.form.get('message.PushPlus.token'))
+        device_yaml['message']['Bark']['enabled'] = bool(request.form.get('message.Bark.enabled'))
+        device_yaml['message']['Bark']['url'] = PC_funcs.trans_str(request.form.get('message.Bark.url'))
+        device_yaml['message']['Bark']['key'] = PC_funcs.trans_str(request.form.get('message.Bark.key'))
+        device_yaml['message']['WeChat_app']['enabled'] = bool(request.form.get('message.WeChat_app.enabled'))
+        device_yaml['message']['WeChat_app']['corpid'] = PC_funcs.trans_str(request.form.get('message.WeChat_app.corpid'))
+        device_yaml['message']['WeChat_app']['agentid'] = PC_funcs.trans_str(request.form.get('message.WeChat_app.agentid'))
+        device_yaml['message']['WeChat_app']['secret'] = PC_funcs.trans_str(request.form.get('message.WeChat_app.secret'))
 
         # 保存配置
         save_yaml = PC_yaml.save_yaml('main', device_yaml)

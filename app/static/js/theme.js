@@ -1,37 +1,63 @@
-// 深色模式
-// 手动切换主题的功能
+// 深色模式主题切换
+
+const THEME_KEY = 'PCtheme'; // localStorage 键名
+
+// 切换主题
 function toggleTheme() {
     document.body.style.transition = "background-color 0.5s, color 0.5s";
-    document.body.classList.toggle('dark-mode');
-    // 保存用户选择的主题到 localStorage，确保页面刷新后保持设置
-    const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-    localStorage.setItem('theme', theme);
-}
+    const currentTheme = localStorage.getItem(THEME_KEY) || 'auto';
+    let nextTheme, nextTheme_cn;
 
-// 检测并设置当前的主题
-function detectAndApplyTheme() {
-    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (isDarkMode) {
-        document.body.classList.add('dark-mode');
+    if (currentTheme === 'auto') {
+        nextTheme = 'light';
+        nextTheme_cn = '浅色模式';
+    } else if (currentTheme === 'light') {
+        nextTheme = 'dark';
+        nextTheme_cn = '深色模式';
     } else {
-        document.body.classList.remove('dark-mode');
+        nextTheme = 'auto';
+        nextTheme_cn = '跟随系统';
     }
+
+    applyTheme(nextTheme);
+    localStorage.setItem(THEME_KEY, nextTheme);
+
+    swal({
+        text: `主题已切换为：${nextTheme_cn}`,
+        button: false,
+        timer: 1500,
+        className: "swal-modal-thememode",
+    });
+    setTimeout(() => {
+        const overlay = document.querySelector('.swal-overlay');
+        if (overlay) overlay.classList.add('swal-overlay-thememode');
+    }, 0);
 }
 
-// 页面加载时应用用户上次选择的主题
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        if (savedTheme === 'dark') {
+// 应用指定的主题
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+    } else if (theme === 'light') {
+        document.body.classList.remove('dark-mode');
+    } else {
+        // auto 模式，跟随系统
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDarkMode) {
             document.body.classList.add('dark-mode');
         } else {
             document.body.classList.remove('dark-mode');
         }
-    } else {
-        detectAndApplyTheme(); // 如果没有保存，自动检测系统主题
     }
+}
 
-    // 给图片添加点击事件，点击图片切换主题
+// 页面加载时应用上次选择的主题
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem(THEME_KEY) || 'auto';
+    applyTheme(savedTheme);
+
     const themeToggleButton = document.getElementById('theme-toggle');
-    themeToggleButton.addEventListener('click', toggleTheme);
+    if (themeToggleButton) {
+        themeToggleButton.addEventListener('click', toggleTheme);
+    }
 });

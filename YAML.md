@@ -25,6 +25,19 @@ message:
         enabled: False    #是否启用
         url: http(s)://ip:port    #自建服务地址，勿省略http(s)://
         token: YOUR APPS TOKEN    #APPS中的token
+    PushPlus:    #PushPlus消息推送参数配置
+        enabled: False    #是否启用
+        token: YOUR TOKEN    #PushPlus的token
+        channel: wechat    #消息通道，默认为wechat（微信服务号）
+    Bark:    #Bark消息推送参数配置
+        enabled: False    #是否启用
+        url: YOUR BARK URL    #服务地址，官方或自建，勿省略http(s)://
+        key: YOUR KEY    #服务的Key
+    WeChat_app:    #企业微信应用消息推送参数配置
+        enabled: False    #是否启用
+        corpid: YOUR CORPID    #企业微信-企业ID
+        agentid: YOUR AGENTID    #企业微信-应用AgentId
+        secret: YOUR SECRET    #企业微信-应用Secret
 ```
 ```
 # device.yaml设备配置文件

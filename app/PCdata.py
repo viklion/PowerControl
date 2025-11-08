@@ -146,6 +146,36 @@ class PCdata():
     def get_main_yaml_message_Gotify_token(self):
         return self.get(['main','yaml', 'message', 'Gotify', 'token'])
 
+    def get_main_yaml_message_PushPlus_enabled(self):
+        return self.get(['main','yaml', 'message', 'PushPlus', 'enabled'])
+
+    def get_main_yaml_message_PushPlus_token(self):
+        return self.get(['main','yaml', 'message', 'PushPlus', 'token'])
+    
+    def get_main_yaml_message_PushPlus_channel(self):
+        return self.get(['main','yaml', 'message', 'PushPlus', 'channel'])
+
+    def get_main_yaml_message_Bark_enabled(self):
+        return self.get(['main','yaml', 'message', 'Bark', 'enabled'])
+
+    def get_main_yaml_message_Bark_url(self):
+        return self.get(['main','yaml', 'message', 'Bark', 'url'])
+    
+    def get_main_yaml_message_Bark_key(self):
+        return self.get(['main','yaml', 'message', 'Bark', 'key'])
+
+    def get_main_yaml_message_WeChat_app_enabled(self):
+        return self.get(['main','yaml', 'message', 'WeChat_app', 'enabled'])
+
+    def get_main_yaml_message_WeChat_app_corpid(self):
+        return self.get(['main','yaml', 'message', 'WeChat_app', 'corpid'])
+    
+    def get_main_yaml_message_WeChat_app_agentid(self):
+        return self.get(['main','yaml', 'message', 'WeChat_app', 'agentid'])
+
+    def get_main_yaml_message_WeChat_app_secret(self):
+        return self.get(['main','yaml', 'message', 'WeChat_app', 'secret'])
+
     def get_main_local_ip(self):
         return self.get(['main','local_ip'])
 
