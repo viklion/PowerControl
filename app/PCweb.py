@@ -356,7 +356,7 @@ def message_test():
 def change_log():
     try:
         # 读取 change.log 文件内容
-        with open('change.log', 'r', encoding='GBK') as file:
+        with open('change.log', 'r', encoding='UTF-8') as file:
             log_content = file.read()
     except Exception as e:
         log_content = "读取change.log文件失败" + ' → ' + str(e)

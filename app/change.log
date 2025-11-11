@@ -1,177 +1,177 @@
-V3.7fix  2025-11-12��
+V3.7fix  2025-11-12：
 ---------------------
-1���޸�ǰ��ʱ����ʾ����ȷ����
+1、修复前端时间显示不正确问题
 
 
-V3.7  2025-11-8��
+V3.7  2025-11-8：
 ---------------------
-1������PushPlus��Bark����ҵ΢��Ӧ����Ϣ����
-2����ɫ/ǳɫģʽ��������ϵͳ
+1、添加PushPlus、Bark、企业微信应用消息推送
+2、深色/浅色模式新增跟随系统
 
 
-V3.6  2025-10-24��
+V3.6  2025-10-24：
 ---------------------
-1������ҳ��������ȫ������������ȫ���ػ�����ť���Ƴ���ȫ������������ȫ��ֹͣ������ȫ����������ť
-2������ҳ����������ѡ���豸�����
-3��������������
+1、总览页：新增“全部开机”、“全部关机”按钮，移除“全部启动”、“全部停止”、“全部重启”按钮
+2、总览页：新增批量选择设备后操作
+3、美化弹窗界面
 
 
-V3.5  2025-10-17��
+V3.5  2025-10-17：
 ---------------------
-1������Gotify����
+1、添加Gotify推送
 
 
-V3.4  2025-9-16��
+V3.4  2025-9-16：
 ---------------------
-1���޸�Qmsg�����޷���ȡkey������
+1、修复Qmsg推送无法读取key的问题
 
 
-V3.3  2025-9-8��
+V3.3  2025-9-8：
 ---------------------
-1���Ż��ͷ�����������Ϣ����
-2���Ż�webҳ��
+1、优化巴法断线重连消息推送
+2、优化web页面
 
 
-V3.2  2025-8-28��
+V3.2  2025-8-28：
 ---------------------
-1���豸����ҳ��ֱ�ӽ��п���/�ػ�����
-2���޸�����
+1、设备总览页可直接进行开机/关机操作
+2、修复问题
 
 
-V3.1  2025-8-18��
+V3.1  2025-8-18：
 ---------------------
-1��֧�ֶ��豸
-*��Ҫapi�Ķ���
-������/config?key=��Կ --> ���Ѹ�Ϊ�豸����ҳ������豸�����豸����༭ҳ
-���ѣ�/wol?key=��Կ --> /wol/�豸id�����?key=��Կ
-�ػ���/shutdown?key=��Կ --> /shutdown/�豸id�����?key=��Կ
-ping��/ping?key=��Կ --> /ping/�豸id�����?key=��Կ
-�����豸idΪdevice01����������Ϊwindows����api�ӿ�Ϊ/wol/device01?key=��Կ����/wol/windows?key=��Կ
-*tips:���豸��ע��ͷ��Ƶ��豸�ǳƲ�Ҫ�ظ��ˣ����ù���
-*�汾�Ķ��ϴ�����bug�뷴��
+1、支持多设备
+*主要api改动：
+总览：/config?key=密钥 --> 现已改为设备总览页，点击设备进入设备服务编辑页
+唤醒：/wol?key=密钥 --> /wol/设备id或别名?key=密钥
+关机：/shutdown?key=密钥 --> /shutdown/设备id或别名?key=密钥
+ping：/ping?key=密钥 --> /ping/设备id或别名?key=密钥
+例：设备id为device01，别名设置为windows，则api接口为/wol/device01?key=密钥，或，/wol/windows?key=密钥
+*tips:多设备下注意巴法云的设备昵称不要重复了，做好关联
+*版本改动较大，如遇bug请反馈
 
 
-V3.0  2025-7-25��
+V3.0  2025-7-25：
 ---------------------
-1�������Զ���ָ���������ҳ�棬һ�����ɹػ���˯�ߡ�����ָ�֧��Linux��MacOS
-2�����绽�Ѻ�ping����֧���Զ���ָ��
-3���Ż�webҳ��
+1、新增自定义指令快速生成页面，一键生成关机、睡眠、重启指令，支持Linux、MacOS
+2、网络唤醒和ping新增支持自定义指令
+3、优化web页面
 
 
-V2.94  2025-7-15��
+V2.94  2025-7-15：
 ---------------------
-1������homeassistant���ô����﷨
-2���Ż��Զ���ָ������
-*�Զ���ָ���£���ʱʱ������С��5�뽫ǿ���޸�Ϊ5��
+1、更新homeassistant配置代码语法
+2、优化自定义指令返回输出
+*自定义指令下，超时时长设置小于5秒将强制修改为5秒
 
 
-V2.93  2025-7-5��
+V2.93  2025-7-5：
 ---------------------
-1����ʹ�ø����ŵĻ�������PUID��PGID��ָ���û���������
-�鿴����docker cli���docker compose���á�С�׼��̳�
-*������PUID��PGID����Ĭ��Ϊ0����root�û�
+1、现使用更优雅的环境变量PUID和PGID来指定用户运行容器
+查看最新docker cli命令、docker compose配置、小白级教程
+*不设置PUID、PGID变量默认为0，即root用户
 
 
-V2.92  2025-6-1��
+V2.92  2025-6-1：
 ---------------------
-1��web����ػ�ָ��ͳ�ʱʱ�����ã�Ĭ��2��
-2��web�������绽�Ѷ˿����ã�Ĭ��Ϊ9��һ�������޸�
-3���ͷ����������5�κ󣬺������ȴ�60����������
-4���ͷ�������Ϣ���͵����5�κ�������
-5���Զ���ָ��ػ�����yaml�ļ����޸�������ָ�shell_script_allowed��
+1、web加入关机指令发送超时时长设置，默认2秒
+2、web加入网络唤醒端口设置，默认为9，一般无需修改
+3、巴法重连当天达5次后，后续将等待60秒后进行重连
+4、巴法重连消息推送当天达5次后不再推送
+5、自定义指令关机可在yaml文件中修改允许的指令（shell_script_allowed）
 
 
-V2.91  2025-3-14��
+V2.91  2025-3-14：
 ---------------------
-1���޸���һ��BUG��δ������Ϣ����ʱ�������ͷ��ƺ󱨴�������ʧЧ
+1、修复了一个BUG：未开启消息推送时，重连巴法云后报错，功能失效
 
 
-V2.9  2025-3-8��
+V2.9  2025-3-8：
 ---------------------
-1��������ҵ΢��Ⱥ����������
+1、加入企业微信群机器人推送
 
 
-V2.8  2025-2-26��
+V2.8  2025-2-26：
 ---------------------
-1���Ż��ͷ���������
-2��������־������Ϣ
+1、优化巴法断线重连
+2、高亮日志错误信息
 
 
-V2.7  2025-2-15��
+V2.7  2025-2-15：
 ---------------------
-1���������绽�Ѽ���ܷ��յ�����ħ����������WakeOnLanMonitor.exe�������Ľ̳�ʹ��
-2�����绽�ѣ���ѡ�������㲥��ַ���豸��ַ��һ��Ĭ�ϣ�ȫ�ֹ㲥��ַ�������޸�
-3�����½̳̣����绽�Ѳ���
+1、增加网络唤醒检测能否收到唤醒魔包的软件（WakeOnLanMonitor.exe），查阅教程使用
+2、网络唤醒：可选发送至广播地址或设备地址，一般默认（全局广播地址）无需修改
+3、更新教程：网络唤醒部分
 
 
-V2.6  2025-2-2��
+V2.6  2025-2-2：
 ---------------------
-1���Ż�web��������ҳ
-* ip:�˿� ���Ѹ�Ϊ��ҳ��ԭ�̳���ڸ�Ϊ��ip:�˿�/pdf
+1、优化web，增加首页
+* ip:端口 现已改为首页，原教程入口改为：ip:端口/pdf
 
 
-V2.5  2025-1-25��
+V2.5  2025-1-25：
 ---------------------
-1������Ĭ��root�û����У���֧�ַ�root���У�docker run�м���-u uesr_id:group_id,����-u 1000:100
-*��Ҫ�������Ҫ�л���root���У������ȷ��ӳ��Ŀ¼�Ķ�дȨ�ޣ������ļ�����־�ļ���������д�������ݹ��޸�Ȩ��
+1、容器默认root用户运行，现支持非root运行，docker run中加入-u uesr_id:group_id,例如-u 1000:100
+*重要：如果需要切换非root运行，请务必确认映射目录的读写权限（配置文件、日志文件），如遇写入错误，请递归修改权限
 
-2���ɹ�����@Aliang-code�����Զ���ػ�shell�ֻ��������2��ָ�
---sshpassָ����Թر�linux�豸�����磺sshpass -p �û����� ssh -o "StrictHostKeyChecking=no" �û���@ip "echo 'sudo����' | sudo -S poweroff"
-���ӣ����Զ���ָ�������루���̹ػ�����sshpass -p "yourpassword" ssh -o "StrictHostKeyChecking=no" username@192.168.1.12 "echo 'sudopassword' | sudo -S poweroff"
-���ӳٹػ����޸�sleep����������sshpass -p "yourpassword" ssh -o "StrictHostKeyChecking=no" username@192.168.1.12 "echo 'sudopassword' | sudo -S sleep 30 && echo 'sudopassword' | sudo -S poweroff"
+2、由贡献者@Aliang-code加入自定义关机shell项，只允许以下2项指令：
+--sshpass指令可以关闭linux设备，例如：sshpass -p 用户密码 ssh -o "StrictHostKeyChecking=no" 用户名@ip "echo 'sudo密码' | sudo -S poweroff"
+例子，在自定义指令中填入（立刻关机）：sshpass -p "yourpassword" ssh -o "StrictHostKeyChecking=no" username@192.168.1.12 "echo 'sudopassword' | sudo -S poweroff"
+（延迟关机，修改sleep后秒数）：sshpass -p "yourpassword" ssh -o "StrictHostKeyChecking=no" username@192.168.1.12 "echo 'sudopassword' | sudo -S sleep 30 && echo 'sudopassword' | sudo -S poweroff"
 
---curlָ����ʹ������Remote Shutdown Manager������https://github.com/karpach/remote-shutdown-pc��������ʹ�ø���
+--curl指令，如果使用类似Remote Shutdown Manager软件（https://github.com/karpach/remote-shutdown-pc），可以使用该项
 
 
-V2.4  2025-1-15��
+V2.4  2025-1-15：
 ---------------------
-1�������Զ�������־���ܣ����ñ���������0Ϊֻ����������־����ÿ������12���Զ�����
-2������鿴��־��ڣ�/logs?key=��Կ��
-3������webҳ�棨���ͼ����л���ɫǳɫģʽ��
+1、加入自动清理日志功能，设置保留天数（0为只保留当天日志），每天中午12点自动清理
+2、加入查看日志入口（/logs?key=密钥）
+3、美化web页面（点击图标可切换深色浅色模式）
 
 
-V2.3  2025-1-11��
+V2.3  2025-1-11：
 ---------------------
-1��һ��С�Ż����޸�һ��Сbug
+1、一点小优化，修复一点小bug
 
 
-V2.2  2025-1-8��
+V2.2  2025-1-8：
 ---------------------
-1�����½̳̣����ӽ���homeassistant����
-2������ҳ��ʾ�豸����״̬
-3���������ҳ�����㸴�ƴ��루/code��
-4���޸�ping����json����
+1、更新教程：添加接入homeassistant方法
+2、配置页显示设备在线状态
+3、加入代码页，方便复制代码（/code）
+4、修改ping返回json数据
 
 
-V2.1  2024-12-27��
+V2.1  2024-12-27：
 ---------------------
-1�����½̳�
-2����Թػ��޷��ɹ��ģ�����udp�ػ���ʽ����Ҫ���Ժ�̨��������exe����ʹ�÷������Ľ̳̹ػ����֡��Ѿ����������ػ�������Ķ���ʹ��netrpc��ʽ����
-3���Ż�����ҳ������δ�������ܵĲ���������鿴�̳̺͸�����־��ڣ��������绽�Ѻ͹ػ���ڣ������ڿ��ٲ���
+1、更新教程
+2、针对关机无法成功的，加入udp关机方式，需要电脑后台运行配套exe程序，使用方法查阅教程关机部分。已经可以正常关机的无需改动，使用netrpc方式即可
+3、优化配置页，隐藏未开启功能的参数，加入查看教程和更新日志入口，加入网络唤醒和关机入口，可用于快速测试
 
 
-V2.0  2024-12-24��
+V2.0  2024-12-24：
 ---------------------
-1���Ż�С���⣬�޸İ汾�ţ���ʽ����
+1、优化小问题，修改版本号，正式发布
 
 
-V1.8  2024-12-23��
+V1.8  2024-12-23：
 ---------------------
-1���Ż����°ͷ����ϵ��豸��������״̬
+1、优化更新巴法云上的设备在线离线状态
 
 
-V1.7  2024-12-22��
+V1.7  2024-12-22：
 ---------------------
-1����ܹ�ƽ̨֧��
+1、多架构平台支持
 
 
-V1.6  2024-12-22��
+V1.6  2024-12-22：
 ---------------------
-1���޸Ĺػ�ʵ�ַ�ʽ
+1、修改关机实现方式
 
 
-V1.5  2024-12-21��
+V1.5  2024-12-21：
 ---------------------
-1������changelog������־
-2��web�����������������ֶ���������������������--restart unless-stopped��
-3����������ʱ��ͳ��
+1、加入changelog更新日志
+2、web加入重启服务，无须手动重启容器（需设置容器--restart unless-stopped）
+3、加入运行时长统计
