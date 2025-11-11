@@ -45,7 +45,9 @@ document.getElementById('go_ping').href = `/ping/${DEVICE_ID}?key=${KEY}`;
 // 消息显示
 function addFlashMessage(content) {
     const now = new Date();
-    const timestamp = now.toISOString().slice(0, 19).replace("T", " "); // 格式: YYYY-MM-DD HH:MM:SS
+    const timestamp = now.toLocaleString('zh-CN', { hour12: false })
+        .replace(/\//g, '-')
+        .replace(',', ''); // 格式: YYYY-MM-DD HH:MM:SS
     const flashMessages = document.getElementById('flash-messages');
     // 清空之前的内容
     // flashMessages.innerHTML = "";
