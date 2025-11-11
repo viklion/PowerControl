@@ -66,9 +66,10 @@ services:
 一般无需手动修改配置文件，都可在web配置，[配置文件参数详解](https://github.com/viklion/PowerControl/blob/main/YAML.md)
 
 ## 界面
-![index](https://github.com/user-attachments/assets/3df4b928-0cf9-4deb-a478-5681dc77b586)
+![gif](https://github.com/user-attachments/assets/1b23a8af-0175-45ad-971d-890d47c056d8)
 
-![overview](https://github.com/user-attachments/assets/c9cf79ba-c624-46fe-b47a-00bec12bd265)
+![overview](https://github.com/user-attachments/assets/40708ae1-b070-48dd-a005-99dd1fd58e1c)
 
-![config](https://github.com/user-attachments/assets/d272cbd9-0133-4785-a5c0-fba1bcd423f4)
+![main](https://github.com/user-attachments/assets/ea746d97-3947-4aba-9520-bb24183fdb2d)
 
+![device](https://github.com/user-attachments/assets/d0ffd29c-48dd-466e-847e-a4cae06d547d)
