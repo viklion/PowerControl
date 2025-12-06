@@ -107,26 +107,27 @@ sensor:
     scan_interval: 60
     value_template: "{{ value_json.device_status }}"
 
-switch:
-  - platform: template
-    switches:
-      my_pc:
-        friendly_name: "电脑"
-        unique_id: "my_pc_001"
-        icon_template: mdi:desktop-tower-monitor
-        value_template: "{{ states('input_text.powercontrol_state') == 'on' }}"
+template:
+  - switch:
+      - default_entity_id: switch.my_pc:
+        name: 电脑
+        unique_id: my_pc_001
+        icon: mdi:desktop-tower-monitor
+        state: "{{ states('input_text.powercontrol_state') == 'on' }}"
         turn_on:
           - action: shell_command.ha_wol_pc
           - action: input_text.set_value
             target:
-              entity_id: input_text.powercontrol_state
+              entity_id: 
+                - input_text.powercontrol_state
             data:
               value: "on"
         turn_off:
           - action: shell_command.ha_shutdown_pc
           - action: input_text.set_value
             target:
-              entity_id: input_text.powercontrol_state
+              entity_id: 
+                - input_text.powercontrol_state
             data:
               value: "off"
         </code>
