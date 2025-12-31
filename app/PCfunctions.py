@@ -166,16 +166,18 @@ class PCfuncs():
                         return str(e)
                 elif self.checkbool(self.PC_data.get_device_device_shutdown_method_udp(device_id)):
                     try:
+                        udp_port = self.PC_data.get_device_device_shutdown_udp_port(device_id)
+                        win_cmd = self.PC_data.get_device_device_shutdown_win_cmd(device_id)
                         # 创建一个UDP socket
                         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                         # 设置超时时间
                         sock.settimeout(shutdown_timeout)
                         # 目标主机和端口
                         host = device_ip
-                        port = 17678
+                        port = udp_port
                         # 要发送的消息
                         data = {
-                            'cmd': 'shutdown',
+                            'cmd': win_cmd,
                             'time': shutdown_time,
                         }
                         # 将字典序列化为JSON字符串

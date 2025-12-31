@@ -254,7 +254,13 @@ class PCdata():
 
     def get_device_device_shutdown_shell_script(self, device_id):
         return self.get(['device', device_id, 'yaml', 'device', 'shutdown', 'shell_script'])
-    
+
+    def get_device_device_shutdown_udp_port(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'device', 'shutdown', 'udp_port'])
+
+    def get_device_device_shutdown_win_cmd(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'device', 'shutdown', 'win_cmd'])
+
     def get_device_device_shutdown_time(self, device_id):
         return self.get(['device', device_id, 'yaml', 'device', 'shutdown', 'time'])
 

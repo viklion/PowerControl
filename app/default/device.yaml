@@ -27,6 +27,8 @@ device:
     account: youraccount
     password: yourpassword
     shell_script: yourscript
+    udp_port: 17678
+    win_cmd: shutdown
     time: 60
     timeout: 2
   ping:

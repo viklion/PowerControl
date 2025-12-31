@@ -1,0 +1,4 @@
+#include "resource.h"
+
+IDI_APPICON ICON "pcshutdown.ico"
+IDI_APPICON_GRAY ICON "pcshutdown-gray.ico"

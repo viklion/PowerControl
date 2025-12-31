@@ -71,6 +71,8 @@ devices:    #设备参数配置
     account: youraccount    #关机账户-账户
     password: yourpassword    #关机账户-密码
     shell_script: yourscript    #自定义指令内容
+    udp_port: 17678    #配套软件监听的端口，默认：17678
+    win_cmd: shutdown    #shutdown：关机，reboot：重启，sleep：睡眠，hibernate：休眠
     time: 60    #延迟关机时长，1为立刻关机
     timeout: 2    #指令超时时长，默认：2
   ping:    #ping查询设备在线状态参数配置

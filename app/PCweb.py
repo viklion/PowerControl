@@ -158,6 +158,8 @@ def config_device(device_id):
         device_yaml['device']['shutdown']['account'] = PC_funcs.trans_str(request.form.get('device.shutdown.account'))
         device_yaml['device']['shutdown']['password'] = PC_funcs.trans_str(request.form.get('device.shutdown.password'))
         device_yaml['device']['shutdown']['shell_script'] = PC_funcs.trans_str(request.form.get('device.shutdown.shell_script'))
+        device_yaml['device']['shutdown']['udp_port'] = int(request.form.get('device.shutdown.udp_port'))
+        device_yaml['device']['shutdown']['win_cmd'] = PC_funcs.trans_str(request.form.get('device.shutdown.win_cmd'))
         device_yaml['device']['shutdown']['time'] = int(request.form.get('device.shutdown.time'))
         device_yaml['device']['shutdown']['timeout'] = int(request.form.get('device.shutdown.timeout'))
         device_yaml['device']['ping']['enabled'] = bool(request.form.get('device.ping.enabled'))

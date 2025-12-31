@@ -126,7 +126,7 @@
                         <option id="broadcast_device_ip" value="device_ip" {% if config.device.wol.destination=='device_ip' %}selected{% endif %}>设备ip()</option>
                     </select>
                     <span class="tooltip no-select">❔︎
-                        <span class="tooltiptext">一般选全局或定向</span>
+                        <span class="tooltiptext">一般选全局或定向，可尝试切换保存后执行唤醒测试</span>
                     </span>
                     <br>
                     端口： <input class="input-label" type="number" name="device.wol.port" value="{{ config.device.wol.port }}" min="1" step="1" max="65535" title="一般无需修改，默认:9" placeholder="一般无需修改，默认:9">
@@ -158,8 +158,24 @@
                     账户： <input class="input-label" type="text" name="device.shutdown.account" value="{{ config.device.shutdown.account }}"><br>
                     密码： <input class="input-label" type="password" name="device.shutdown.password" value="{{ config.device.shutdown.password }}" onfocus="this.type='text'" onblur="this.type='password'"><br>
                 </div>
-                <div id='dl_pcshutdown' class='hidden'>
-                    <a class="textlink no-select" href="{{ url_for('download') }}?file=pcshutdown" onclick="return confirmDownload();">➔下载配套服务程序，并按教程使用</a>
+                <div id='udpconfig' class='hidden'>
+                    软件监听端口： <input class="input-label" type="number" name="device.shutdown.udp_port" value="{{ config.device.shutdown.udp_port }}" min="1" step="1" max="65535" title="配套软件监听的端口，默认：17678" placeholder="配套软件监听的端口，默认：17678">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">配套软件PCshutdown监听的端口，默认：17678</span>
+                    </span>
+                    <br>
+                    关机操作：
+                    <select class="input-label" name="device.shutdown.win_cmd">
+                        <option value="shutdown" {% if config.device.shutdown.win_cmd=='shutdown' %}selected{% endif %}>关机</option>
+                        <option value="reboot" {% if config.device.shutdown.win_cmd=='reboot' %}selected{% endif %}>重启</option>
+                        <option value="sleep" {% if config.device.shutdown.win_cmd=='sleep' %}selected{% endif %}>睡眠</option>
+                        <option value="hibernate" {% if config.device.shutdown.win_cmd=='hibernate' %}selected{% endif %}>休眠</option>
+                    </select>
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">仅配套软件方法支持选择关机操作，该配置项对关机账户方法无效</span>
+                    </span>
+                    <br>
+                    <a class="textlink no-select" href="{{ url_for('download') }}?file=pcshutdown" onclick="return confirmDownload();">➔下载配套软件PCshutdown，并按教程使用</a>
                 </div>
                 <div id='shutdown_shell_script' class='hidden'>
                     自定义指令： <input class="input-label" type="text" name="device.shutdown.shell_script" value="{{ config.device.shutdown.shell_script }}" title="例如sshpass、curl等" placeholder="例如sshpass、curl等">

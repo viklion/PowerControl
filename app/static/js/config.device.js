@@ -265,14 +265,14 @@ function handleSelectChangeWol() {
 // 获取元素
 const shutdownMethodSelect = document.getElementById('shutdown_method');
 const netrpcConfig = document.getElementById('netrpcconfig');
-const dl_pcshutdown = document.getElementById('dl_pcshutdown');
+const udpconfig = document.getElementById('udpconfig');
 const shutdown_shell_script = document.getElementById('shutdown_shell_script');
 const shutdown_delay_time = document.getElementById('shutdown_delay_time');
 
 // 更新显示状态
 function ifshow_method_shutdown() {
     hideElement(netrpcConfig);
-    hideElement(dl_pcshutdown);
+    hideElement(udpconfig);
     hideElement(shutdown_shell_script);
     hideElement(shutdown_delay_time);
 
@@ -280,7 +280,7 @@ function ifshow_method_shutdown() {
         showElement(netrpcConfig);
         showElement(shutdown_delay_time);
     } else if (shutdownMethodSelect.value === 'udp') {
-        showElement(dl_pcshutdown);
+        showElement(udpconfig);
         showElement(shutdown_delay_time);
     } else if (shutdownMethodSelect.value === 'shell') {
         showElement(shutdown_shell_script);
