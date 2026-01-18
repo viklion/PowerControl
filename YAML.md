@@ -86,5 +86,17 @@ devices:    #设备参数配置
     off_keyword: 'off'    #判断设备离线关键字
 message:
     enabled: False     #该设备的消息推送开关
+schedule:    #定时任务参数配置
+  enabled: False    #是否启用定时任务
+  plans:    #定时任务列表
+    - id: '1'    #任务id
+      enabled: False    #是否启用该任务
+      name: '示例任务1'    #任务名称
+      type: cron    #任务类型，cron：循环任务，datetime：单次任务
+      datetime: '2026-1-1 20:00:00'    #单次任务时间
+      cron: '0 9 * * 1-5'    #循环任务时间，5段cron表达式
+      action: shutdown    #任务执行操作，wol：开机，shutdown：关机
+      remind: False    #是否启用任务执行前提醒
+      advance: 5    #任务提前提醒时间，单位：分钟
 ```
 

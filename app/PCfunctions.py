@@ -4,6 +4,7 @@ import time
 import socket
 import json
 import subprocess
+import re
 from wakeonlan import send_magic_packet
 from pythonping import ping
 from datetime import datetime, timedelta
@@ -139,6 +140,77 @@ class PCfuncs():
                     except Exception as e:
                         self.PC_logger.error(f"自动清理日志 {filename} 出错: {str(e)}")
 
+    @staticmethod
+    def trans_cron(cron):
+        # cron 字段范围
+        CRON_FIELD_RANGES = {
+            "minute": (0, 59),
+            "hour": (0, 23),
+            "day": (1, 31),
+            "month": (1, 12),
+            "day_of_week": (0, 7),
+        }
+
+        def check_field(field: str, min_v: int, max_v: int):
+            """
+            校验单个 cron 字段是否合法
+            支持：*, */n, a-b, a,b,c
+            """
+            pattern = r"^(\*|\*/\d+|\d+(-\d+)?)(,\d+(-\d+)?)*$"
+            if not re.match(pattern, field):
+                raise ValueError(f"非法 cron 字段格式: {field}")
+
+            for part in re.split(r"[,-]", field.replace("*/", "")):
+                if part.isdigit():
+                    v = int(part)
+                    if not (min_v <= v <= max_v):
+                        raise ValueError(f"cron 字段值超范围: {v} (应在 {min_v}-{max_v})")
+
+        def convert_linux_week_to_aps(week: str) -> str:
+            """
+            Linux cron 星期 → APScheduler 星期
+            Linux: 0/7=Sun, 1=Mon ... 6=Sat
+            APS:   0=Mon ... 6=Sun
+            """
+            if week == "*":
+                return week
+
+            result = []
+            for part in week.split(","):
+                if "-" in part:
+                    start, end = map(int, part.split("-"))
+                    result.extend(range(start, end + 1))
+                else:
+                    result.append(int(part))
+
+            converted = set()
+            for d in result:
+                if d == 7:
+                    d = 0
+                converted.add((d - 1) % 7)
+
+            return ",".join(str(d) for d in sorted(converted))
+
+        """
+        校验 Linux crontab（5段）并转换为 APScheduler CronTrigger
+        """
+        parts = cron.strip().split()
+        if len(parts) != 5:
+            raise ValueError("crontab 必须是 5 段格式")
+
+        minute, hour, day, month, week = parts
+
+        check_field(minute, *CRON_FIELD_RANGES["minute"])
+        check_field(hour, *CRON_FIELD_RANGES["hour"])
+        check_field(day, *CRON_FIELD_RANGES["day"])
+        check_field(month, *CRON_FIELD_RANGES["month"])
+        check_field(week, *CRON_FIELD_RANGES["day_of_week"])
+
+        aps_week = convert_linux_week_to_aps(week)
+
+        return minute, hour, day, month, aps_week
+
+
     # 关机
     def pcshutdown(self, device_id):
         # 设备服务是否启用
@@ -241,7 +313,9 @@ class PCfuncs():
                         wol_interface = None
                     try:
                         # 唤醒设备
-                        send_magic_packet(wol_mac, ip_address = wol_destination, port = wol_port, interface = wol_interface)
+                        for _ in range(3):
+                            send_magic_packet(wol_mac, ip_address = wol_destination, port = wol_port, interface = wol_interface)
+                            time.sleep(0.2)
                         return 'done'
                     except Exception as e:
                         return str(e).replace("\n", "→")

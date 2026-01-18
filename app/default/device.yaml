@@ -41,4 +41,16 @@ device:
     on_keyword: 'on'
     off_keyword: 'off'
 message:
-    enabled: False
+  enabled: False
+schedule:
+  enabled: False
+  plans:
+    - id: '1'
+      enabled: False
+      name: 'Ê¾ÀýÈÎÎñ1'
+      type: cron
+      datetime: '2026-1-1 20:00:00'
+      cron: '0 9 * * 1-5'
+      action: shutdown
+      remind: False
+      advance: 5

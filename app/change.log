@@ -1,3 +1,10 @@
+V4.0  2026-1-18：
+---------------------
+1、添加定时开关机功能:
+a、支持单次（日期时间）和循环（cron表达式）两种定时任务
+b、支持定时任务执行前x分钟推送通知提醒
+
+
 V3.9  2026-1-1：
 ---------------------
 1、更新关机配套软件PCshutdown，支持自定义监听端口，支持关机、重启、睡眠、休眠
@@ -58,7 +65,7 @@ V3.1  2025-8-18：
 唤醒：/wol?key=密钥 --> /wol/设备id或别名?key=密钥
 关机：/shutdown?key=密钥 --> /shutdown/设备id或别名?key=密钥
 ping：/ping?key=密钥 --> /ping/设备id或别名?key=密钥
-例：设备id为device01，别名设置为windows，则api接口为/wol/device01?key=密钥，或，/wol/windows?key=密钥
+例：设备id为device01，别名设置为windows，则api接口为http://192.168.x.x:7678/wol/device01?key=密钥，或，http://192.168.x.x:7678/wol/windows?key=密钥
 *tips:多设备下注意巴法云的设备昵称不要重复了，做好关联
 *版本改动较大，如遇bug请反馈
 

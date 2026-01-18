@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -22,7 +23,8 @@
         <div class="blur-left"></div>
         <div class="head-container">
             <a>
-                <img id="theme-toggle" src="{{ url_for('static', filename='icon.png') }}" alt="PowerControl" class="icon-image"  title="深色/浅色模式切换">
+                <img id="theme-toggle" src="{{ url_for('static', filename='icon.png') }}" alt="PowerControl"
+                    class="icon-image" title="深色/浅色模式切换">
             </a>
             <a id="main" class="textlink" target="_blank">总览</a>
             <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
@@ -61,29 +63,32 @@
             <button id="start_top_btn" type="button">启动</button>
             <button id="stop_top_btn" type="button">停止</button>
             <button id="restart_top_btn" type="button">重启</button>
-            <button id="delete_top_btn" type="button">删除</button>
+            <button id="delete_top_btn" style="background-color: rgb(255, 102, 102);" type="button">删除</button>
         </div>
         <form id="pcconfig" method="post">
             <h2 style="margin-top: -20px;">服务：</h2>
             <div class='line-container'>
-                启用该设备服务： <input id="main_enabled" class="checkbox-label" type="checkbox" name="main.enabled" value="True" {% if config['main']['enabled'] %} checked{% endif %}>
+                启用该设备服务： <input id="main_enabled" class="checkbox-label" type="checkbox" name="main.enabled"
+                    value="True" {% if config['main']['enabled'] %} checked{% endif %}>
                 <label for="main_enabled"></label>
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">设备服务总开关</span>
                 </span>
             </div>
-            api别名： <input class="input-label" type="text" name="main.alias" value="{{ config.main.alias | default('', true) }}">
+            api别名： <input class="input-label" type="text" name="main.alias"
+                value="{{ config.main.alias | default('', true) }}">
             <span class="tooltip no-select">❔︎
-                <span class="tooltiptext">只能英文且不可重复,只影响api,可以将id修改为自定义别名,例如/device01可以换成/windows或/mac或/ubuntu等</span>
+                <span class="tooltiptext">只能英文且不可重复,只影响api,可以将id修改为自定义别名,例如/device01可以换成/windows或/mac或/ubuntu等,例:http://192.168.x.x:7678/wol/windows?key=密钥</span>
             </span>
             <br>
             <h2>巴法：</h2>
             <div class='line-container'>
-                接入巴法云： <input id="bemfa_enabled" class="checkbox-label" type="checkbox" name="bemfa.enabled" value="True" {% if config['bemfa']['enabled'] %} checked{% endif %} data-target = 'bemfaconfig'>
+                接入巴法云： <input id="bemfa_enabled" class="checkbox-label" type="checkbox" name="bemfa.enabled"
+                    value="True" {% if config['bemfa']['enabled'] %} checked{% endif %} data-target='bemfaconfig'>
                 <label for="bemfa_enabled"></label>
                 <a id="go_bemfa" class="textlink no-select" href="https://cloud.bemfa.com/" target="_blank">➔前往巴法控制台</a>
             </div>
-            <div id = 'bemfaconfig' class = 'hidden'>
+            <div id='bemfaconfig' class='hidden'>
                 巴法云用户私钥： <input class="input-label" type="text" name="bemfa.uid" value="{{ config.bemfa.uid }}">
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">巴法云控制台左上角用户私钥</span>
@@ -101,110 +106,148 @@
                 <span class="tooltiptext">随意更改,但不可重复</span>
             </span>
             <br>
-            设备ip地址： <input class="input-label" type="text" name="device.ip" value="{{ config.device.ip }}" id="device_ip" oninput="update_wol_dest()"><br>
+            设备ip地址： <input class="input-label" type="text" name="device.ip" value="{{ config.device.ip }}"
+                id="device_ip" oninput="update_wol_dest()"><br>
             <hr class="dashed-hr">
             <div class='line-container'>
-                启用网络唤醒： <input id="wol_enabled" class="checkbox-label" type="checkbox" name="device.wol.enabled" value="True" {% if config['device']['wol']['enabled'] %} checked{% endif %} data-target = 'wolconfig'>
+                启用网络唤醒： <input id="wol_enabled" class="checkbox-label" type="checkbox" name="device.wol.enabled"
+                    value="True" {% if config['device']['wol']['enabled'] %} checked{% endif %} data-target='wolconfig'>
                 <label for="wol_enabled"></label>
                 <a id="go_wol" class="textlink no-select" href="/wol" target="_blank">➔执行开机</a>
             </div>
-            <div id = 'wolconfig' class = 'hidden'>
+            <div id='wolconfig' class='hidden'>
                 唤醒方法：
                 <select id="wol_method" class="input-label" name="device.wol.method">
-                    <option value="wakeonlan" {% if config.device.wol.method.wakeonlan==true %}selected{% endif %}>内置网络唤醒</option>
-                    <option value="shell" {% if config.device.wol.method.shell==true %}selected{% endif %}>自定义指令</option>
+                    <option value="wakeonlan" {% if config.device.wol.method.wakeonlan==true %}selected{% endif %}>
+                        内置网络唤醒</option>
+                    <option value="shell" {% if config.device.wol.method.shell==true %}selected{% endif %}>自定义指令
+                    </option>
                 </select>
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">无特殊需求使用内置即可</span>
                 </span><br>
                 <div id='wakeonlanconfig' class='hidden'>
-                    设备网卡mac地址： <input class="input-label" type="text" name="device.wol.mac" value="{{ config.device.wol.mac }}" title="可以是xx-xx，也可以是xx:xx" placeholder="xx-xx或xx:xx"><br>
-                    目标地址： 
+                    设备网卡mac地址： <input class="input-label" type="text" name="device.wol.mac"
+                        value="{{ config.device.wol.mac }}" title="可以是xx-xx，也可以是xx:xx" placeholder="xx-xx或xx:xx"><br>
+                    目标地址：
                     <select class="input-label" name="device.wol.destination">
-                        <option value="broadcast_ip_global" {% if config.device.wol.destination=='broadcast_ip_global' %}selected{% endif %}>全局广播(255.255.255.255)</option>
-                        <option id="broadcast_ip_direct" value="broadcast_ip_direct" {% if config.device.wol.destination=='broadcast_ip_direct' %}selected{% endif %}>定向广播()</option>
-                        <option id="broadcast_device_ip" value="device_ip" {% if config.device.wol.destination=='device_ip' %}selected{% endif %}>设备ip()</option>
+                        <option value="broadcast_ip_global" {% if config.device.wol.destination=='broadcast_ip_global'
+                            %}selected{% endif %}>全局广播(255.255.255.255)</option>
+                        <option id="broadcast_ip_direct" value="broadcast_ip_direct" {% if
+                            config.device.wol.destination=='broadcast_ip_direct' %}selected{% endif %}>定向广播()</option>
+                        <option id="broadcast_device_ip" value="device_ip" {% if
+                            config.device.wol.destination=='device_ip' %}selected{% endif %}>设备ip()</option>
                     </select>
                     <span class="tooltip no-select">❔︎
                         <span class="tooltiptext">一般选全局或定向，可尝试切换保存后执行唤醒测试</span>
                     </span>
                     <br>
-                    端口： <input class="input-label" type="number" name="device.wol.port" value="{{ config.device.wol.port }}" min="1" step="1" max="65535" title="一般无需修改，默认:9" placeholder="一般无需修改，默认:9">
+                    端口： <input class="input-label" type="number" name="device.wol.port"
+                        value="{{ config.device.wol.port }}" min="1" step="1" max="65535" title="一般无需修改，默认:9"
+                        placeholder="一般无需修改，默认:9">
                     <span class="tooltip no-select">❔︎
                         <span class="tooltiptext">无特殊需求默认:9即可</span>
                     </span>
                     <br>
-                    <a class="textlink no-select" href="{{ url_for('download') }}?file=wolmonitor" onclick="return confirmDownload();">➔下载唤醒魔包接收测试软件，查阅教程使用</a>
+                    <a class="textlink no-select" href="{{ url_for('download') }}?file=wolmonitor"
+                        onclick="return confirmDownload();">➔下载唤醒魔包接收测试软件，查阅教程使用</a>
                 </div>
                 <div id='wol_shell_script' class='hidden'>
-                    自定义指令： <input class="input-label" type="text" name="device.wol.shell_script" value="{{ config.device.wol.shell_script }}" title="例如sshpass、curl等" placeholder="例如sshpass、curl等">
+                    自定义指令： <input class="input-label" type="text" name="device.wol.shell_script"
+                        value="{{ config.device.wol.shell_script }}" title="例如sshpass、curl等"
+                        placeholder="例如sshpass、curl等">
                 </div>
             </div>
             <hr class="dashed-hr">
             <div class='line-container'>
-                启用远程关机： <input id="shutdown_enabled" class="checkbox-label" type="checkbox" name="device.shutdown.enabled" value="True" {% if config['device']['shutdown']['enabled'] %} checked{% endif %} data-target = 'shutdownconfig'>
+                启用远程关机： <input id="shutdown_enabled" class="checkbox-label" type="checkbox"
+                    name="device.shutdown.enabled" value="True" {% if config['device']['shutdown']['enabled'] %}
+                    checked{% endif %} data-target='shutdownconfig'>
                 <label for="shutdown_enabled"></label>
                 <a id="go_shutdown" class="textlink no-select" href="/shutdown" target="_blank">➔执行关机</a>
             </div>
-            <div id = 'shutdownconfig' class = 'hidden'>
+            <div id='shutdownconfig' class='hidden'>
                 关机方法：
                 <select id="shutdown_method" class="input-label" name="device.shutdown.method">
-                    <option value="netrpc" {% if config.device.shutdown.method.netrpc==true %}selected{% endif %}>关机账户[Windows]</option>
-                    <option value="udp" {% if config.device.shutdown.method.udp==true %}selected{% endif %}>配套软件[Windows]</option>
-                    <option value="shell" {% if config.device.shutdown.method.shell==true %}selected{% endif %}>自定义指令[Linux MacOS ...]</option>
+                    <option value="netrpc" {% if config.device.shutdown.method.netrpc==true %}selected{% endif %}>
+                        关机账户[Windows]</option>
+                    <option value="udp" {% if config.device.shutdown.method.udp==true %}selected{% endif %}>
+                        配套软件[Windows]</option>
+                    <option value="shell" {% if config.device.shutdown.method.shell==true %}selected{% endif %}>
+                        自定义指令[Linux MacOS ...]</option>
                 </select>
                 <br>
-                <div id = 'netrpcconfig' class = 'hidden'>
-                    账户： <input class="input-label" type="text" name="device.shutdown.account" value="{{ config.device.shutdown.account }}"><br>
-                    密码： <input class="input-label" type="password" name="device.shutdown.password" value="{{ config.device.shutdown.password }}" onfocus="this.type='text'" onblur="this.type='password'"><br>
+                <div id='netrpcconfig' class='hidden'>
+                    账户： <input class="input-label" type="text" name="device.shutdown.account"
+                        value="{{ config.device.shutdown.account }}"><br>
+                    密码： <input class="input-label" type="password" name="device.shutdown.password"
+                        value="{{ config.device.shutdown.password }}" onfocus="this.type='text'"
+                        onblur="this.type='password'"><br>
                 </div>
                 <div id='udpconfig' class='hidden'>
-                    软件监听端口： <input class="input-label" type="number" name="device.shutdown.udp_port" value="{{ config.device.shutdown.udp_port }}" min="1" step="1" max="65535" title="配套软件监听的端口，默认：17678" placeholder="配套软件监听的端口，默认：17678">
+                    软件监听端口： <input class="input-label" type="number" name="device.shutdown.udp_port"
+                        value="{{ config.device.shutdown.udp_port }}" min="1" step="1" max="65535"
+                        title="配套软件监听的端口，默认：17678" placeholder="配套软件监听的端口，默认：17678">
                     <span class="tooltip no-select">❔︎
                         <span class="tooltiptext">配套软件PCshutdown监听的端口，默认：17678</span>
                     </span>
                     <br>
                     关机操作：
                     <select class="input-label" name="device.shutdown.win_cmd">
-                        <option value="shutdown" {% if config.device.shutdown.win_cmd=='shutdown' %}selected{% endif %}>关机</option>
-                        <option value="reboot" {% if config.device.shutdown.win_cmd=='reboot' %}selected{% endif %}>重启</option>
-                        <option value="sleep" {% if config.device.shutdown.win_cmd=='sleep' %}selected{% endif %}>睡眠</option>
-                        <option value="hibernate" {% if config.device.shutdown.win_cmd=='hibernate' %}selected{% endif %}>休眠</option>
+                        <option value="shutdown" {% if config.device.shutdown.win_cmd=='shutdown' %}selected{% endif %}>
+                            关机</option>
+                        <option value="reboot" {% if config.device.shutdown.win_cmd=='reboot' %}selected{% endif %}>重启
+                        </option>
+                        <option value="sleep" {% if config.device.shutdown.win_cmd=='sleep' %}selected{% endif %}>睡眠
+                        </option>
+                        <option value="hibernate" {% if config.device.shutdown.win_cmd=='hibernate' %}selected{% endif
+                            %}>休眠</option>
                     </select>
                     <span class="tooltip no-select">❔︎
                         <span class="tooltiptext">仅配套软件方法支持选择关机操作，该配置项对关机账户方法无效</span>
                     </span>
                     <br>
-                    <a class="textlink no-select" href="{{ url_for('download') }}?file=pcshutdown" onclick="return confirmDownload();">➔下载配套软件PCshutdown，并按教程使用</a>
+                    <a class="textlink no-select" href="{{ url_for('download') }}?file=pcshutdown"
+                        onclick="return confirmDownload();">➔下载配套软件PCshutdown，并按教程使用</a>
                 </div>
                 <div id='shutdown_shell_script' class='hidden'>
-                    自定义指令： <input class="input-label" type="text" name="device.shutdown.shell_script" value="{{ config.device.shutdown.shell_script }}" title="例如sshpass、curl等" placeholder="例如sshpass、curl等">
+                    自定义指令： <input class="input-label" type="text" name="device.shutdown.shell_script"
+                        value="{{ config.device.shutdown.shell_script }}" title="例如sshpass、curl等"
+                        placeholder="例如sshpass、curl等">
                     <br>
                     <a class="textlink no-select" href="/getcommand" target="_blank">➔快速生成指令</a>
                 </div>
                 <div id='shutdown_delay_time'>
-                    延迟关机时长(秒)： <input class="input-label" type="number" name="device.shutdown.time" value="{{ config.device.shutdown.time }}" min="1" step="1" title="填1为立刻关机" placeholder="填1为立刻关机">
+                    延迟关机时长(秒)： <input class="input-label" type="number" name="device.shutdown.time"
+                        value="{{ config.device.shutdown.time }}" min="1" step="1" title="填1为立刻关机"
+                        placeholder="填1为立刻关机">
                     <span class="tooltip no-select">❔︎
                         <span class="tooltiptext">填1为立刻关机</span>
                     </span>
                     <br>
                 </div>
-                指令超时时长(秒)： <input class="input-label" type="number" name="device.shutdown.timeout" value="{{ config.device.shutdown.timeout }}" min="1" step="1" max="10" title="指令发送超过该时长则判定发送失败，默认:2" placeholder="指令发送超过该时长则判定发送失败，默认:2">
+                指令超时时长(秒)： <input class="input-label" type="number" name="device.shutdown.timeout"
+                    value="{{ config.device.shutdown.timeout }}" min="1" step="1" max="10" title="指令发送超过该时长则判定发送失败，默认:2"
+                    placeholder="指令发送超过该时长则判定发送失败，默认:2">
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">指令发送超过该时长则判定发送失败,默认:2</span>
                 </span><br>
             </div>
             <hr class="dashed-hr">
             <div class='line-container'>
-                启用ping检测： <input id="ping_enabled" class="checkbox-label" type="checkbox" name="device.ping.enabled" value="True" {% if config['device']['ping']['enabled'] %} checked{% endif %} data-target = 'pingconfig'>
+                启用ping检测： <input id="ping_enabled" class="checkbox-label" type="checkbox" name="device.ping.enabled"
+                    value="True" {% if config['device']['ping']['enabled'] %} checked{% endif %}
+                    data-target='pingconfig'>
                 <label for="ping_enabled"></label>
                 <a id="go_ping" class="textlink no-select" href="/ping" target="_blank">➔执行ping</a>
             </div>
-            <div id = 'pingconfig' class = 'hidden'>
+            <div id='pingconfig' class='hidden'>
                 ping方法：
                 <select id="ping_method" class="input-label" name="device.ping.method">
-                    <option value="pcping" {% if config.device.ping.method.pcping==true %}selected{% endif %}>内置ping</option>
-                    <option value="shell" {% if config.device.ping.method.shell==true %}selected{% endif %}>自定义指令</option>
+                    <option value="pcping" {% if config.device.ping.method.pcping==true %}selected{% endif %}>内置ping
+                    </option>
+                    <option value="shell" {% if config.device.ping.method.shell==true %}selected{% endif %}>自定义指令
+                    </option>
                 </select>
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">无特殊需求使用内置即可</span>
@@ -212,24 +255,26 @@
                 <br>
                 <div id='ping_shell_script' class='hidden'>
                     自定义指令： <input class="input-label" type="text" name="device.ping.shell_script"
-                        value="{{ config.device.ping.shell_script }}" title="例如sshpass、curl等" placeholder="例如sshpass、curl等">
-                        <span class="tooltip no-select">❔︎
-                            <span class="tooltiptext">需要有返回信息来判断设备是否在线</span>
-                        </span>
-                        <br>
+                        value="{{ config.device.ping.shell_script }}" title="例如sshpass、curl等"
+                        placeholder="例如sshpass、curl等">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">需要有返回信息来判断设备是否在线</span>
+                    </span>
+                    <br>
                     判断在线关键字： <input class="input-label" type="text" name="device.ping.on_keyword"
                         value="{{ config.device.ping.on_keyword }}">
-                        <span class="tooltip no-select">❔︎
-                            <span class="tooltiptext">返回消息中包含该字段则判断在线,注意唯一性</span>
-                        </span>
-                        <br>
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">返回消息中包含该字段则判断在线,注意唯一性</span>
+                    </span>
+                    <br>
                     判断离线关键字： <input class="input-label" type="text" name="device.ping.off_keyword"
                         value="{{ config.device.ping.off_keyword }}">
-                        <span class="tooltip no-select">❔︎
-                            <span class="tooltiptext">返回消息中包含该字段则判断离线,注意唯一性</span>
-                        </span><br>
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">返回消息中包含该字段则判断离线,注意唯一性</span>
+                    </span><br>
                 </div>
-                ping间隔时长(秒)： <input class="input-label" type="number" name="device.ping.time" value="{{ config.device.ping.time }}" min="1" step="1">
+                ping间隔时长(秒)： <input class="input-label" type="number" name="device.ping.time"
+                    value="{{ config.device.ping.time }}" min="1" step="1">
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">不宜太短,一般60秒即可</span>
                 </span>
@@ -237,12 +282,94 @@
             </div>
             <h2>推送：</h2>
             <div class='line-container'>
-                启用消息推送： <input id="push_enabled" class="checkbox-label" type="checkbox" name="message.enabled" value="True" {% if
-                    config['message']['enabled'] %} checked{% endif %}>
+                启用消息推送： <input id="push_enabled" class="checkbox-label" type="checkbox" name="message.enabled"
+                    value="True" {% if config['message']['enabled'] %} checked{% endif %}>
                 <label for="push_enabled"></label>
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">此为该设备推送消息开关,全局消息推送请在全局设置中开关</span>
                 </span>
+            </div>
+            <h2>定时：</h2>
+            <div class='line-container'>
+                启用定时任务： <input id="schedule_enabled" class="checkbox-label" type="checkbox" name="schedule.enabled"
+                    value="True" {% if config['schedule']['enabled'] %} checked{% endif %} data-target='scheduleconfig'>
+                <label for="schedule_enabled"></label>
+            </div>
+            <div id='scheduleconfig' class='hidden'>
+                <div id="schedule_list">
+                    {% for plan in config.schedule.plans %}
+                    <div class="schedule-hr schedule-plan" data-index="{{ loop.index0 }}">
+                        id： <input class="input-label schedule-id" type="text" value="{{ plan.id }}" readonly><br>
+                        名称： <input class="input-label schedule-name" type="text" value="{{ plan.name }}" placeholder="名称">
+                        <span class="tooltip no-select">❔︎
+                            <span class="tooltiptext">随便更改，如：每周六晚11点关机</span>
+                        </span>
+                        <br>
+                        启用：
+                        <input id="schedule_enabled_{{ loop.index0 }}" class="checkbox-label schedule-enabled" type="checkbox" {% if plan.enabled %}checked{% endif %} data-target="schedule_body_{{ loop.index0 }}">
+                        <label for="schedule_enabled_{{ loop.index0 }}" style="margin-bottom: 6px;"></label>
+                        <br>
+                        <div id="schedule_body_{{ loop.index0 }}" class="{% if not plan.enabled %}hidden{% endif %}">
+                            类型：
+                            <select class="input-label schedule-type">
+                                <option value="datetime" {% if plan.type=='datetime' %}selected{% endif %}>单次</option>
+                                <option value="cron" {% if plan.type=='cron' %}selected{% endif %}>循环</option>
+                            </select>
+                            <br>
+                            <div class="schedule-datetime-wrapper{% if plan.type != 'datetime' %} hidden{% endif %}">
+                                时间：
+                                <input class="datetime-label schedule-datetime" style="width: 260px;" type="datetime-local" step="1" 
+                                    value="{{ plan.datetime }}" placeholder="YYYY-M-D HH:MM:SS">
+                                <br>
+                            </div>
+                            <div class="schedule-cron-wrapper{% if plan.type != 'cron' %} hidden{% endif %}">
+                                cron表达式：
+                                <input class="input-label schedule-cron" type="text" value="{{ plan.cron }}"
+                                    placeholder="* * * * *">
+                                    <span class="tooltip no-select">❔︎
+                                        <span class="tooltiptext">格式为5段cron表达式,数字,不支持英文。tips:可借助AI快速生成</span>
+                                    </span><br>
+                                <a style="font-size:14px;color: #4CAF50;"> ➔快速生成cron表达式：</a>
+                                <a class="textlink" href="/getcron" target="_blank">本地版</a>
+                                <a class="textlink" href="https://tool.hoothin.com/zh-CN/cron-parser-generator" target="_blank">在线版</a>
+                                <br>
+                            </div>
+                            操作：<select class="input-label schedule-action">
+                                <option value="wol" {% if plan.action=='wol' %}selected{% endif %}>开机</option>
+                                <option value="shutdown" {% if plan.action=='shutdown' %}selected{% endif %}>关机</option>
+                            </select>
+                            <br>
+                            下次执行时间：<span class="schedule-next-runtime">
+                                {% if plan.id not in schdule_nextruntime or not schdule_nextruntime[plan.id] %}
+                                    无
+                                {% else %}
+                                    {{ schdule_nextruntime[plan.id] }}
+                                {% endif %}
+                            </span>
+                            <span class="tooltip no-select">❔︎
+                                <span class="tooltiptext">保存并重启服务后更新下次执行时间</span>
+                            </span><br>
+                            提前推送提醒：
+                            <input id="schedule_remind_{{ loop.index0 }}" class="checkbox-label schedule-remind" type="checkbox" {% if plan.remind %}checked{% endif %} data-target="">
+                            <label for="schedule_remind_{{ loop.index0 }}" style="margin-bottom: 6px;"></label>
+                            <span class="tooltip no-select">❔︎
+                                <span class="tooltiptext">需同时勾选主程序和单个设备的消息推送开关</span>
+                            </span>
+                            <br>
+                            <div class="schedule-advance-wrapper{% if not plan.remind %} hidden{% endif %}">
+                                提前时间(分钟)：
+                                <input class="input-label schedule-advance" type="number" value="{{ plan.advance }}"
+                                    min="1"><br>
+                            </div>
+                        </div>
+                        <button type="button" style="background-color: rgb(255, 102, 102); margin-bottom: 10px;" class="remove-plan-btn">删除</button>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div>
+                    <button type="button" id="add_schedule_plan_btn">添加任务</button>
+                </div>
+                <input type="hidden" id="schedule_plans_input" name="schedule.plans" value='{{ config.schedule.plans | tojson | safe }}'>
             </div>
             <hr class="default-hr">
             <div class="line-container no-select">
@@ -250,9 +377,10 @@
                 <button id="start_bottom_btn" type="button">启动</button>
                 <button id="stop_bottom_btn" type="button">停止</button>
                 <button id="restart_bottom_btn" type="button">重启</button>
-                <button id="delete_bottom_btn" type="button">删除</button>
+                <button id="delete_bottom_btn" style="background-color: rgb(255, 102, 102);" type="button">删除</button>
             </div>
         </form>
     </div>
 </body>
+
 </html>

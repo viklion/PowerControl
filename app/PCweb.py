@@ -170,6 +170,19 @@ def config_device(device_id):
         device_yaml['device']['ping']['on_keyword'] = PC_funcs.trans_str(request.form.get('device.ping.on_keyword'))
         device_yaml['device']['ping']['off_keyword'] = PC_funcs.trans_str(request.form.get('device.ping.off_keyword'))
         device_yaml['message']['enabled'] = bool(request.form.get('message.enabled'))
+        device_yaml['schedule']['enabled'] = bool(request.form.get('schedule.enabled'))
+        # 解析前端提交的 schedule.plans（JSON 字符串），保存为列表结构
+        plans_raw = request.form.get('schedule.plans')
+        if plans_raw:
+            try:
+                device_yaml['schedule']['plans'] = json.loads(plans_raw)
+            except Exception as e:
+                PC_logger.error(f'解析 schedule.plans 失败，保存原始值: {e}')
+                # 当解析失败时回退保存原始字符串以便不丢失数据
+                device_yaml['schedule']['plans'] = plans_raw
+        else:
+            # 空值则用空列表
+            device_yaml['schedule']['plans'] = []
         # 保存配置
         save_yaml = PC_yaml.save_yaml(device_id, device_yaml)
         if save_yaml == True:
@@ -182,13 +195,14 @@ def config_device(device_id):
     device_status = PC_data.get_device_status(device_id)
     device_running = PC_thread.is_alive(device_id)
     device_name = f'[{PC_data.get_device_device_name(device_id)}]'
+    schdule_nextruntime = PC_data.get_device_service_schedule(device_id)
     run_time = PC_data.get_device_service_object(device_id).get_run_time() if device_running else '服务未启动'
     if device_status:
         flash(PC_funcs.get_time() + '\n' + '设备状态：' + device_status[0])
     else:
         flash(PC_funcs.get_time() + '\n' + '设备状态：未知')
     PC_logger.debug(f'ip：{user_ip} 访问设备配置页')
-    return render_template('config-device.html', VERSION=PC_funcs.get_version(), device_id=device_id, device_name=device_name, config=device_yaml, run_time=run_time)
+    return render_template('config-device.html', VERSION=PC_funcs.get_version(), device_id=device_id, device_name=device_name, config=device_yaml, run_time=run_time, schdule_nextruntime=schdule_nextruntime)
 
 # 关机
 @app.route('/shutdown/<device>', methods=['GET'])
@@ -213,16 +227,16 @@ def shutdown(device):
     if rs:
         if 'succeeded' in rs:
             message = 'success'
-            message_cn = '已发送关机指令'
-            logger.info(f'{message_cn}(api) → {rs}')
+            message_cn = '已发送关机指令(api)'
+            logger.info(f'{message_cn} → {rs}')
         else:
             message = 'error'
-            message_cn = '发送关机指令失败'
-            logger.error(f'{message_cn}(api) → {rs}')
+            message_cn = '发送关机指令失败(api)'
+            logger.error(f'{message_cn} → {rs}')
     else:
         message = 'skip'
-        message_cn = f'服务未启用或未运行，或远程关机未启用'
-        logger.warning(f'{message_cn}(api)')
+        message_cn = f'服务未启用或未运行，或远程关机未启用(api)'
+        logger.warning(f'{message_cn}')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
                 "method": "shutdown",
@@ -258,16 +272,16 @@ def wol(device):
     if rs:
         if 'done' in rs:
             message = 'success'
-            message_cn = '已发送唤醒指令'
-            logger.info(f'{message_cn}(api)')
+            message_cn = '已发送唤醒指令(api)'
+            logger.info(f'{message_cn}')
         else:
             message = 'error'
-            message_cn = '发送唤醒指令失败'
-            logger.error(f'{message_cn}(api) → {rs}')
+            message_cn = '发送唤醒指令失败(api)'
+            logger.error(f'{message_cn} → {rs}')
     else:
         message = 'skip'
-        message_cn = f'服务未启用或未运行，或网络唤醒未启用'
-        logger.warning(f'{message_cn}(api)')
+        message_cn = f'服务未启用或未运行，或网络唤醒未启用(api)'
+        logger.warning(f'{message_cn}')
     rs_json = {"device_name": PC_data.get_device_device_name(device_id),
                 "device_ip": PC_data.get_device_device_ip(device_id),
                 "method": "wol",
@@ -487,6 +501,11 @@ def get_command():
 
     return render_template('getcommand.html')
 
+# crontab 生成器
+@app.route('/getcron', methods=['GET'])
+def get_cron():
+    return render_template('getcron.html')
+
 # 新建设备配置文件
 @app.route('/device/new', methods=['POST'])
 def device_new():
@@ -592,6 +611,29 @@ def get_device_data(device_id):
                     "device_yaml": device_yaml,
                     "device_status": device_status,
                     "device_running": device_running
+                    }
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+# 获取设备定时任务下次执行时间
+@app.route('/device/get/<device_id>/schedule/next-run-time', methods=['GET'])
+def get_device_schedule_next_run_time(device_id):
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问获取设备定时任务下次执行时间api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问获取设备定时任务下次执行时间api')
+    schdule_nextruntime = PC_data.get_device_service_schedule(device_id)
+    if device_id == 'main':
+        rs_json = {"device_id": device_id,
+                "device_schedule_nextruntime": "主程序无定时功能"
+                }
+    else:
+        rs_json = {"device_id": device_id,
+                    "device_schedule_nextruntime": schdule_nextruntime
                     }
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
@@ -746,7 +788,7 @@ def shutdown_device_all():
     rs_text = "\n".join(rs_list_simple)
     PC_logger.info(f'已完成设备全部关机(api) → {rs_list_simple}')
     PC_logger.debug(f'已完成设备全部关机(api) → {rs_json}')
-    PC_message.send_message('main', '已完成全部关机', "\n" + rs_text)
+    PC_message.send_message('main', '已完成设备全部关机(api)', "\n" + rs_text)
     rs_json['text'] = rs_text
     return Response(
                 json.dumps(rs_json, ensure_ascii=False),
@@ -788,7 +830,7 @@ def wol_device_all():
     rs_text = "\n".join(rs_list_simple)
     PC_logger.info(f'已完成设备全部开机(api) → {rs_list_simple}')
     PC_logger.debug(f'已完成设备全部开机(api) → {rs_json}')
-    PC_message.send_message('main', '已完成全部开机', "\n" + rs_text)
+    PC_message.send_message('main', '已完成设备全部开机(api)', "\n" + rs_text)
     rs_json['text'] = rs_text
     return Response(
                 json.dumps(rs_json, ensure_ascii=False),
@@ -830,7 +872,7 @@ def shutdown_device_batch():
     rs_text = "\n".join(rs_list_simple)
     PC_logger.info(f'已完成设备批量关机(api) → {rs_list_simple}')
     PC_logger.debug(f'已完成设备批量关机(api) → {rs_json}')
-    PC_message.send_message('main', '已完成批量关机', "\n" + rs_text)
+    PC_message.send_message('main', '已完成设备批量关机(api)', "\n" + rs_text)
     rs_json['text'] = rs_text
     return Response(
                 json.dumps(rs_json, ensure_ascii=False),
@@ -872,7 +914,7 @@ def wol_device_batch():
     rs_text = "\n".join(rs_list_simple)
     PC_logger.info(f'已完成设备批量开机(api) → {rs_list_simple}')
     PC_logger.debug(f'已完成设备批量开机(api) → {rs_json}')
-    PC_message.send_message('main', '已完成批量开机', "\n" + rs_text)
+    PC_message.send_message('main', '已完成设备批量开机(api)', "\n" + rs_text)
     rs_json['text'] = rs_text
     return Response(
                 json.dumps(rs_json, ensure_ascii=False),

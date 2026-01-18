@@ -6,6 +6,7 @@ from PClog import PClog
 from PCfunctions import PCfuncs
 from PCmessage import PCmessage
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 
 class PCservice():
@@ -78,7 +79,132 @@ class PCservice():
                 self.PC_message.send_message(self.device_id, f"状态更新：{new_state[0]}")
         except Exception as e:
             self.logger.error("ping出错：" + str(e))
-            
+
+    # 添加定时开关机任务
+    def schedule_add_plans_job(self):
+        if self.PC_funcs.checkbool(self.PC_data.get_device_schedule_enabled(self.device_id)):
+            self.logger.debug("正在添加定时开关机任务")
+            plans = self.PC_data.get_device_schedule_plans(self.device_id)
+            for plan in plans:
+                plan_id = self.PC_funcs.trans_str(plan.get('id'))
+                try:
+                    if self.PC_funcs.checkbool(plan.get('enabled')):
+                        plan_type = self.PC_funcs.trans_str(plan.get('type'))
+                        plan_action = self.PC_funcs.trans_str(plan.get('action'))
+                        plan_remind = self.PC_funcs.checkbool(plan.get('remind'))
+                        plan_remind_advance = int(plan.get('advance', 5))
+                        if plan_type == 'datetime':
+                            plan_datetime_str = plan.get('datetime')  #字符串类型
+                            next_run_str = plan_datetime_str
+                            plan_datetime_trans = datetime.strptime(plan_datetime_str, "%Y-%m-%d %H:%M:%S")  #转换为datetime类型
+                            if plan_datetime_trans > datetime.now():
+                                self.scheduler.add_job(self.schedule_action_datetime, 'date', run_date=plan_datetime_str, kwargs={'id': plan_id, 'action': plan_action})
+                                self.PC_data.update_device_service_schedule_next_run_time(self.device_id, plan_id, plan_datetime_str)
+                                self.schedule_add_remind_message_job(plan_id, plan_datetime_trans, plan_remind, plan_remind_advance, plan_action)
+                        elif plan_type == 'cron':
+                            plan_cron = self.PC_funcs.trans_str(plan.get('cron'))
+                            minute, hour, day, month, aps_week = self.PC_funcs.trans_cron(plan_cron)
+                            trigger = CronTrigger(minute=minute, hour=hour, day=day, month=month, day_of_week=aps_week)
+                            next_run = self.schedule_update_next_run_time(plan_id, trigger)
+                            next_run_str = str(next_run)
+                            self.scheduler.add_job(self.schedule_action_cron, trigger=trigger, kwargs={'id': plan_id, 'trigger': trigger, 'remind': plan_remind, 'advance': plan_remind_advance, 'action': plan_action})
+                            self.schedule_add_remind_message_job(plan_id, next_run, plan_remind, plan_remind_advance, plan_action)
+                        self.logger.debug(f"已添加定时任务，id：{plan_id}，类型：{plan_type}，下次执行时间：{next_run_str}，操作：{plan_action}")
+                    else:
+                        self.logger.debug(f"定时任务id：{plan_id}，未启用，跳过")
+                except Exception as e:
+                    self.logger.error(f"添加定时任务id：{plan_id}，出错：{str(e)}")
+                    continue
+            self.logger.info("定时开关机任务全部添加完成")
+        else:
+            self.logger.debug("未启用定时开关机服务，跳过添加定时任务")
+
+    # 定时任务通知提醒
+    def schedule_remind_message(self, advance, action, run_time):
+        action_dict = {'wol': '开机', 'shutdown': '关机'}
+        self.PC_message.send_message(self.device_id, f'将于{advance}分钟后执行:{action_dict.get(action, action)}', desp=f'定时任务提醒，执行时间：{run_time}，执行操作：{action_dict.get(action, action)}')
+
+    # 更新下次执行时间
+    def schedule_update_next_run_time(self, id, trigger) -> datetime: 
+        # 计算下一次执行时间
+        now = datetime.now()
+        next_run = trigger.get_next_fire_time(None, now).replace(tzinfo=None)
+        self.PC_data.update_device_service_schedule_next_run_time(self.device_id, id, str(next_run))
+        self.logger.debug(f"定时任务id：{id}，下次执行时间：" + str(next_run))
+        return next_run
+
+    # 添加通知提醒定时器
+    def schedule_add_remind_message_job(self, id, next_run:datetime, remind, advance, action):
+        # 提前 x 分钟
+        if remind:
+            remind_message_time = next_run - timedelta(minutes=advance)
+            now = datetime.now()
+            if remind_message_time > now:
+                self.logger.debug(f"定时任务id：{id}，下次通知时间：" + str(remind_message_time))
+                self.scheduler.add_job(
+                    self.schedule_remind_message,
+                    trigger='date',
+                    run_date=remind_message_time,
+                    args=[advance, action, str(next_run)],
+                )
+            else:
+                self.logger.warning(f"定时任务id：{id}，提醒时间({remind_message_time})早于当前时间({now.strftime('%Y-%m-%d %H:%M:%S')})，跳过本次提醒")
+
+    # 网络唤醒
+    def action_wol(self, source='bemfa'):
+        src_dict = {'bemfa': 'bemfa', 'schedule': '定时任务'}
+        src = src_dict.get(source, source)
+        rs = self.PC_funcs.pcwol(self.device_id)
+        if rs:
+            if 'done' in rs:
+                text = f'已发送唤醒指令({src})'
+                self.logger.info(text)
+                self.PC_message.send_message(self.device_id, text)
+            else:
+                text = f'发送唤醒指令失败({src})'
+                self.logger.error(text + ' → ' + rs)
+                self.PC_message.send_message(self.device_id, text)
+        else:
+            text = f'网络唤醒未启用({src})'
+            self.logger.warning(text)
+            self.PC_message.send_message(self.device_id, text)
+
+    # 关机
+    def action_shutdown(self, source='bemfa'):
+        src_dict = {'bemfa': 'bemfa', 'schedule': '定时任务'}
+        src = src_dict.get(source, source)
+        rs = self.PC_funcs.pcshutdown(self.device_id)
+        if rs:
+            if 'succeeded' in rs:
+                text = f'已发送关机指令({src})'
+                self.logger.info(text + ' → ' + rs)
+                self.PC_message.send_message(self.device_id, text)
+            else:
+                text = f'发送关机指令失败({src})'
+                self.logger.error(text + ' → ' + rs)
+                self.PC_message.send_message(self.device_id, text)
+        else:
+            text = f'远程关机未启用({src})'
+            self.logger.warning(text)
+            self.PC_message.send_message(self.device_id, text)
+
+    # 单次定时任务执行操作
+    def schedule_action_datetime(self, id, action, source='schedule'):
+        if action == 'wol':
+            self.action_wol(source)
+        elif action == 'shutdown':
+            self.action_shutdown(source)
+        self.PC_data.update_device_service_schedule_next_run_time(self.device_id, id, '')
+
+    # 循环定时任务执行操作
+    def schedule_action_cron(self, id, trigger, remind, advance, action, source='schedule'):
+        if action == 'wol':
+            self.action_wol(source)
+        elif action == 'shutdown':
+            self.action_shutdown(source)
+        next_run = self.schedule_update_next_run_time(id, trigger)
+        self.schedule_add_remind_message_job(id, next_run, remind, advance, action)
+
     # 统计运行时间
     def get_run_time(self):
         run_timedelta = timedelta(seconds=time.time()-self.start_time)
@@ -121,7 +247,7 @@ class PCservice():
     def add_send_heartbeat_packet_job(self):
         try:
             self.scheduler.add_job(self.send_heartbeat_packet, 'interval', seconds=60, next_run_time=datetime.now(), id='send_heartbeat_packet_job')
-            self.logger.info("bemfa心跳服务已启动")
+            self.logger.debug("bemfa心跳服务已启动")
         except Exception as e:
             self.logger.error("bemfa心跳服务启动失败："+str(e))
 
@@ -130,7 +256,7 @@ class PCservice():
         if self.scheduler.get_job('send_heartbeat_packet_job'):
             try:
                 self.scheduler.remove_job('send_heartbeat_packet_job')
-                self.logger.info("bemfa心跳服务已停止")
+                self.logger.debug("bemfa心跳服务已停止")
             except Exception as e:
                 self.logger.error("bemfa心跳服务停止失败："+str(e))
 
@@ -151,7 +277,7 @@ class PCservice():
         if self.PC_funcs.checkbool(self.PC_data.get_device_device_ping_enabled(self.device_id)):
             try:
                 self.scheduler.add_job(self.update_bemfa, 'interval', seconds=60, next_run_time=datetime.now() + + timedelta(seconds=5), id='update_bemfa_job')
-                self.logger.info("bemfa云端设备状态更新服务已启动")
+                self.logger.debug("bemfa云端设备状态更新服务已启动")
             except Exception as e:
                 self.logger.error("bemfa云端设备状态更新服务启动失败："+str(e))
 
@@ -160,7 +286,7 @@ class PCservice():
         if self.scheduler.get_job('update_bemfa_job'):
             try:
                 self.scheduler.remove_job('update_bemfa_job')
-                self.logger.info("bemfa云端设备状态更新服务已停止")
+                self.logger.debug("bemfa云端设备状态更新服务已停止")
             except Exception as e:
                 self.logger.error("bemfa云端设备状态更新服务停止失败："+str(e))
 
@@ -171,33 +297,6 @@ class PCservice():
     # 重置重连次数定时任务
     def add_reset_reconnect_count_job(self):
         self.scheduler.add_job(self.reset_reconnect_count, 'cron', hour=0, minute=0, id='reset_reconnect_count_job')
-
-    # 收到消息后执行开关机
-    def power_control(self, state):
-        if state == 'on' :
-            rs = self.PC_funcs.pcwol(self.device_id)
-            if rs:
-                if 'done' in rs:
-                    self.logger.info('唤醒指令已发送(bemfa)')
-                    self.PC_message.send_message(self.device_id, '唤醒指令已发送')
-                else:
-                    self.logger.error('唤醒指令发送失败(bemfa)' + ' → ' + rs)
-                    self.PC_message.send_message(self.device_id, '唤醒指令发送失败')
-            else:
-                self.logger.warning('网络唤醒未启用(bemfa)')
-                self.PC_message.send_message(self.device_id, '网络唤醒未启用')
-        elif state == 'off':
-            rs = self.PC_funcs.pcshutdown(self.device_id)
-            if rs:
-                if 'succeeded' in rs:
-                    self.logger.info("关机指令已发送(bemfa)" + ' → ' + rs)
-                    self.PC_message.send_message(self.device_id, '关机指令已发送')
-                else:
-                    self.logger.error("关机指令发送失败(bemfa)" + ' → ' + rs)
-                    self.PC_message.send_message(self.device_id, '关机指令发送失败')
-            else:
-                self.logger.warning('远程关机未启用(bemfa)')
-                self.PC_message.send_message(self.device_id, '远程关机未启用')
 
     # 主循环
     def mainloop(self):
@@ -225,10 +324,10 @@ class PCservice():
             elif f'uid={self.bemfa_uid}' in recv_str:
                 # 收到开机消息
                 if 'msg=on' in recv_str:
-                    self.power_control('on')
+                    self.action_wol()
                 # 收到关机消息
                 elif 'msg=off' in recv_str:
-                    self.power_control('off')
+                    self.action_shutdown()
 
     # 停止服务
     def stop(self):
@@ -253,13 +352,13 @@ class PCservice():
                         self.logger.debug("close socket error："+str(e))
                     self.logger.debug("bemfa服务已停止")
                 # 删除设备状态记录
-                self.PC_data.delete(['device', self.device_id, 'status'])
+                self.PC_data.delete_device_status(self.device_id)
+                self.PC_data.delete_device_service_schedule(self.device_id)
                 self.logger.info(f"设备{self.device_id}所有服务已停止")
                 # 删除日志记录器
                 self.PC_log.remove_logger(self.logger_name)
                 # 已停止符号
                 self.stopped = True
-
 
     # 启动准备
     def start(self, stop_event):
@@ -306,6 +405,7 @@ class PCservice():
                     if not retry:
                         self.logger.info("bemfa服务启动")
                         self.add_reset_reconnect_count_job()
+                        self.schedule_add_plans_job()
                     # 如果是重连
                     elif retry:
                         # 重连次数+1

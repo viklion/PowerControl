@@ -18,7 +18,7 @@ class PCdata():
             },   
         'device':{
             "device01":{"yaml": {...}, # 主要配置信息
-                        "service": {...}, # 服务信息：object、thread、logger
+                        "service": {...}, # 服务信息：object、thread、logger、schedule:{id: next_run_time}
                         "status": {[list]} # 设备在线状态
                         },
             device02:{"yaml": {},
@@ -291,6 +291,12 @@ class PCdata():
     def get_device_message_enabled(self, device_id):
         return self.get(['device', device_id, 'yaml', 'message', 'enabled'])
 
+    def get_device_schedule_enabled(self, device_id) -> bool:
+        return self.get(['device', device_id, 'yaml', 'schedule', 'enabled'])
+
+    def get_device_schedule_plans(self, device_id) -> list:
+        return self.get(['device', device_id, 'yaml', 'schedule', 'plans'])
+
     def get_device_service_object(self, device_id):
         return self.get(['device', device_id, 'service', 'object'])
 
@@ -303,7 +309,14 @@ class PCdata():
 
     def get_device_service_logger(self, device_id):
         return self.get(['device', device_id, 'service', 'logger'])
-    
+
+    def get_device_service_schedule(self, device_id):
+        dict = self.get(['device', device_id, 'service', 'schedule'])
+        return dict if dict else {}
+
+    def get_device_service_schedule_next_run_time(self, device_id, schedule_id):
+        return self.get(['device', device_id, 'service', 'schedule', schedule_id])
+
     def get_device_status(self, device_id):
         return self.get(['device', device_id, 'status'])
 
@@ -343,12 +356,24 @@ class PCdata():
     def update_device_service_logger(self, device_id, logger):
         list = ['device', device_id, 'service', 'logger']
         self.update(list, logger)
-        
+
+    def update_device_service_schedule_next_run_time(self, device_id, schedule_id, next_run_time):
+        list = ['device', device_id, 'service', 'schedule', schedule_id]
+        self.update(list, next_run_time)
+
     def update_device_status(self, device_id, status: list):
         list = ['device', device_id, 'status']
         self.update(list, status)
-        
+
     def delete_device(self, device_id):
         list = ['device', device_id]
         self.delete(list)
         return True
+
+    def delete_device_status(self, device_id):
+        list = ['device', device_id, 'status']
+        self.delete(list)
+
+    def delete_device_service_schedule(self, device_id):
+        list = ['device', device_id, 'service', 'schedule']
+        self.delete(list)

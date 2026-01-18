@@ -63,6 +63,7 @@ p {
     gap: 10px;
 }
 
+.datetime-label,
 .input-label {
     width: 180px;
     min-width: 180px;
@@ -182,7 +183,7 @@ button:active {
 
 #flash-messages ul li {
     background-color: #ebebeb;
-    color: red;
+    color: orangered;
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
@@ -192,12 +193,13 @@ button:active {
     opacity: 0;
     max-height: 0;
     visibility: hidden;
+    overflow: hidden;
     transition: all 0.3s ease;
     pointer-events: none;
 }
 .visible {
     opacity: 1;
-    max-height: 1000px;
+    max-height: 99999px;
     visibility: visible;
     transition: all 0.3s ease;
 }
@@ -212,6 +214,21 @@ button:active {
 .dashed-hr {
     width: 100%;
     border: 1px dashed #e0e0e0;
+}
+
+.schedule-hr {
+    border: 3px dashed #e0e0e0;
+    padding: 8px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+.schedule-plan {
+    line-height: 1.8;
+}
+
+.schedule-next-runtime {
+    color: orangered;
 }
 
 .tooltip {
@@ -246,6 +263,7 @@ button:active {
 }
 
 @media (max-width: 768px) {
+    .datetime-label,
     .input-label {
         font-size: 16px;
     }
@@ -283,6 +301,7 @@ body.dark-mode #flash-messages ul li {
     color: #ffff99d6;
 }
 
+body.dark-mode .datetime-label,
 body.dark-mode .input-label {
     background-color: #555555;
     color: #ffffffd6;
@@ -298,6 +317,14 @@ body.dark-mode .default-hr {
 
 body.dark-mode .dashed-hr {
     border: 1px dashed #888888;
+}
+
+body.dark-mode .schedule-hr {
+    border: 3px dashed #888888;
+}
+
+body.dark-mode .schedule-next-runtime {
+    color: #ffff99d6;
 }
 
 body.dark-mode input[type="submit"],

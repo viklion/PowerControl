@@ -109,7 +109,7 @@ function sendRestartRequest() {
     window.scrollTo({ top: 0 });
     addFlashMessage("正在重启服务，请稍候...");
     // 使用 Fetch API 发送 POST 请求
-    fetch(`/device/restart/${DEVICE_ID}?key=${KEY}`, {method: 'POST'})
+    fetch(`/device/restart/${DEVICE_ID}?key=${KEY}`, { method: 'POST' })
         .then(response => {
             if (!response.ok) addFlashMessage("请求失败：" + response.status);
             return response.json();
@@ -205,7 +205,9 @@ function ifshow(event) {
 
 // 页面加载完成后为所有复选框添加事件监听
 document.addEventListener('DOMContentLoaded', () => {
-    const checkboxes = document.querySelectorAll('.checkbox-label:not(#main_enabled):not(#push_enabled)');
+    const checkboxes = document.querySelectorAll(
+        '.checkbox-label:not(#main_enabled):not(#push_enabled):not(.schedule-enabled):not(.schedule-remind)'
+    );
 
     checkboxes.forEach(checkbox => {
         // 初始化显示状态
@@ -221,7 +223,274 @@ document.addEventListener('DOMContentLoaded', () => {
         // 添加监听事件
         checkbox.addEventListener('change', ifshow);
     });
+
+    // 初始化 schedule 编辑区
+    initScheduleEditor();
 });
+
+// ----------------------------------------------------------------------------------------------------
+// schedule 编辑
+function initScheduleEditor() {
+    const scheduleList = document.getElementById('schedule_list');
+    const addBtn = document.getElementById('add_schedule_plan_btn');
+    const hiddenInput = document.getElementById('schedule_plans_input');
+    // 确保后端能收到 schedule.plans
+    if (hiddenInput) {
+        hiddenInput.setAttribute('name', 'schedule.plans');
+    }
+
+    function serializePlans() {
+        const plans = [];
+        document.querySelectorAll('.schedule-plan').forEach(planEl => {
+            const id = planEl.querySelector('.schedule-id').value;
+            const enabled = planEl.querySelector('.schedule-enabled').checked;
+            const name = planEl.querySelector('.schedule-name').value;
+            const type = planEl.querySelector('.schedule-type').value;
+            let datetime = planEl.querySelector('.schedule-datetime').value;
+            // datetime-local → 'YYYY-M-D HH:MM:SS'
+            if (datetime && datetime.includes('T')) {
+                datetime = datetime.replace('T', ' ');
+                if (datetime.length === 16) {
+                    datetime += ':00';
+                }
+            }
+            const cron = planEl.querySelector('.schedule-cron').value;
+            const action = planEl.querySelector('.schedule-action').value;
+            const remind = planEl.querySelector('.schedule-remind').checked;
+            const advance = parseInt(planEl.querySelector('.schedule-advance').value) || 5;
+            plans.push({ id, enabled, name, type, datetime, cron, action, remind, advance });
+        });
+        hiddenInput.value = JSON.stringify(plans);
+    }
+
+    function removePlan(e) {
+        const planEl = e.target.closest('.schedule-plan');
+        if (!planEl) return;
+        planEl.remove();
+        serializePlans();
+    }
+
+    function addPlanWithData(data) {
+        const idx = document.querySelectorAll('.schedule-plan').length;
+        const div = document.createElement('div');
+        // 标记为 schedule-plan
+        div.classList.add('schedule-hr', 'schedule-plan');
+        div.dataset.index = idx;
+        div.innerHTML = `
+            id： <input class="input-label schedule-id" type="text" value="${data.id || ''}" readonly><br>
+            名称： <input class="input-label schedule-name" type="text" value="${data.name || ''}" placeholder="名称">
+            <span class="tooltip no-select">❔︎
+                <span class="tooltiptext">随便更改，如：每周六晚11点关机</span>
+            </span><br>
+            启用：
+            <input id="schedule_enabled_${idx}" class="checkbox-label schedule-enabled" type="checkbox" ${data.enabled ? 'checked' : ''} data-target="schedule_body_${idx}">
+            <label for="schedule_enabled_${idx}" style="margin-bottom: 6px;"></label>
+            <br>
+            <div id="schedule_body_${idx}" class="schedule-body${!data.enabled ? ' hidden' : ''}">
+                类型：
+                <select class="input-label schedule-type">
+                    <option value="datetime" ${data.type == 'datetime' ? 'selected' : ''}>单次</option>
+                    <option value="cron" ${data.type == 'cron' ? 'selected' : ''}>循环</option>
+                </select>
+                <br>
+                <div class="schedule-datetime-wrapper${data.type !== 'datetime' ? ' hidden' : ''}">
+                    时间：
+                    <input class="datetime-label schedule-datetime" style="width: 260px;" 
+                        type="datetime-local"
+                        step="1"
+                        value="${data.datetime ? data.datetime.replace(' ', 'T') : ''}">
+                    <br>
+                </div>
+                <div class="schedule-cron-wrapper${data.type !== 'cron' ? ' hidden' : ''}">
+                    cron表达式：
+                    <input class="input-label schedule-cron" type="text" value="${data.cron || '* * * * *'}" placeholder="* * * * *">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">格式为5段cron表达式,数字,不支持英文。tips:可借助AI快速生成</span>
+                    </span><br>
+                    <a style="font-size:14px;color: #4CAF50;"> ➔快速生成cron表达式：</a>
+                    <a class="textlink" href="/getcron" target="_blank">本地版</a>
+                    <a class="textlink" href="https://tool.hoothin.com/zh-CN/cron-parser-generator" target="_blank">在线版</a>
+                    <br>
+                </div>
+                操作：<select class="input-label schedule-action">
+                        <option value="wol" ${data.action == 'wol' ? 'selected' : ''}>开机</option>
+                        <option value="shutdown" ${data.action == 'shutdown' ? 'selected' : ''}>关机</option>
+                    </select><br>
+                下次执行时间：<span class="schedule-next-runtime">无</span>
+                            <span class="tooltip no-select">❔︎
+                                <span class="tooltiptext">保存并重启服务后更新下次执行时间</span>
+                            </span><br>
+                提前推送提醒：
+                <input id="schedule_remind_${idx}" class="checkbox-label schedule-remind" type="checkbox" ${data.remind ? 'checked' : ''} data-target="">
+                <label for="schedule_remind_${idx}" style="margin-bottom: 6px;"></label>
+                <span class="tooltip no-select">❔︎
+                    <span class="tooltiptext">需同时勾选主程序和单个设备的消息推送开关</span>
+                </span>
+                <br>
+                <div class="schedule-advance-wrapper${!data.remind ? ' hidden' : ''}">
+                    提前时间(分钟)：
+                    <input class="input-label schedule-advance" type="number" value="${data.advance || 5}" min="1"><br>
+                </div>
+            </div>
+            <button type="button" style="background-color: rgb(255, 102, 102); margin-bottom: 10px;" class="remove-plan-btn">删除</button>
+        `;
+        scheduleList.appendChild(div);
+        div.querySelector('.remove-plan-btn').addEventListener('click', removePlan);
+        // 监听所有输入变化自动序列化
+        div.querySelectorAll('input,select').forEach(el => el.addEventListener('change', serializePlans));
+
+        // 定时任务启用勾选显示/隐藏
+        const enabledCb = div.querySelector('.schedule-enabled');
+        const body = div.querySelector(`#schedule_body_${idx}`);
+
+        enabledCb.addEventListener('change', () => {
+            if (enabledCb.checked) {
+                body.classList.remove('hidden');
+                body.classList.add('visible');
+            } else {
+                body.classList.remove('visible');
+                body.classList.add('hidden');
+            }
+            serializePlans();
+        });
+
+        // 类型切换显示/隐藏
+        const typeSelect = div.querySelector('.schedule-type');
+        const dtWrap = div.querySelector('.schedule-datetime-wrapper');
+        const cronWrap = div.querySelector('.schedule-cron-wrapper');
+
+        function updateType() {
+            const isDatetime = typeSelect.value === 'datetime';
+            if (isDatetime) {
+                dtWrap.classList.remove('hidden');
+                dtWrap.classList.add('visible');
+                cronWrap.classList.remove('visible');
+                cronWrap.classList.add('hidden');
+            } else {
+                dtWrap.classList.remove('visible');
+                dtWrap.classList.add('hidden');
+                cronWrap.classList.remove('hidden');
+                cronWrap.classList.add('visible');
+            }
+            serializePlans();
+        }
+        typeSelect.addEventListener('change', updateType);
+        updateType();
+
+        // 提醒勾选显示/隐藏
+        const remindCb = div.querySelector('.schedule-remind');
+        const advWrap = div.querySelector('.schedule-advance-wrapper');
+
+        remindCb.addEventListener('change', () => {
+            if (remindCb.checked) {
+                advWrap.classList.remove('hidden');
+                advWrap.classList.add('visible');
+            } else {
+                advWrap.classList.remove('visible');
+                advWrap.classList.add('hidden');
+            }
+            serializePlans();
+        });
+
+        serializePlans();
+    }
+
+    addBtn.addEventListener('click', function () {
+        addPlanWithData({
+            id: Math.floor(Date.now() / 1000).toString(),
+            enabled: false,
+            name: '新建任务',
+            type: 'cron',
+            datetime: '',
+            cron: '* * * * *',
+            action: 'shutdown',
+            remind: false,
+            advance: 5
+        });
+    });
+
+    // 为已有的删除按钮绑定事件（如果页面渲染已有节点）
+    document.querySelectorAll('.schedule-plan .remove-plan-btn').forEach(btn => btn.addEventListener('click', removePlan));
+    // 初始序列化一次
+    serializePlans();
+    // 提交表单前，确保 schedule 数据已最新序列化
+    const form = document.getElementById('pcconfig');
+    if (form) {
+        form.addEventListener('submit', function () {
+            serializePlans();
+        });
+    }
+
+    // 已存在任务初始化逻辑
+    document.querySelectorAll('.schedule-plan').forEach(planEl => {
+        const enabledCb = planEl.querySelector('.schedule-enabled');
+        const body = planEl.querySelector('[id^="schedule_body_"]');
+        if (enabledCb && body) {
+            if (enabledCb.checked) {
+                body.classList.remove('hidden');
+                body.classList.add('visible');
+            } else {
+                body.classList.remove('visible');
+                body.classList.add('hidden');
+            }
+            enabledCb.addEventListener('change', () => {
+                if (enabledCb.checked) {
+                    body.classList.remove('hidden');
+                    body.classList.add('visible');
+                } else {
+                    body.classList.remove('visible');
+                    body.classList.add('hidden');
+                }
+                serializePlans();
+            });
+        }
+
+        const typeSelect = planEl.querySelector('.schedule-type');
+        const dtWrap = planEl.querySelector('.schedule-datetime-wrapper');
+        const cronWrap = planEl.querySelector('.schedule-cron-wrapper');
+        if (typeSelect && dtWrap && cronWrap) {
+            const updateType = () => {
+                const isDatetime = typeSelect.value === 'datetime';
+                if (isDatetime) {
+                    dtWrap.classList.remove('hidden');
+                    dtWrap.classList.add('visible');
+                    cronWrap.classList.remove('visible');
+                    cronWrap.classList.add('hidden');
+                } else {
+                    dtWrap.classList.remove('visible');
+                    dtWrap.classList.add('hidden');
+                    cronWrap.classList.remove('hidden');
+                    cronWrap.classList.add('visible');
+                }
+                serializePlans();
+            };
+            typeSelect.addEventListener('change', updateType);
+            updateType();
+        }
+
+        const remindCb = planEl.querySelector('.schedule-remind');
+        const advWrap = planEl.querySelector('.schedule-advance-wrapper');
+        if (remindCb && advWrap) {
+            if (remindCb.checked) {
+                advWrap.classList.remove('hidden');
+                advWrap.classList.add('visible');
+            } else {
+                advWrap.classList.remove('visible');
+                advWrap.classList.add('hidden');
+            }
+            remindCb.addEventListener('change', () => {
+                if (remindCb.checked) {
+                    advWrap.classList.remove('hidden');
+                    advWrap.classList.add('visible');
+                } else {
+                    advWrap.classList.remove('visible');
+                    advWrap.classList.add('hidden');
+                }
+                serializePlans();
+            });
+        }
+    });
+}
 
 // ----------------------------------------------------------------------------------------------------
 // 隐藏or显示元素
@@ -392,17 +661,24 @@ window.onload = update_wol_dest;
 
 // ----------------------------------------------------------------------------------------------------
 // 提示信息
-// 点击 ❔︎ 显示/隐藏（适合手机触屏）
-document.querySelectorAll('.tooltip').forEach(el => {
-    el.addEventListener('click', function (event) {
-        event.stopPropagation(); // 阻止冒泡，防止触发 document 点击隐藏
-        this.classList.toggle('show');
+// tooltip 显示/隐藏（事件委托，支持动态新增）
+document.addEventListener('click', function (event) {
+    const tooltip = event.target.closest('.tooltip');
+    if (!tooltip) return;
+
+    event.stopPropagation();
+
+    // 先隐藏其他 tooltip（可选，避免多个同时展开）
+    document.querySelectorAll('.tooltip.show').forEach(el => {
+        if (el !== tooltip) el.classList.remove('show');
     });
+
+    tooltip.classList.toggle('show');
 });
 
-// 点击页面空白处隐藏 tooltip
+// 点击空白处隐藏所有 tooltip
 document.addEventListener('click', function () {
-    document.querySelectorAll('.tooltip').forEach(el => {
+    document.querySelectorAll('.tooltip.show').forEach(el => {
         el.classList.remove('show');
     });
 });

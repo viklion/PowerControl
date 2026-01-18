@@ -11,9 +11,10 @@ docker容器远程网络唤醒或关闭Windows、Linux、MacOS设备，支持添
 1. 通过巴法云接入米家，使用小爱音箱语音开机/关机
 1. 通过访问api开机/关机，端口转发或反向代理后可远程操作
 1. 支持接入homeassistant，通过homeassistant操作
-1. 通过自定义指令，可打开/关闭虚拟机
+1. 通过自定义指令，拓展操作，如打开/关闭虚拟机
 1. 支持多设备管理
 1. 支持消息推送
+1. 支持定时任务
 
 ## 部署
 * [视频教程(bilibili)](https://www.bilibili.com/video/BV1cykZY7Er9)

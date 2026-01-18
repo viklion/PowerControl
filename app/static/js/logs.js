@@ -5,6 +5,7 @@ document.addEventListener("touchstart", function () { }, true);
 let currentFilename = null;
 let currentListItem = null;
 let allLines = [];
+let checkedDevicesCache = {}; // 按文件名记录勾选的设备
 
 // 加载日志文件
 function loadFileContent(filename, listItem) {
@@ -36,6 +37,7 @@ function loadFileContent(filename, listItem) {
 
             // 渲染复选框、日志行
             renderDeviceCheckboxes(devices);
+            applyFilter(); // 重新应用上一次的筛选条件
             // 全选 / 全不选按钮设置可见
             document.getElementById('selectAllBtn').style.display = 'block';
             document.getElementById('deselectAllBtn').style.display = 'block';
@@ -64,7 +66,8 @@ function renderDeviceCheckboxes(devices) {
         checkbox.value = device;
         checkbox.id = `filter_${device}`;
         checkbox.className = 'checkbox-label';
-        checkbox.checked = true; // 默认选中
+        const cache = checkedDevicesCache[currentFilename];
+        checkbox.checked = !cache || cache.includes(device);
         checkbox.addEventListener('change', applyFilter);
 
         const label = document.createElement('label');
@@ -88,8 +91,13 @@ function renderDeviceCheckboxes(devices) {
 
 // 根据勾选过滤日志
 function applyFilter() {
-    const checkedDevices = Array.from(document.querySelectorAll('#deviceCheckboxes input[type="checkbox"]:checked'))
-        .map(cb => cb.value);
+    const checked = Array.from(
+        document.querySelectorAll('#deviceCheckboxes input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+
+    checkedDevicesCache[currentFilename] = checked;
+
+    const checkedDevices = checked;
 
     const filtered = allLines.filter(line => {
         const match = line.match(/\[(.*?)\]/); // 只取第一个方括号
