@@ -392,6 +392,14 @@ function initScheduleEditor() {
             serializePlans();
         });
 
+        // tooltip 点击显示/隐藏
+        div.querySelectorAll('.tooltip').forEach(el => {
+            el.addEventListener('click', function (event) {
+                event.stopPropagation(); // 阻止冒泡，防止触发 document 点击隐藏
+                this.classList.toggle('show');
+            });
+        });
+
         serializePlans();
     }
 
@@ -661,24 +669,17 @@ window.onload = update_wol_dest;
 
 // ----------------------------------------------------------------------------------------------------
 // 提示信息
-// tooltip 显示/隐藏（事件委托，支持动态新增）
-document.addEventListener('click', function (event) {
-    const tooltip = event.target.closest('.tooltip');
-    if (!tooltip) return;
-
-    event.stopPropagation();
-
-    // 先隐藏其他 tooltip（可选，避免多个同时展开）
-    document.querySelectorAll('.tooltip.show').forEach(el => {
-        if (el !== tooltip) el.classList.remove('show');
+// 点击 ❔︎ 显示/隐藏（适合手机触屏）
+document.querySelectorAll('.tooltip').forEach(el => {
+    el.addEventListener('click', function (event) {
+        event.stopPropagation(); // 阻止冒泡，防止触发 document 点击隐藏
+        this.classList.toggle('show');
     });
-
-    tooltip.classList.toggle('show');
 });
 
-// 点击空白处隐藏所有 tooltip
+// 点击页面空白处隐藏 tooltip
 document.addEventListener('click', function () {
-    document.querySelectorAll('.tooltip.show').forEach(el => {
+    document.querySelectorAll('.tooltip').forEach(el => {
         el.classList.remove('show');
     });
 });
