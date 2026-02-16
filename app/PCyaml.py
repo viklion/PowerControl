@@ -157,6 +157,21 @@ class PCyaml():
             self.PC_logger.error(f"保存配置文件 '{device_id}.yaml' 出错:" + str(e))
             return str(e)
 
+    # 保存部分改动的YAML文件
+    def save_mod_yaml(self , device_id, data: dict):
+        '''
+        :param device_id: yaml文件名
+        :param data: 数据
+        '''
+        try:
+            f = self.read_yaml(device_id)
+            f.update(data)
+            rs = self.save_yaml(device_id, f)
+            return rs
+        except Exception as e:
+            self.PC_logger.error(f"保存配置文件 '{device_id}.yaml' 出错:" + str(e))
+            return str(e)
+
     # 删除设备YAML文件
     def delete_yaml(self , device_id):
         '''
@@ -265,6 +280,7 @@ class PCyaml():
         try:
             shutil.copy(self.default_device_yaml_filepath, os.path.join(self.data_path, f'{device_id}.yaml'))
             self.PC_logger.info(f"已生成'{device_id}.yaml'")
+            self.save_mod_yaml(device_id, {'order': len(device_id_num_list)+1})
             return device_id
         except Exception as e:
             self.PC_logger.error(f"生成'{device_id}.yaml'失败: {e}")

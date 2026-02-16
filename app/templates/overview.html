@@ -23,8 +23,8 @@
                     class="icon-image" title="深色/浅色模式切换">
             </a>
             <a id="main" class="textlink" target="_blank">总览</a>
-            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
-            <a id="pdf" class="textlink" href="/pdf" target="_blank">pdf教程</a>
+            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">Github</a>
+            <a id="pdf" class="textlink" href="/pdf" target="_blank">PDF教程</a>
             <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
             <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
             <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
@@ -58,8 +58,9 @@
             <button id="shutdown_all_top_btn" type="button">全部关机</button>
             <button id="restart_container_top_btn" type="button">重启容器</button>
             <button id="batch_operation_top_btn" type="button">批量操作</button>
+            <button id="order_device_top_btn" type="button">自定排序</button>
         </div>
-        <div id=batch_btn_line class="hidden" style="margin-top: -20px; margin-bottom: 40px;">
+        <div id="batch_btn_line" class="hidden" style="margin-top: -20px; margin-bottom: 40px;">
             <hr class="dashed-hr">
             <div class="line-container no-select">
                 <button id="wol_batch_top_btn" type="button">开机</button>
@@ -71,9 +72,17 @@
                 <button id="select_all_toggle_top_btn" type="button">全选</button>
             </div>
         </div>
+        <div id="order_btn_line" class="hidden" style="margin-top: -40px; margin-bottom: 40px;">
+            <div class="line-container no-select" style="margin-left: 450px; margin-top: -50px;">
+                <button id="order_save_top_btn" type="button">保存排序</button>
+            </div>
+        </div>
         <div class="device-container no-select" id="deviceContainer">
             <!-- 设备卡片会由 JS 动态生成 -->
         </div>
+    </div>
+    <div id="context-menu" class="context-menu hidden">
+        <ul> </ul>
     </div>
 </body>
 </html>

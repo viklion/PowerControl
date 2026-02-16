@@ -27,8 +27,8 @@
                     class="icon-image" title="深色/浅色模式切换">
             </a>
             <a id="main" class="textlink" target="_blank">总览</a>
-            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">github</a>
-            <a id="pdf" class="textlink" href="/pdf" target="_blank">pdf教程</a>
+            <a id="github" class="textlink" href="https://github.com/viklion/PowerControl" target="_blank">Github</a>
+            <a id="pdf" class="textlink" href="/pdf" target="_blank">PDF教程</a>
             <a id="video" class="textlink" href="https://www.bilibili.com/video/BV1cykZY7Er9" target="_blank">视频教程</a>
             <a id="changelog" class="textlink" href="/changelog" target="_blank">更新日志</a>
             <a id="code" class="textlink" href="/code" target="_blank">复制代码</a>
@@ -99,6 +99,11 @@
                     <span class="tooltiptext">巴法云新建TCP设备云主题名</span>
                 </span>
                 <br>
+                巴法云设备昵称： <input id="bemfa_topicname" class="input-label" type="text" readonly>
+                <span class="tooltip no-select">❔︎
+                    <span class="tooltiptext">巴法云TCP设备云昵称，仅显示，更改请在巴法控制台修改</span>
+                </span>
+                <br>
             </div>
             <h2>设备：</h2>
             设备名称： <input class="input-label" type="text" name="device.name" value="{{ config.device.name }}">
@@ -128,7 +133,11 @@
                 </span><br>
                 <div id='wakeonlanconfig' class='hidden'>
                     设备网卡mac地址： <input class="input-label" type="text" name="device.wol.mac"
-                        value="{{ config.device.wol.mac }}" title="可以是xx-xx，也可以是xx:xx" placeholder="xx-xx或xx:xx"><br>
+                        value="{{ config.device.wol.mac }}" title="支持xx-xx或xx:xx" placeholder="支持xx-xx或xx:xx">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">支持xx-xx或xx:xx</span>
+                    </span>
+                    <br>
                     目标地址：
                     <select class="input-label" name="device.wol.destination">
                         <option value="broadcast_ip_global" {% if config.device.wol.destination=='broadcast_ip_global'
@@ -139,7 +148,7 @@
                             config.device.wol.destination=='device_ip' %}selected{% endif %}>设备ip()</option>
                     </select>
                     <span class="tooltip no-select">❔︎
-                        <span class="tooltiptext">一般选全局或定向，可尝试切换保存后执行唤醒测试</span>
+                        <span class="tooltiptext">一般选全局或定向，优先定向，可尝试切换保存后执行开机测试</span>
                     </span>
                     <br>
                     端口： <input class="input-label" type="number" name="device.wol.port"

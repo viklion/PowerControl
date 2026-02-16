@@ -388,7 +388,7 @@ class PCservice():
                 self.bemfa_reconnect_count = 0
             self.run()
         else:
-            self.PC_logger.warning(f"{self.device_id}未启用")
+            self.PC_logger.warning(f"{self.device_id}服务未启用")
 
     # 启动
     def run(self):

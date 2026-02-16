@@ -203,7 +203,7 @@ function ifshow(event) {
     go_func_show();
 }
 
-// 页面加载完成后为所有复选框添加事件监听
+// 页面加载完成后为所有复选框添加事件监听、获取巴法云设备昵称
 document.addEventListener('DOMContentLoaded', () => {
     const checkboxes = document.querySelectorAll(
         '.checkbox-label:not(#main_enabled):not(#push_enabled):not(.schedule-enabled):not(.schedule-remind)'
@@ -226,7 +226,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初始化 schedule 编辑区
     initScheduleEditor();
+
+    // 获取巴法云设备昵称
+    fetchBemfaTopicName();
 });
+
+// 获取巴法云设备昵称
+function fetchBemfaTopicName() {
+    const bemfaEnabled = document.getElementById('bemfa_enabled');
+    const bemfaUidInput = document.querySelector('input[name="bemfa.uid"]');
+    const bemfaTopicInput = document.querySelector('input[name="bemfa.topic"]');
+    const bemfaTopicNameInput = document.getElementById('bemfa_topicname');
+
+    if (!bemfaEnabled || !bemfaUidInput || !bemfaTopicInput || !bemfaTopicNameInput) return;
+
+    if (!bemfaEnabled.checked) return;
+
+    const uid = bemfaUidInput.value.trim();
+    const topic = bemfaTopicInput.value.trim();
+
+    if (!uid || !topic) return;
+
+    const url = `https://apis.bemfa.com/vb/api/v2/topicInfo?openID=${encodeURIComponent(uid)}&type=3&topic=${encodeURIComponent(topic)}`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 0 && data.data && data.data.name) {
+                bemfaTopicNameInput.value = data.data.name;
+            } else {
+                bemfaTopicNameInput.value = '未获取到设备昵称';
+            }
+        })
+        .catch(err => {
+            console.error('获取巴法云设备昵称失败:', err);
+            bemfaTopicNameInput.value = '获取设备昵称失败';
+        });
+}
 
 // ----------------------------------------------------------------------------------------------------
 // schedule 编辑

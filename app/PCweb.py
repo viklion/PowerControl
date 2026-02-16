@@ -110,15 +110,15 @@ def config_main():
         device_yaml['message']['WeChat_app']['secret'] = PC_funcs.trans_str(request.form.get('message.WeChat_app.secret'))
 
         # 保存配置
-        save_yaml = PC_yaml.save_yaml('main', device_yaml)
-        if save_yaml == True:
+        rs = PC_yaml.save_yaml('main', device_yaml)
+        if rs == True:
             PC_yaml.reload_main_yaml()
             PC_logger.info(f'设置全局日志级别：{PC_data.get_main_yaml_log_level()}')
             PC_log.set_all_loggers_level(PC_data.get_main_yaml_log_level())
             PC_logger.info(f'设置全局日志保留天数：{PC_data.get_main_yaml_log_days()}')
             flash(PC_funcs.get_time() + '\n' +'配置保存成功，已生效')
         else:
-            flash(PC_funcs.get_time() + '\n' +'配置保存失败：' + str(save_yaml))
+            flash(PC_funcs.get_time() + '\n' +'配置保存失败：' + str(rs))
         return render_template('config-main.html', VERSION=PC_funcs.get_version(), device_id=device_id, device_name='主程序', config=device_yaml, run_time=run_time)
     PC_logger.debug(f'ip：{user_ip} 访问全局配置页')
     return render_template('config-main.html', VERSION=PC_funcs.get_version(), device_id=device_id, device_name='主程序', config=device_yaml, run_time=run_time)
@@ -184,12 +184,12 @@ def config_device(device_id):
             # 空值则用空列表
             device_yaml['schedule']['plans'] = []
         # 保存配置
-        save_yaml = PC_yaml.save_yaml(device_id, device_yaml)
-        if save_yaml == True:
+        rs = PC_yaml.save_yaml(device_id, device_yaml)
+        if rs == True:
             PC_yaml.load_yaml(device_id)
             flash(PC_funcs.get_time() + '\n' +'配置保存成功，请点击重启服务生效')
         else:
-            flash(PC_funcs.get_time() + '\n' +'配置保存失败：' + str(save_yaml))
+            flash(PC_funcs.get_time() + '\n' +'配置保存失败：' + str(rs))
         return redirect(url_for('config_device', device_id=device_id, key=web_key))
 
     device_status = PC_data.get_device_status(device_id)
@@ -562,28 +562,44 @@ def get_device_all_brief():
     '''
     rs_json = {
         'device01':{
+            'order': int,
             'enabled': bool,
             'name': '',
             'alias': '',
             'ip': '',
             'running': bool,
             'status': [],
+            'message': bool,
+            'schedule': bool,
+            'schedule_count': int
         }
     }
     '''
-    rs_json['main']['log_level'] = PC_data.get_main_yaml_log_level()
-    rs_json['main']['log_days'] = PC_data.get_main_yaml_log_days()
-    rs_json['main']['message_enabled'] = PC_data.get_main_yaml_message_enabled()
-    
     device_id_list = PC_yaml.list_device_id()
+    
+    main_yaml = PC_yaml.read_yaml('main')
+    rs_json['main']['log_level'] = main_yaml['log']['level']
+    rs_json['main']['log_days'] = main_yaml['log']['keep_days']
+    rs_json['main']['message_enabled'] = main_yaml['message']['enabled']
+    rs_json['main']['device_count'] = len(device_id_list)
+
     for device_id in device_id_list:
         device_yaml = PC_yaml.read_yaml(device_id)
+        rs_json[device_id]['order'] = device_yaml['order']
         rs_json[device_id]['enabled'] = device_yaml['main']['enabled']
         rs_json[device_id]['name'] = device_yaml['device']['name']
         rs_json[device_id]['alias'] = device_yaml['main']['alias']
         rs_json[device_id]['ip'] = device_yaml['device']['ip']
         rs_json[device_id]['running'] = PC_thread.is_alive(device_id)
         rs_json[device_id]['status'] = PC_data.get_device_status(device_id)
+        rs_json[device_id]['message'] = device_yaml['message']['enabled']
+
+        schedule_enabled = device_yaml['schedule']['enabled']
+        rs_json[device_id]['schedule'] = schedule_enabled
+        if schedule_enabled:
+            plans = device_yaml['schedule'].get('plans', [])
+            count = sum(plan.get('enabled', False) for plan in plans)
+            rs_json[device_id]['schedule_count'] = count
 
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
@@ -640,6 +656,36 @@ def get_device_schedule_next_run_time(device_id):
             mimetype='application/json; charset=utf-8'
         ), 200
 
+# 保存设备排序信息
+@app.route('/device/update/device-order', methods=['POST'])
+def update_device_order():
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if web_key != WEB_KEY:
+        PC_logger.warning(f'ip：{user_ip} 访问更新设备排序api失败，错误的KEY：{web_key}')
+        return 'denied', 401
+    PC_logger.debug(f'ip：{user_ip} 访问更新设备排序api')
+    rs_list=[]
+    device_order = request.get_json()  #{"device01": 1, "device02": 2}
+    for device_id, order in device_order.items():
+        data = {"order": order}
+        rs = PC_yaml.save_mod_yaml(device_id, data)
+        rs_list.append(rs)
+    rs = rs_list and all(rs_list)
+    if rs:
+        message = '设备排序保存成功'
+        PC_yaml.load_all_yaml()
+    else:
+        message = '保存设备排序错误，请查看日志'
+    rs_json = {"result": rs,
+                "message": message
+                }
+    return Response(
+            json.dumps(rs_json, ensure_ascii=False),
+            mimetype='application/json; charset=utf-8'
+        ), 200
+
+
 # 保存设备配置信息
 @app.route('/device/update/<device_id>', methods=['POST'])
 def update_device_data(device_id):
@@ -650,7 +696,7 @@ def update_device_data(device_id):
         return 'denied', 401
     PC_logger.debug(f'ip：{user_ip} 访问更新设备配置信息api')
     device_yaml = request.get_json().get('device_yaml')
-    rs = PC_yaml.save_yaml(device_id, device_yaml)
+    rs = PC_yaml.save_mod_yaml(device_id, device_yaml)
     if rs == True:
         result = rs
         if device_id == 'main':

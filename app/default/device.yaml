@@ -1,3 +1,4 @@
+order: 1
 main:
   enabled: True
   alias:
@@ -14,7 +15,7 @@ device:
       wakeonlan: True
       shell: False
     mac: 00-11-22-33-44-55
-    destination: broadcast_ip_global
+    destination: broadcast_ip_direct
     port: 9
     interface: default
     shell_script: yourscript

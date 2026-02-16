@@ -42,6 +42,7 @@ message:
 ```
 # device.yaml设备配置文件
 
+order: 1    #设备排序
 main:
   enabled: True    #设备服务总开关
   alias:    #api别名
