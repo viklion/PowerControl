@@ -139,7 +139,7 @@ function deleteFile(filename) {
 
         // 发送删除请求
         fetch(deleteUrl, {
-            method: 'DELETE',
+            method: 'POST',
         })
             .then(response => {
                 if (response.ok) {

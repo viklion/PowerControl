@@ -137,7 +137,7 @@ function sendDeleteRequest() {
         window.scrollTo({ top: 0 });
         addFlashMessage("正在删除设备服务，请稍候...");
         // 使用 Fetch API 发送 POST 请求
-        fetch(`/device/delete/${DEVICE_ID}?key=${KEY}`, { method: 'DELETE' })
+        fetch(`/device/delete/${DEVICE_ID}?key=${KEY}`, { method: 'POST' })
             .then(response => {
                 if (!response.ok) addFlashMessage("请求失败：" + response.status);
                 return response.json();

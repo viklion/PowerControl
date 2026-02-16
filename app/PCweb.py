@@ -436,7 +436,7 @@ def view_log_content(filename):
         return str(e), 500
 
 # 删除日志文件
-@app.route('/logs/delete/<filename>', methods=['DELETE'])
+@app.route('/logs/delete/<filename>', methods=['POST'])
 def delete_log(filename):
     web_key = request.args.get('key')
     if web_key != WEB_KEY:
@@ -718,7 +718,7 @@ def update_device_data(device_id):
         ), 200
 
 # 删除设备配置信息(同时停止服务等)
-@app.route('/device/delete/<device_id>', methods=['DELETE'])
+@app.route('/device/delete/<device_id>', methods=['POST'])
 def delete_device_data(device_id):
     web_key = request.args.get('key')
     user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -728,14 +728,19 @@ def delete_device_data(device_id):
     PC_logger.debug(f'ip：{user_ip} 访问删除设备配置信息api')
     if device_id == 'main':
         return '无法删除主程序配置文件', 403
+    device_name = PC_data.get_device_device_name(device_id)
     del_thread = PC_thread.stop_thread(device_id)
     del_data = PC_data.delete_device(device_id)
     del_yaml = PC_yaml.delete_yaml(device_id)
+    result = del_thread and del_data and del_yaml
+    message_cn = '已删除设备配置文件' if result else '删除设备出现问题，请查看日志'
     rs_json = {"device_id": device_id,
+                "device_name": device_name,
                 "del_thread": del_thread,
                 "del_data": del_data,
                 "del_yaml": del_yaml,
-                "result": del_thread and del_data and del_yaml
+                "result": result,
+                "message_cn": message_cn
                 }
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
@@ -754,7 +759,9 @@ def start_device_service(device_id):
 
     rs = PC_thread.start_thread(device_id)
     rs_json = {"device_id": device_id,
-                "result": rs
+                "device_name": PC_data.get_device_device_name(device_id),
+                "result": rs,
+                "message_cn": '已启动设备服务' if rs else '启动设备服务失败'
                 }
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
@@ -773,7 +780,9 @@ def stop_device_service(device_id):
 
     rs = PC_thread.stop_thread(device_id)
     rs_json = {"device_id": device_id,
-                "result": rs
+                "device_name": PC_data.get_device_device_name(device_id),
+                "result": rs,
+                "message_cn": '已停止设备服务' if rs else '停止设备服务失败'
                 }
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
@@ -792,7 +801,9 @@ def restart_device_service(device_id):
 
     rs = PC_thread.restart_thread(device_id)
     rs_json = {"device_id": device_id,
-                "result": rs
+                "device_name": PC_data.get_device_device_name(device_id),
+                "result": rs,
+                "message_cn": '已重启设备服务' if rs else '重启设备服务失败'
                 }
     return Response(
             json.dumps(rs_json, ensure_ascii=False),
@@ -841,6 +852,52 @@ def shutdown_device_all():
                 mimetype='application/json; charset=utf-8'
             ), 200
 
+# 关机 POST method
+@app.route('/device/shutdown/<device>', methods=['POST'])
+def shutdown_post(device):
+    # 获取请求中的密钥
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    device_id = device
+    alias_dict = PC_data.get_device_alias_dict()
+    for dev_id, alias in alias_dict.items():
+        if alias == device.replace(' ', '-'):
+            device_id = dev_id
+            break
+    logger = PC_data.get_device_service_logger(device_id) or PC_logger
+
+    if web_key != WEB_KEY:
+        logger.warning(f'ip：{user_ip} 访问关机api失败，错误的KEY：{web_key}')
+        return '请在url中填入正确的key', 401
+    logger.debug(f'ip：{user_ip} 访问关机api')
+
+    rs = PC_funcs.pcshutdown(device_id)
+    if rs:
+        if 'succeeded' in rs:
+            message = 'success'
+            message_cn = '已发送关机指令(api)'
+            logger.info(f'{message_cn} → {rs}')
+        else:
+            message = 'error'
+            message_cn = '发送关机指令失败(api)'
+            logger.error(f'{message_cn} → {rs}')
+    else:
+        message = 'skip'
+        message_cn = f'服务未启用或未运行，或远程关机未启用(api)'
+        logger.warning(f'{message_cn}')
+    rs_json = {"device_name": PC_data.get_device_device_name(device_id),
+                "device_ip": PC_data.get_device_device_ip(device_id),
+                "method": "shutdown",
+                "message_cn": message_cn,
+                "message": message,
+                "result": rs
+                }
+    PC_message.send_message(device_id, message_cn)
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+
 # 开机全部设备
 @app.route('/device/wol/all', methods=['POST'])
 def wol_device_all():
@@ -878,6 +935,51 @@ def wol_device_all():
     PC_logger.debug(f'已完成设备全部开机(api) → {rs_json}')
     PC_message.send_message('main', '已完成设备全部开机(api)', "\n" + rs_text)
     rs_json['text'] = rs_text
+    return Response(
+                json.dumps(rs_json, ensure_ascii=False),
+                mimetype='application/json; charset=utf-8'
+            ), 200
+
+# 开机 POST method
+@app.route('/device/wol/<device>', methods=['POST'])
+def wol_post(device):
+    web_key = request.args.get('key')
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    device_id = device
+    alias_dict = PC_data.get_device_alias_dict()
+    for dev_id, alias in alias_dict.items():
+        if alias == device.replace(' ', '-'):
+            device_id = dev_id
+            break
+    logger = PC_data.get_device_service_logger(device_id) or PC_logger
+
+    if web_key != WEB_KEY:
+        logger.warning(f'ip：{user_ip} 访问网络唤醒api失败，错误的KEY：{web_key}')
+        return '请在url中填入正确的key', 401
+    logger.debug(f'ip：{user_ip} 访问网络唤醒api')
+
+    rs = PC_funcs.pcwol(device_id)
+    if rs:
+        if 'done' in rs:
+            message = 'success'
+            message_cn = '已发送唤醒指令(api)'
+            logger.info(f'{message_cn}')
+        else:
+            message = 'error'
+            message_cn = '发送唤醒指令失败(api)'
+            logger.error(f'{message_cn} → {rs}')
+    else:
+        message = 'skip'
+        message_cn = f'服务未启用或未运行，或网络唤醒未启用(api)'
+        logger.warning(f'{message_cn}')
+    rs_json = {"device_name": PC_data.get_device_device_name(device_id),
+                "device_ip": PC_data.get_device_device_ip(device_id),
+                "method": "wol",
+                "message_cn": message_cn,
+                "message": message,
+                "result": rs
+                }
+    PC_message.send_message(device_id, message_cn)
     return Response(
                 json.dumps(rs_json, ensure_ascii=False),
                 mimetype='application/json; charset=utf-8'

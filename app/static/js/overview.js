@@ -959,7 +959,7 @@ function hideContextMenu() {
 
 function sendContextMenuAction(action) {
     if (!contextMenuDeviceId) return;
-    const id = [contextMenuDeviceId];
+    const id = contextMenuDeviceId;
     hideContextMenu();
 
     let actionCN = '';
@@ -986,21 +986,17 @@ function sendContextMenuAction(action) {
         if (!willOperate) return;
         addFlashMessage(`正在${actionCN}，请等待结果返回...`);
 
-        fetch(`/device/batch/${action}?key=${KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ device_ids: id })
-        })
+        fetch(`/device/${action}/${id}?key=${KEY}`, {method: 'POST'})
             .then(response => {
                 if (!response.ok) addFlashMessage('请求失败：' + response.status);
                 return response.json();
             })
             .then(data => {
                 if (data) {
-                    addFlashMessage(data.text || JSON.stringify(data));
+                    addFlashMessage(`[${data.device_name}]${data.message_cn}`);
                     fetchAllDevicesBrief();
                 } else {
-                    addFlashMessage('操作返回为空，请查看日志');
+                    addFlashMessage('请求返回为空，请查看日志');
                 }
             })
             .catch(err => {
