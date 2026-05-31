@@ -291,12 +291,71 @@
             </div>
             <h2>推送：</h2>
             <div class='line-container'>
-                启用消息推送： <input id="push_enabled" class="checkbox-label" type="checkbox" name="message.enabled"
-                    value="True" {% if config['message']['enabled'] %} checked{% endif %}>
-                <label for="push_enabled"></label>
+                启用消息推送： <input id="message_enabled" class="checkbox-label" type="checkbox" name="message.enabled"
+                    value="True" {% if config['message']['enabled'] %} checked{% endif %} data-target='messageconfig'>
+                <label for="message_enabled"></label>
                 <span class="tooltip no-select">❔︎
                     <span class="tooltiptext">此为该设备推送消息开关,全局消息推送请在全局设置中开关</span>
-                </span>
+                </span><br>
+            </div>
+            <div id='messageconfig' class='hidden'>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    自定义推送渠道： <input id="message_channel_enabled" class="checkbox-label" type="checkbox" name="message.channel.enabled"
+                        value="True" {% if config['message']['channel']['enabled'] %} checked{% endif %}
+                        data-target='message_channel_config'>
+                    <label for="message_channel_enabled"></label>
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">*注意：配置并启用多个推送渠道，且未单独设置主程序或设备推送渠道时，默认将推送至所有启用的渠道</span>
+                    </span>
+                </div>
+                <div id='message_channel_config' class='hidden'>
+                    渠道：<select class="input-label" name="message.channel.channel">
+                        <option value="serverchan_turbo" {% if config.message.channel.channel=='serverchan_turbo' %}selected{% endif %}>
+                            Server酱Turbo</option>
+                        <option value="serverchan3" {% if config.message.channel.channel=='serverchan3' %}selected{% endif %}>Server酱3
+                        </option>
+                        <option value="qmsg" {% if config.message.channel.channel=='qmsg' %}selected{% endif %}>Qmsg
+                        </option>
+                        <option value="qmsgpvt" {% if config.message.channel.channel=='qmsgpvt' %}selected{% endif %}>Qmsg私有云</option>
+                        <option value="gotify" {% if config.message.channel.channel=='gotify' %}selected{% endif %}>Gotify</option>
+                        <option value="pushplus" {% if config.message.channel.channel=='pushplus' %}selected{% endif %}>PushPlus
+                        </option>
+                        <option value="bark" {% if config.message.channel.channel=='bark' %}selected{% endif %}>Bark</option>
+                        <option value="wechat_webhook" {% if config.message.channel.channel=='wechat_webhook' %}selected{% endif %}>
+                            企业微信群机器人
+                        </option>
+                        <option value="wechat_app" {% if config.message.channel.channel=='wechat_app' %}selected{% endif %}>企业微信应用
+                        </option>
+                        <option value="webhook" {% if config.message.channel.channel=='webhook' %}selected{% endif %}>Webhook</option>
+                    </select>
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">需启用并配置好相关渠道参数</span>
+                    </span>
+                    <br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    模板：<input id="message_template_enabled" class="checkbox-label" type="checkbox" name="message.template.enabled"
+                        value="True" {% if config['message']['template']['enabled'] %} checked{% endif %}
+                        data-target='message_template_config'>
+                    <label for="message_template_enabled"></label>
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">可自行排版及添加文字，内置变量：$name:设备名, $time:时间, $title:标题, $content:内容(多数时候为空)</span>
+                    </span>
+                </div>
+                <div id='message_template_config' class='hidden'>
+                    标题： <input class="input-label" type="text" name="message.template.title" value="{{ config.message.template.title }}"
+                        placeholder="默认：$name$title">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">默认：$name$title</span>
+                    </span><br>
+                    内容： <input class="input-label" type="text" name="message.template.content"
+                        value="{{ config.message.template.content }}" placeholder="默认：$time $content">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">默认：$time $content</span>
+                    </span>
+                </div>
             </div>
             <h2>定时：</h2>
             <div class='line-container'>

@@ -125,12 +125,33 @@ class PCdata():
     def get_main_yaml_message_Qmsg_enabled(self):
         return self.get(['main','yaml', 'message', 'Qmsg', 'enabled'])
 
-    def get_main_yaml_message_Qmsg_Key(self):
+    def get_main_yaml_message_Qmsg_key(self):
         return self.get(['main','yaml', 'message', 'Qmsg', 'key'])
-    
+
     def get_main_yaml_message_Qmsg_qq(self):
         return self.get(['main','yaml', 'message', 'Qmsg', 'qq'])
-    
+
+    def get_main_yaml_message_Qmsgpvt_enabled(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'enabled'])
+
+    def get_main_yaml_message_Qmsgpvt_url(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'url'])
+
+    def get_main_yaml_message_Qmsgpvt_key(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'key'])
+
+    def get_main_yaml_message_Qmsgpvt_type(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'type'])
+
+    def get_main_yaml_message_Qmsgpvt_qq(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'qq'])
+
+    def get_main_yaml_message_Qmsgpvt_qqgroup(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'qqgroup'])
+
+    def get_main_yaml_message_Qmsgpvt_bot(self):
+        return self.get(['main','yaml', 'message', 'Qmsgpvt', 'bot'])
+
     def get_main_yaml_message_WeChat_webhook_enabled(self):
         return self.get(['main','yaml', 'message', 'WeChat_webhook', 'enabled'])
     
@@ -175,6 +196,39 @@ class PCdata():
 
     def get_main_yaml_message_WeChat_app_secret(self):
         return self.get(['main','yaml', 'message', 'WeChat_app', 'secret'])
+
+    def get_main_yaml_message_Webhook_enabled(self):
+        return self.get(['main','yaml', 'message', 'Webhook', 'enabled'])
+
+    def get_main_yaml_message_Webhook_Method(self):
+        return self.get(['main','yaml', 'message', 'Webhook', 'Method'])
+
+    def get_main_yaml_message_Webhook_Url(self):
+        return self.get(['main','yaml', 'message', 'Webhook', 'Url'])
+    
+    def get_main_yaml_message_Webhook_ContentType(self):
+        return self.get(['main','yaml', 'message', 'Webhook', 'ContentType'])
+    
+    def get_main_yaml_message_Webhook_Headers(self):
+        return self.get(['main','yaml', 'message', 'Webhook', 'Headers'])
+    
+    def get_main_yaml_message_Webhook_Body(self):
+        return self.get(['main','yaml', 'message', 'Webhook', 'Body'])
+
+    def get_main_yaml_message_channel_enabled(self):
+        return self.get(['main','yaml', 'message_channel', 'enabled'])
+
+    def get_main_yaml_message_channel_channel(self):
+        return self.get(['main','yaml', 'message_channel', 'channel'])
+
+    def get_main_yaml_message_template_enabled(self):
+        return self.get(['main','yaml', 'message_template', 'enabled'])
+
+    def get_main_yaml_message_template_title(self):
+        return self.get(['main','yaml', 'message_template', 'title'])
+    
+    def get_main_yaml_message_template_content(self):
+        return self.get(['main','yaml', 'message_template', 'content'])
 
     def get_main_local_ip(self):
         return self.get(['main','local_ip'])
@@ -290,6 +344,21 @@ class PCdata():
 
     def get_device_message_enabled(self, device_id):
         return self.get(['device', device_id, 'yaml', 'message', 'enabled'])
+
+    def get_device_message_channel_enabled(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'message', 'channel', 'enabled'])
+
+    def get_device_message_channel_channel(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'message', 'channel', 'channel'])
+
+    def get_device_message_template_enabled(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'message', 'template', 'enabled'])
+
+    def get_device_message_template_title(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'message', 'template', 'title'])
+
+    def get_device_message_template_content(self, device_id):
+        return self.get(['device', device_id, 'yaml', 'message', 'template', 'content'])
 
     def get_device_schedule_enabled(self, device_id) -> bool:
         return self.get(['device', device_id, 'yaml', 'schedule', 'enabled'])

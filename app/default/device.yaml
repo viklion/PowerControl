@@ -1,7 +1,7 @@
 order: 1
 main:
   enabled: True
-  alias:
+  alias: ''
 bemfa:
   enabled: False
   uid: aaabbbcccdddeeefffggg
@@ -43,6 +43,13 @@ device:
     off_keyword: 'off'
 message:
   enabled: False
+  channel:
+    enabled: False
+    channel: serverchan_turbo
+  template: 
+    enabled: False
+    title: $name$title
+    content: $time $content
 schedule:
   enabled: False
   plans:

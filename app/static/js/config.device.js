@@ -206,7 +206,7 @@ function ifshow(event) {
 // 页面加载完成后为所有复选框添加事件监听、获取巴法云设备昵称
 document.addEventListener('DOMContentLoaded', () => {
     const checkboxes = document.querySelectorAll(
-        '.checkbox-label:not(#main_enabled):not(#push_enabled):not(.schedule-enabled):not(.schedule-remind)'
+        '.checkbox-label:not(#main_enabled):not(.schedule-enabled):not(.schedule-remind)'
     );
 
     checkboxes.forEach(checkbox => {

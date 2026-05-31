@@ -172,3 +172,36 @@ document.addEventListener('click', function () {
         el.classList.remove('show');
     });
 });
+
+// ----------------------------------------------------------------------------------------------------
+// 下拉框选择事件
+// 获取元素
+const QmsgpvtSendTo = document.getElementById('send_to');
+const SendToQQ = document.getElementById('qmsgpvt_qq');
+const SendToQQgroup = document.getElementById('qmsgpvt_qqgroup');
+
+// 更新显示状态
+function ifshow_qmsgpvt_sendto() {
+
+    hideElement(SendToQQ);
+    hideElement(SendToQQgroup);
+
+    if (QmsgpvtSendTo.value === 'qq') {
+        showElement(SendToQQ);
+    } else if (QmsgpvtSendTo.value === 'qqgroup') {
+        showElement(SendToQQgroup);
+    }
+}
+
+// 监听
+function handleQmsgpvtSendTo() {
+    ifshow_qmsgpvt_sendto();
+}
+
+// 页面加载初始调用
+document.addEventListener('DOMContentLoaded', () => {
+    ifshow_qmsgpvt_sendto();
+
+    // 监听select的change事件
+    QmsgpvtSendTo.addEventListener('change', handleQmsgpvtSendTo);
+});

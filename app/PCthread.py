@@ -56,6 +56,8 @@ class PCthread():
             else:
                 self.PC_logger.debug(f"{device_id}线程处于停止状态")
 
+        # 加载设备配置
+        self.PC_yaml.load_yaml(device_id)
         # 生成停止信号
         stop_event = threading.Event()
         self.PC_logger.debug(f"创建{device_id}线程")

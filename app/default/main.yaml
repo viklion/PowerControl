@@ -15,6 +15,14 @@ message:
         enabled: False
         key: YOUR KEY
         qq: 123456789
+    Qmsgpvt:
+        enabled: False
+        url: http(s)://IP(or domain):port
+        key: YOUR KEY
+        type: qq
+        qq: 123456789
+        qqgroup: 123456789
+        bot: ''
     WeChat_webhook:
         enabled: False
         url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
@@ -35,3 +43,17 @@ message:
         corpid: YOUR CORPID
         agentid: YOUR AGENTID
         secret: YOUR SECRET
+    Webhook:
+        enabled: False
+        Url: http(s)://IP(or domain):port
+        Method: POST
+        ContentType: application/json
+        Headers: '{}'
+        Body: '{}'
+message_channel:
+    enabled: False
+    channel: serverchan_turbo
+message_template: 
+    enabled: False
+    title: $name$title
+    content: $time $content
