@@ -199,11 +199,11 @@ class PCmessage():
                 # 移除 'ad' 广告字段
                 if 'ad' in rs:
                     del rs['ad']
-                logger.debug("Qmsg酱推送返回:" + str(rs))
+                logger.debug("Qmsg私有云推送返回:" + str(rs))
                 return rs
             except Exception as e:
                 rs = str(e)
-                logger.error("Qmsg酱推送消息出错：" + rs)
+                logger.error("Qmsg私有云推送消息出错：" + rs)
                 return rs
 
     # 企业微信群机器人推送
