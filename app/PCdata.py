@@ -131,6 +131,15 @@ class PCdata():
     def get_main_yaml_message_Qmsg_qq(self):
         return self.get(['main','yaml', 'message', 'Qmsg', 'qq'])
 
+    def get_main_yaml_message_Qmsgv3_enabled(self):
+        return self.get(['main','yaml', 'message', 'Qmsgv3', 'enabled'])
+
+    def get_main_yaml_message_Qmsgv3_key(self):
+        return self.get(['main','yaml', 'message', 'Qmsgv3', 'key'])
+
+    def get_main_yaml_message_Qmsgv3_group(self):
+        return self.get(['main','yaml', 'message', 'Qmsgv3', 'group'])
+
     def get_main_yaml_message_Qmsgpvt_enabled(self):
         return self.get(['main','yaml', 'message', 'Qmsgpvt', 'enabled'])
 

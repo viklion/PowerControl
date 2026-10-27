@@ -97,6 +97,8 @@
                     </option>
                     <option value="qmsg" {% if config.message_channel.channel=='qmsg' %}selected{% endif %}>Qmsg
                     </option>
+                    <option value="qmsgv3" {% if config.message_channel.channel=='qmsgv3' %}selected{% endif %}>Qmsg酱v3
+                    </option>
                     <option value="qmsgpvt" {% if config.message_channel.channel=='qmsgpvt' %}selected{% endif %}>Qmsg私有云</option>
                     <option value="gotify" {% if config.message_channel.channel=='gotify' %}selected{% endif %}>Gotify</option>
                     <option value="pushplus" {% if config.message_channel.channel=='pushplus' %}selected{% endif %}>PushPlus</option>
@@ -187,6 +189,24 @@
                         value="{{ config.message.Qmsg.key }}"><br>
                     QQ： <input class="input-label" type="number" name="message.Qmsg.qq"
                         value="{{ config.message.Qmsg.qq }}"><br>
+                </div>
+                <hr class="dashed-hr">
+                <div class='line-container'>
+                    Qmsg酱v3： <input id="qmsgv3_enabled" class="checkbox-label" type="checkbox"
+                        name="message.Qmsgv3.enabled" value="True" {% if
+                        config['message']['Qmsgv3']['enabled'] %} checked{% endif %} data-target='qmsgv3config'>
+                    <label for="qmsgv3_enabled"></label>
+                    <a id="go_qmsgv3" class="textlink no-select" href="https://qmsg.zendee.cn/" target="_blank">➔前往Qmsg酱</a>
+                </div>
+                <div id='qmsgv3config' class='hidden'>
+                    Key： <input class="input-label" type="text" name="message.Qmsgv3.key"
+                        value="{{ config.message.Qmsgv3.key }}"><br>
+                    群号： <input class="input-label" type="text" name="message.Qmsgv3.group"
+                        value="{{ config.message.Qmsgv3.group }}" placeholder="留空推送至私聊">
+                    <span class="tooltip no-select">❔︎
+                        <span class="tooltiptext">选填，填写已在Qmsg酱控制台绑定机器人的QQ群号则推送到该群，留空则推送到私聊；同一Key每5秒最多推送一次</span>
+                    </span>
+                    <br>
                 </div>
                 <hr class="dashed-hr">
                 <div class='line-container'>

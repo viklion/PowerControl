@@ -73,6 +73,7 @@ class PCmessage():
                 'serverchan_turbo': self.send_message_serverchan_turbo,
                 'serverchan3': self.send_message_serverchan3,
                 'qmsg': self.send_message_qmsg,
+                'qmsgv3': self.send_message_qmsgv3,
                 'qmsgpvt': self.send_message_qmsgpvt,
                 'wechat_webhook': self.send_message_wechat_webhook,
                 'gotify': self.send_message_gotify,
@@ -172,6 +173,31 @@ class PCmessage():
             except Exception as e:
                 rs = str(e)
                 logger.error("Qmsg酱推送消息出错：" + rs)
+                return rs
+
+    # Qmsg酱v3推送
+    def send_message_qmsgv3(self, device_id, title, desp=''):
+        if self.PC_funcs.checkbool(self.PC_data.get_main_yaml_message_Qmsgv3_enabled()):
+            device_name, logger = self.check_message_from(device_id)
+            title, content = self.message_template_handle(device_id, device_name, title, desp)
+            try:
+                data = {
+                        'msg': title + '\n' + content,
+                    }
+                group = self.PC_funcs.trans_str(self.PC_data.get_main_yaml_message_Qmsgv3_group())
+                # 填写群号才推送到群，否则推送至已绑定的QQ
+                if group:
+                    data['group'] = group
+                key = self.PC_data.get_main_yaml_message_Qmsgv3_key()
+                rs = requests.post(f'https://qmsg.zendee.cn/v3/send/{key}', data=data).json()
+                # 移除 'ad' 广告字段
+                if isinstance(rs, dict) and 'ad' in rs:
+                    del rs['ad']
+                logger.debug("Qmsg酱v3推送返回:" + str(rs))
+                return rs
+            except Exception as e:
+                rs = str(e)
+                logger.error("Qmsg酱v3推送消息出错：" + rs)
                 return rs
 
     # Qmsg私有云推送

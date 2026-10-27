@@ -18,6 +18,10 @@ message:
       enabled: False    #是否启用
       key: YOUR KEY    #Qmsg酱的key
       qq: 123456789    #QQ号
+    Qmsgv3:    #Qmsg酱v3消息推送参数配置（接口文档：https://qmsg.zendee.cn/docs）
+      enabled: False    #是否启用
+      key: YOUR KEY    #Qmsg酱v3的key
+      group: ''    #QQ群号，选填，留空则推送到私聊
     WeChat_webhook:    #企业微信机器人消息推送参数配置
       enabled: False    #是否启用
       url: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx
