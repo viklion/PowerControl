@@ -44,7 +44,7 @@ document.getElementById('go_push').href = `/message/test?key=${KEY}`;
 // 根据复选框状态更新跳转链接的显示或隐藏
 function go_func_show() {
     const items = [
-        'push', 'serverchanturbo', 'serverchan3', 'qmsg', 'gotify',
+        'push', 'serverchanturbo', 'serverchan3', 'qmsg', 'qmsgv3', 'gotify',
         'pushplus', 'bark', 'wechat_webhook', 'wechat_app'
         
     ];

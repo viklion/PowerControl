@@ -15,6 +15,10 @@ message:
         enabled: False
         key: YOUR KEY
         qq: 123456789
+    Qmsgv3:
+        enabled: False
+        key: YOUR KEY
+        group: ''
     Qmsgpvt:
         enabled: False
         url: http(s)://IP(or domain):port
